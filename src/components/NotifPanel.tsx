@@ -52,8 +52,9 @@ export default function NotifPanel({ open, onClose, onOpenCard }: Props) {
             position: 'absolute',
             top: 56,
             right: 20,
-            width: 330,
-            maxHeight: 440,
+            width: 350,
+            maxWidth: 'calc(100vw - 32px)',
+            maxHeight: 460,
             backgroundColor: 'hsl(var(--card))',
             borderRadius: 'var(--radius)',
             boxShadow: 'var(--neu-shadow-floating)',
@@ -104,7 +105,7 @@ export default function NotifPanel({ open, onClose, onOpenCard }: Props) {
           </div>
 
           {/* Notifications List */}
-          <div style={{ padding: '8px 12px 12px 12px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ padding: '8px 12px 12px 12px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {notifications.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center', color: 'hsl(var(--muted-foreground))' }}>
                 <CheckCircle2 size={24} style={{ margin: '0 auto 8px', color: 'hsl(var(--primary))' }} />
@@ -119,14 +120,19 @@ export default function NotifPanel({ open, onClose, onOpenCard }: Props) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   whileTap={{ scale: 0.98 }}
-                  className="sidebar-nav-item"
                   style={{
-                    padding: '8px 10px',
+                    display: 'flex',
                     alignItems: 'flex-start',
+                    gap: 10,
+                    padding: '9px 11px',
+                    borderRadius: 'var(--radius)',
                     boxShadow: 'var(--neu-shadow-raised-sm)',
                     backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border) / 0.5)',
                     cursor: (n.boardId && n.cardId) ? 'pointer' : 'default',
-                    position: 'relative'
+                    position: 'relative',
+                    whiteSpace: 'normal',
+                    transition: 'all 0.15s ease',
                   }}
                   onClick={() => {
                     if (n.boardId && n.cardId) {
@@ -139,13 +145,27 @@ export default function NotifPanel({ open, onClose, onOpenCard }: Props) {
                     {iconMap[n.icon] ?? <Bell size={14} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: 'hsl(var(--foreground))' }}>
+                    <div style={{
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      color: 'hsl(var(--foreground))',
+                      lineHeight: 1.35,
+                      wordBreak: 'break-word',
+                      whiteSpace: 'normal',
+                    }}>
                       {n.title}
                     </div>
-                    <div style={{ fontSize: 11.5, color: 'hsl(var(--muted-foreground))', marginTop: 1 }}>
+                    <div style={{
+                      fontSize: 11.5,
+                      color: 'hsl(var(--muted-foreground))',
+                      marginTop: 2,
+                      lineHeight: 1.45,
+                      wordBreak: 'break-word',
+                      whiteSpace: 'normal',
+                    }}>
                       {n.sub}
                     </div>
-                    <div style={{ fontSize: 10, color: 'hsl(var(--muted-foreground) / 0.8)', marginTop: 3 }}>
+                    <div style={{ fontSize: 10, color: 'hsl(var(--muted-foreground) / 0.8)', marginTop: 4 }}>
                       {formatTime(n.time)}
                     </div>
                   </div>
