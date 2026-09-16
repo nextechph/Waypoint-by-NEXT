@@ -236,6 +236,9 @@ export const supabaseService = {
           let isMilestone: boolean = card.priority === 'urgent';
           let progress: number = card.completed ? 100 : 0;
           let dependencies: string[] = [];
+          let workSuspensions: any[] = [];
+          let workedDays: string[] = [];
+          let linkedRoadmapId: string | null = null;
 
           // Parse embedded roadmap metadata from card description
           const rMatch = desc.match(/<!--worklane_roadmap:([\s\S]*?)-->/);
@@ -249,6 +252,9 @@ export const supabaseService = {
               if (meta.isMilestone !== undefined) isMilestone = !!meta.isMilestone;
               if (meta.progress !== undefined) progress = meta.progress;
               if (meta.dependencies !== undefined) dependencies = meta.dependencies;
+              if (meta.workSuspensions !== undefined) workSuspensions = meta.workSuspensions;
+              if (meta.workedDays !== undefined) workedDays = meta.workedDays;
+              if (meta.linkedRoadmapId !== undefined) linkedRoadmapId = meta.linkedRoadmapId;
               desc = desc.replace(rMatch[0], '').trimEnd();
             } catch {}
           }
@@ -280,6 +286,9 @@ export const supabaseService = {
             isMilestone,
             progress,
             dependencies,
+            workSuspensions,
+            workedDays,
+            linkedRoadmapId,
             coverAttachmentId: card.cover_attachment_id,
             createdAt: card.created_at,
             isInbox: !!card.is_inbox,
@@ -457,10 +466,15 @@ export const supabaseService = {
         const cardRows = allCardsWithMeta.map((item, index) => {
           const hasRoadmapMeta = !!(
             item.card.startDate ||
+            item.card.actualStartDate ||
+            item.card.actualEndDate ||
             item.card.sprintId ||
             item.card.isMilestone ||
             (item.card.progress !== undefined && item.card.progress !== (item.card.completed ? 100 : 0)) ||
-            (item.card.dependencies && item.card.dependencies.length > 0)
+            (item.card.dependencies && item.card.dependencies.length > 0) ||
+            (item.card.workSuspensions && item.card.workSuspensions.length > 0) ||
+            (item.card.workedDays && item.card.workedDays.length > 0) ||
+            item.card.linkedRoadmapId
           );
 
           let encodedDescription = item.card.description || '';
@@ -480,6 +494,9 @@ export const supabaseService = {
             if (item.card.isMilestone) rMeta.isMilestone = true;
             if (item.card.progress !== undefined) rMeta.progress = item.card.progress;
             if (item.card.dependencies?.length) rMeta.dependencies = item.card.dependencies;
+            if (item.card.workSuspensions?.length) rMeta.workSuspensions = item.card.workSuspensions;
+            if (item.card.workedDays?.length) rMeta.workedDays = item.card.workedDays;
+            if (item.card.linkedRoadmapId) rMeta.linkedRoadmapId = item.card.linkedRoadmapId;
             encodedDescription = `${encodedDescription}\n<!--worklane_roadmap:${JSON.stringify(rMeta)}-->`.trim();
           }
 
@@ -1040,6 +1057,9 @@ export const supabaseService = {
         let isMilestone: boolean = card.priority === 'urgent';
         let progress: number = card.completed ? 100 : 0;
         let dependencies: string[] = [];
+        let workSuspensions: any[] = [];
+        let workedDays: string[] = [];
+        let linkedRoadmapId: string | null = null;
 
         // Parse embedded roadmap metadata from card description
         const rMatch = desc.match(/<!--worklane_roadmap:([\s\S]*?)-->/);
@@ -1053,6 +1073,9 @@ export const supabaseService = {
             if (meta.isMilestone !== undefined) isMilestone = !!meta.isMilestone;
             if (meta.progress !== undefined) progress = meta.progress;
             if (meta.dependencies !== undefined) dependencies = meta.dependencies;
+            if (meta.workSuspensions !== undefined) workSuspensions = meta.workSuspensions;
+            if (meta.workedDays !== undefined) workedDays = meta.workedDays;
+            if (meta.linkedRoadmapId !== undefined) linkedRoadmapId = meta.linkedRoadmapId;
             desc = desc.replace(rMatch[0], '').trimEnd();
           } catch {}
         }
@@ -1078,6 +1101,9 @@ export const supabaseService = {
           isMilestone,
           progress,
           dependencies,
+          workSuspensions,
+          workedDays,
+          linkedRoadmapId,
           coverAttachmentId: card.cover_attachment_id,
           createdAt: card.created_at,
           isInbox: !!card.is_inbox,

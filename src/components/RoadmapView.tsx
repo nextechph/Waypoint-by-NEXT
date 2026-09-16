@@ -153,6 +153,13 @@ export interface CardWorkStatus {
   workedDatesSet: Set<string>;
 }
 
+export function toLocalDateString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 /**
  * Evaluates whether a card has work registered (via Option A: manual check-in or
  * Option B: card activity detection like comments, attachments, or updates).
@@ -199,13 +206,13 @@ export function getCardWorkStatus(card: CardType, actualStartDate: Date, today: 
       cur.setHours(0, 0, 0, 0);
       toDate.setHours(0, 0, 0, 0);
       while (cur <= toDate) {
-        workedSet.delete(cur.toISOString().slice(0, 10));
+        workedSet.delete(toLocalDateString(cur));
         cur.setDate(cur.getDate() + 1);
       }
     }
   }
 
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = toLocalDateString(today);
   const isWorkedToday = workedSet.has(todayStr);
 
   // Find latest worked date <= today
@@ -231,7 +238,7 @@ export function getCardWorkStatus(card: CardType, actualStartDate: Date, today: 
   if (todayDay.getTime() >= startDay.getTime() && !card.completed) {
     const cursor = new Date(startDay);
     while (cursor <= todayDay) {
-      const dStr = cursor.toISOString().slice(0, 10);
+      const dStr = toLocalDateString(cursor);
       if (!workedSet.has(dStr)) {
         automatedSuspendedDays++;
       }

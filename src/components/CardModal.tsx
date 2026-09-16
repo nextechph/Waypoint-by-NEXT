@@ -2546,6 +2546,13 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               const workedCount = workStatus.workedDaysCount;
               const loggedDates = Array.from(workStatus.workedDatesSet).sort();
 
+              const toLocalDateString = (d: Date): string => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+              };
+
               const handleSaveWorkedRange = () => {
                 if (!workedRangeFrom) {
                   showToast('Please select a start date', 'warning');
@@ -2565,7 +2572,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 const cursor = new Date(fromDate);
                 let addedCount = 0;
                 while (cursor <= toDate) {
-                  const dStr = cursor.toISOString().slice(0, 10);
+                  const dStr = toLocalDateString(cursor);
                   if (!currentSet.has(dStr)) {
                     currentSet.add(dStr);
                     addedCount++;
@@ -2602,7 +2609,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 const currentSet = new Set(card.workedDays || []);
                 let added = 0;
                 while (cursor <= today) {
-                  const dStr = cursor.toISOString().slice(0, 10);
+                  const dStr = toLocalDateString(cursor);
                   if (!currentSet.has(dStr)) {
                     currentSet.add(dStr);
                     added++;
