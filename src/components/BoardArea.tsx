@@ -350,7 +350,7 @@ export default function BoardArea({
             initial="initial"
             animate="animate"
             exit="exit"
-            style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+            style={{ width: '100%', height: '100%', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
           >
             <RoadmapView
               board={board}

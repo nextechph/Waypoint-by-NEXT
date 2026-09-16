@@ -292,6 +292,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const [sprintStartDate, setSprintStartDate] = useState('');
   const [sprintEndDate, setSprintEndDate] = useState('');
   const [sprintColor, setSprintColor] = useState('#6366f1');
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   // Quick Task Add dialog
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
@@ -1104,9 +1105,10 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     showToast('Gantt chart and Roadmap exported to CSV successfully', 'success');
   };
 
-  // Pixel sizing per interval
-  const intervalWidthPx = scale === 'days' ? 52 : scale === 'weeks' ? 90 : 130;
-  const totalTimelineWidth = intervals.length * intervalWidthPx;
+  // Pixel sizing per interval with scale & zoom
+  const baseIntervalWidth = scale === 'days' ? 84 : scale === 'weeks' ? 180 : 260;
+  const intervalWidthPx = Math.round(baseIntervalWidth * zoomLevel);
+  const totalTimelineWidth = Math.max(intervals.length * intervalWidthPx, 1100);
 
   // Today marker X position percentage
   const todayMs = today.getTime() + 12 * 3600 * 1000;
@@ -1188,19 +1190,19 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           { value: behindCount, label: 'Behind Schedule', color: '#f59e0b', accent: 'rgba(245,158,11,0.1)' },
         ].map(card => (
           <div key={card.label} style={{
-            flex: '1 1 100px',
-            minWidth: 90,
-            maxWidth: 160,
+            flex: '1 1 120px',
+            minWidth: 110,
+            maxWidth: 200,
             background: card.accent,
             border: `1px solid ${card.color}30`,
-            borderRadius: 10,
-            padding: '10px 14px',
+            borderRadius: 12,
+            padding: '12px 18px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: 4,
           }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: card.color, lineHeight: 1 }}>{card.value}</span>
-            <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>{card.label}</span>
+            <span style={{ fontSize: 26, fontWeight: 800, color: card.color, lineHeight: 1 }}>{card.value}</span>
+            <span style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', fontWeight: 600 }}>{card.label}</span>
           </div>
         ))}
 
@@ -1310,9 +1312,55 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
         {/* Scale Switcher */}
         <div className="roadmap-scale-group" style={{ flexShrink: 0 }}>
-          <button type="button" className={`scale-btn ${scale === 'days' ? 'active' : ''}`} onClick={() => setScale('days')}>Days</button>
-          <button type="button" className={`scale-btn ${scale === 'weeks' ? 'active' : ''}`} onClick={() => setScale('weeks')}>Weeks</button>
-          <button type="button" className={`scale-btn ${scale === 'months' ? 'active' : ''}`} onClick={() => setScale('months')}>Months</button>
+          <button type="button" className={`scale-btn ${scale === 'days' ? 'active' : ''}`} onClick={() => { setScale('days'); setZoomLevel(1); }}>Days</button>
+          <button type="button" className={`scale-btn ${scale === 'weeks' ? 'active' : ''}`} onClick={() => { setScale('weeks'); setZoomLevel(1); }}>Weeks</button>
+          <button type="button" className={`scale-btn ${scale === 'months' ? 'active' : ''}`} onClick={() => { setScale('months'); setZoomLevel(1); }}>Months</button>
+        </div>
+
+        {/* Zoom Controls */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          backgroundColor: 'hsl(var(--card))',
+          borderRadius: 8,
+          padding: '2px 5px',
+          boxShadow: 'var(--neu-shadow-raised-sm)',
+          border: '1px solid hsl(var(--border) / 0.5)',
+          flexShrink: 0,
+        }}>
+          <button
+            type="button"
+            className="icon-btn"
+            style={{ width: 22, height: 22, minWidth: 22, fontSize: 13, fontWeight: 700 }}
+            onClick={() => setZoomLevel(z => Math.max(0.6, +(z - 0.2).toFixed(2)))}
+            title="Zoom out timeline"
+          >−</button>
+          <button
+            type="button"
+            onClick={() => setZoomLevel(1)}
+            title="Click to reset zoom to 100%"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 11,
+              fontWeight: 700,
+              minWidth: 38,
+              textAlign: 'center',
+              color: zoomLevel !== 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              padding: '0 2px'
+            }}
+          >
+            {Math.round(zoomLevel * 100)}%
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            style={{ width: 22, height: 22, minWidth: 22, fontSize: 13, fontWeight: 700 }}
+            onClick={() => setZoomLevel(z => Math.min(2.2, +(z + 0.2).toFixed(2)))}
+            title="Zoom in timeline"
+          >+</button>
         </div>
 
         {/* Group By */}
@@ -1486,10 +1534,10 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                               {assignees.length > 0 && (
                                 <div className="roadmap-task-assignees">
                                   {assignees.slice(0, 2).map((m: any) => (
-                                    <AvatarBorder key={m.id} size={18} title={m.name}>
+                                    <AvatarBorder key={m.id} size={22} title={m.name}>
                                       {m.avatarUrl
-                                        ? <img src={m.avatarUrl} alt={m.name} style={{ width: 18, height: 18, borderRadius: '50%' }} />
-                                        : <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: m.color, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{avatarInitials(m.name)}</div>
+                                        ? <img src={m.avatarUrl} alt={m.name} style={{ width: 22, height: 22, borderRadius: '50%' }} />
+                                        : <div style={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: m.color, color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{avatarInitials(m.name)}</div>
                                       }
                                     </AvatarBorder>
                                   ))}
@@ -1497,15 +1545,15 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                               )}
 
                               {/* Progress + Status — Desktop */}
-                              <div className="hide-on-mobile-flex" style={{ width: 120, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end', paddingRight: 8 }}>
+                              <div className="hide-on-mobile-flex" style={{ width: 130, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end', paddingRight: 8 }}>
                                 {/* Mini progress bar */}
-                                <div style={{ width: '100%', height: 4, borderRadius: 4, background: 'hsl(var(--border))', overflow: 'hidden' }}>
+                                <div style={{ width: '100%', height: 5, borderRadius: 4, background: 'hsl(var(--border))', overflow: 'hidden' }}>
                                   <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: 4, background: t.card.completed ? '#10b981' : 'hsl(var(--primary))', transition: 'width 0.4s ease' }} />
                                 </div>
                                 {/* Status pill */}
                                 <span style={{
-                                  fontSize: 10, fontWeight: 700,
-                                  padding: '1px 6px', borderRadius: 20,
+                                  fontSize: 10.5, fontWeight: 700,
+                                  padding: '2px 7px', borderRadius: 20,
                                   background: statusPill.bg,
                                   color: statusPill.color,
                                   whiteSpace: 'nowrap',
@@ -1669,7 +1717,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                   return (
                     <div key={section.id} className="roadmap-col-bars-group">
-                      <div style={{ height: 34, position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ height: 38, position: 'relative', overflow: 'hidden' }}>
                         {sprintBand && (
                           <div className="roadmap-sprint-span-indicator" style={{
                             left: `${sprintBand.left}%`, width: `${sprintBand.width}%`,
@@ -1685,7 +1733,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                       {!isCollapsed && (
                         tasks.length === 0 ? (
-                          <div style={{ height: 38 }} />
+                          <div style={{ height: 44 }} />
                         ) : (
                           tasks.map(t => {
                             const progressPct = deriveCardProgress(t.card, t.columnName);
@@ -1852,7 +1900,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                       style={{
                                         left: `${actualLeftPct}%`,
                                         width: `${actualTotalWidthPct}%`,
-                                        top: 13,
+                                        top: 11,
                                         backgroundColor: simpleBarColor,
                                       }}
                                       onClick={() => onOpenCard(t.card.id)}
@@ -1862,10 +1910,11 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                       <div className="roadmap-bar-content">
                                         <span className="bar-title">{t.card.title}</span>
                                         <span style={{
-                                          fontSize: 9.5, fontWeight: 700,
-                                          background: 'rgba(0,0,0,0.25)',
-                                          borderRadius: 3, padding: '1px 4px',
+                                          fontSize: 10.5, fontWeight: 700,
+                                          background: 'rgba(0,0,0,0.28)',
+                                          borderRadius: 4, padding: '2px 7px',
                                           flexShrink: 0,
+                                          letterSpacing: '0.01em',
                                         }}>{statusPill.label}</span>
                                       </div>
                                     </motion.div>
