@@ -237,13 +237,15 @@ export default function NeumorphicDatePicker({
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', minWidth: 0 }}>
       {/* Interactive Trigger Button */}
       <motion.button
         type="button"
         whileTap={{ scale: 0.98 }}
         style={{
           width: '100%',
+          minWidth: 0,
+          maxWidth: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -324,6 +326,9 @@ export default function NeumorphicDatePicker({
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                minWidth: 0,
+                flex: 1,
+                textAlign: 'left',
               }}
             >
               {placeholder}

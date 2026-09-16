@@ -1048,9 +1048,9 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
           className="modal-body card-modal-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) 310px',
-            gap: 28,
-            padding: '20px 28px 28px 28px',
+            gridTemplateColumns: 'minmax(0, 1fr) 330px',
+            gap: 22,
+            padding: '20px 24px 28px 24px',
             overflowX: 'hidden',
             overflowY: 'auto',
             minHeight: 0,
@@ -2276,9 +2276,9 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
 
             {/* Scheduled Start & Due Date (all boards) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div className="form-group">
-                  <label className="field-label">Start Date</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
+                <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
+                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Start Date</label>
                   <NeumorphicDatePicker
                     value={card.startDate || null}
                     onChange={newStart => {
@@ -2287,8 +2287,8 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                     align="left"
                   />
                 </div>
-                <div className="form-group">
-                  <label className="field-label">Due Date</label>
+                <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
+                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Due Date</label>
                   <NeumorphicDatePicker
                     value={card.dueDate}
                     onChange={newDue => {
@@ -2301,21 +2301,21 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
 
               {/* Actual Start & End — Roadmap boards only */}
               {isRoadmap && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div className="form-group">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <label className="field-label" style={{ margin: 0 }}>Actual Start</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
+                  <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4, marginBottom: 4, minWidth: 0 }}>
+                      <label className="field-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Actual Start</label>
                       {card.actualStartDate && card.startDate && (() => {
                         const sched = new Date(card.startDate);
                         const actual = new Date(card.actualStartDate);
                         const diff = Math.round((actual.getTime() - sched.getTime()) / 86400000);
                         if (diff < 0) return (
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981', flexShrink: 0, whiteSpace: 'nowrap' }}>
                             {Math.abs(diff)}d early
                           </span>
                         );
                         if (diff > 0) return (
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                             {diff}d late
                           </span>
                         );
@@ -2327,16 +2327,20 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       onChange={newActualStart => {
                         updateCard(cardId, { actualStartDate: newActualStart });
                       }}
-                      placeholder="When did work actually begin?"
+                      placeholder="Actual start..."
                       align="left"
                     />
                   </div>
 
                   {/* Actual / Projected End */}
-                  <div className="form-group">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <label className="field-label" style={{ margin: 0 }}>
-                        {card.completed ? 'Actual End Date' : 'Actual / Projected End'}
+                  <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4, marginBottom: 4, minWidth: 0 }}>
+                      <label
+                        className="field-label"
+                        style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        title={card.completed ? 'Actual End Date' : 'Actual / Projected End'}
+                      >
+                        {card.completed ? 'Actual End' : 'Projected End'}
                       </label>
                       {(() => {
                         const targetDue = card.dueDate ? new Date(card.dueDate) : null;
@@ -2348,17 +2352,17 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         if (actualOrProj) {
                           const diffDays = Math.round((actualOrProj.getTime() - targetDue.getTime()) / 86400000);
                           if (diffDays > 0) return (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444', flexShrink: 0, whiteSpace: 'nowrap' }}>
                               +{diffDays}d Delay
                             </span>
                           );
                           if (diffDays < 0) return (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981', flexShrink: 0, whiteSpace: 'nowrap' }}>
                               {Math.abs(diffDays)}d Early
                             </span>
                           );
                           return (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(59,130,246,0.15)', color: '#3b82f6', flexShrink: 0, whiteSpace: 'nowrap' }}>
                               On Target
                             </span>
                           );
@@ -2367,13 +2371,13 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                           if (now.getTime() > targetDue.getTime() && !card.completed) {
                             const diffDays = Math.max(1, Math.round((now.getTime() - targetDue.getTime()) / 86400000));
                             return (
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                                Projected +{diffDays}d
+                              <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                +{diffDays}d
                               </span>
                             );
                           }
                           return (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                            <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981', flexShrink: 0, whiteSpace: 'nowrap' }}>
                               On Track
                             </span>
                           );
@@ -2385,7 +2389,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       onChange={newActual => {
                         updateCard(cardId, { actualEndDate: newActual });
                       }}
-                      placeholder={card.completed ? 'Set actual completion date...' : 'Leave blank to auto-project...'}
+                      placeholder={card.completed ? 'Actual end...' : 'Auto-projected...'}
                       align="right"
                     />
                   </div>
