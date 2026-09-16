@@ -2406,6 +2406,22 @@ select option {
   text-overflow: ellipsis;
 }
 
+/* ── Early Start Indicator in Actual Track (Hidden normally, revealed on hover) ── */
+.roadmap-early-start-label {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+  font-size: 8px;
+  font-weight: 800;
+  color: #10b981;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+.roadmap-actual-track:hover .roadmap-early-start-label {
+  opacity: 1;
+}
+
 /* ── Work Suspension / Pause Break in Actual Track ── */
 .roadmap-suspension-gap {
   position: absolute;

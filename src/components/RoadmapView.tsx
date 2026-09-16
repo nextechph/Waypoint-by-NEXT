@@ -1969,6 +1969,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                   : t.varianceDays < 0
                                     ? `Status: ${Math.abs(t.varianceDays)} day${Math.abs(t.varianceDays) === 1 ? '' : 's'} ahead of schedule`
                                     : 'Status: On track',
+                              t.startVarianceDays < 0 ? `Early Start: Started ${Math.abs(t.startVarianceDays)} day${Math.abs(t.startVarianceDays) === 1 ? '' : 's'} before scheduled date` : null,
                               suspensionCount > 0 ? `${suspensionCount} work pause${suspensionCount !== 1 ? 's' : ''} logged` : null,
                               !t.card.completed && (
                                 t.isWorkedToday
@@ -2025,7 +2026,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                       }}
                                       title={`Started ${Math.abs(t.startVarianceDays)} day(s) before scheduled date`}
                                     >
-                                      <span style={{ fontSize: 8, fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>
+                                      <span className="roadmap-early-start-label">
                                         Early Start
                                       </span>
                                     </div>
