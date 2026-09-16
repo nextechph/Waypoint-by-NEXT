@@ -32,7 +32,8 @@ export function formatTime(iso: string): string {
 export function formatDueDate(iso: string | null): string {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 export function getDueStatus(iso: string | null): 'overdue' | 'due-soon' | 'ok' | null {

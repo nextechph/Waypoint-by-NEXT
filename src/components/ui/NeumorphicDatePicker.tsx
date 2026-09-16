@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight,
+  Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   X, Check, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +22,7 @@ const DAYS_OF_WEEK = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 export default function NeumorphicDatePicker({
   value,
   onChange,
-  placeholder = 'Set due date & time...',
+  placeholder = 'Set date...',
   align = 'right'
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,19 +39,6 @@ export default function NeumorphicDatePicker({
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
   const [selectedDate, setSelectedDate] = useState<Date | null>(value ? initialDate : null);
 
-  // Time state (12-hour format)
-  const [hours, setHours] = useState(() => {
-    const h = initialDate.getHours();
-    const h12 = h % 12 || 12;
-    return String(h12).padStart(2, '0');
-  });
-  const [minutes, setMinutes] = useState(() => {
-    return String(initialDate.getMinutes()).padStart(2, '0');
-  });
-  const [ampm, setAmpm] = useState<'AM' | 'PM'>(() => {
-    return initialDate.getHours() >= 12 ? 'PM' : 'AM';
-  });
-
   // Sync state when value changes from outside
   useEffect(() => {
     if (value) {
@@ -60,10 +47,6 @@ export default function NeumorphicDatePicker({
         setViewYear(d.getFullYear());
         setViewMonth(d.getMonth());
         setSelectedDate(d);
-        const h = d.getHours();
-        setHours(String(h % 12 || 12).padStart(2, '0'));
-        setMinutes(String(d.getMinutes()).padStart(2, '0'));
-        setAmpm(h >= 12 ? 'PM' : 'AM');
       }
     } else {
       setSelectedDate(null);
@@ -117,15 +100,9 @@ export default function NeumorphicDatePicker({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const computeIso = (d: Date | null, hStr: string, mStr: string, period: 'AM' | 'PM') => {
+  const computeIso = (d: Date | null) => {
     if (!d) return null;
-    let h = parseInt(hStr, 10);
-    if (isNaN(h) || h < 1 || h > 12) h = 12;
-    if (period === 'PM' && h < 12) h += 12;
-    if (period === 'AM' && h === 12) h = 0;
-    let m = parseInt(mStr, 10);
-    if (isNaN(m) || m < 0 || m > 59) m = 0;
-    const finalDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0, 0);
+    const finalDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
     return isNaN(finalDate.getTime()) ? null : finalDate.toISOString();
   };
 
@@ -151,16 +128,14 @@ export default function NeumorphicDatePicker({
     setViewMonth(dateObj.getMonth());
     setViewYear(dateObj.getFullYear());
     setSelectedDate(dateObj);
-    const iso = computeIso(dateObj, hours, minutes, ampm);
+    const iso = computeIso(dateObj);
     if (iso) onChange(iso);
+    setIsOpen(false);
   };
 
   const handleQuickPreset = (preset: 'today' | 'tomorrow' | 'nextWeek' | 'endOfWeek') => {
     const now = new Date();
     let d = now;
-    let h = '05';
-    let m = '00';
-    let p: 'AM' | 'PM' = 'PM';
 
     if (preset === 'today') {
       d = now;
@@ -174,25 +149,21 @@ export default function NeumorphicDatePicker({
     } else if (preset === 'nextWeek') {
       d = new Date();
       d.setDate(d.getDate() + 7);
-      h = '09';
-      p = 'AM';
     }
 
     setViewYear(d.getFullYear());
     setViewMonth(d.getMonth());
     setSelectedDate(d);
-    setHours(h);
-    setMinutes(m);
-    setAmpm(p);
 
-    const iso = computeIso(d, h, m, p);
+    const iso = computeIso(d);
     if (iso) onChange(iso);
+    setIsOpen(false);
   };
 
   const handleApply = () => {
     const targetDate = selectedDate || new Date();
     setSelectedDate(targetDate);
-    const iso = computeIso(targetDate, hours, minutes, ampm);
+    const iso = computeIso(targetDate);
     if (iso) onChange(iso);
     setIsOpen(false);
   };
@@ -235,7 +206,7 @@ export default function NeumorphicDatePicker({
     return days;
   }, [viewYear, viewMonth]);
 
-  // Display trigger string (clean date and time separation)
+  // Display trigger string (clean date only, without time)
   const formatted = useMemo(() => {
     if (!value) return null;
     const d = new Date(value);
@@ -246,11 +217,7 @@ export default function NeumorphicDatePicker({
       day: 'numeric',
       year: 'numeric'
     });
-    const timePart = d.toLocaleTimeString(undefined, {
-      hour: 'numeric',
-      minute: '2-digit'
-    });
-    return { datePart, timePart };
+    return { datePart };
   }, [value]);
 
   const isToday = (d: Date) => {
@@ -285,9 +252,9 @@ export default function NeumorphicDatePicker({
           alignItems: 'center',
           justifyContent: 'space-between',
           cursor: 'pointer',
-          padding: '6px 8px',
-          minHeight: 44,
-          borderRadius: 10,
+          padding: '5px 8px',
+          minHeight: 34,
+          borderRadius: 8,
           border: '1px solid hsl(var(--border) / 0.8)',
           backgroundColor: isOpen
             ? 'hsl(var(--secondary) / 0.7)'
@@ -301,12 +268,12 @@ export default function NeumorphicDatePicker({
         }}
         onClick={() => setIsOpen(o => !o)}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1, overflow: 'hidden' }}>
           <div
             style={{
-              width: 26,
-              height: 26,
-              borderRadius: 7,
+              width: 22,
+              height: 22,
+              borderRadius: 6,
               backgroundColor: formatted ? 'hsl(var(--primary) / 0.12)' : 'hsl(var(--secondary) / 0.8)',
               color: formatted ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
               display: 'flex',
@@ -316,42 +283,25 @@ export default function NeumorphicDatePicker({
               boxShadow: 'var(--neu-shadow-raised-sm)',
             }}
           >
-            <CalendarIcon size={13} strokeWidth={2} />
+            <CalendarIcon size={12} strokeWidth={2} />
           </div>
 
           {formatted ? (
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden', textAlign: 'left' }}>
-              <span
-                style={{
-                  fontSize: 11.5,
-                  fontWeight: 400,
-                  color: 'hsl(var(--foreground))',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  lineHeight: 1.25,
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {formatted.datePart}
-              </span>
-              <span
-                style={{
-                  fontSize: 10.5,
-                  fontWeight: 300,
-                  color: 'hsl(var(--muted-foreground))',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  lineHeight: 1.2,
-                  marginTop: 1,
-                }}
-              >
-                <Clock size={9} style={{ opacity: 0.75, flexShrink: 0 }} />
-                <span>{formatted.timePart}</span>
-              </span>
-            </div>
+            <span
+              style={{
+                fontSize: 11.5,
+                fontWeight: 500,
+                color: 'hsl(var(--foreground))',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: 1.2,
+                letterSpacing: '-0.01em',
+                textAlign: 'left',
+              }}
+            >
+              {formatted.datePart}
+            </span>
           ) : (
             <span
               style={{
@@ -397,13 +347,11 @@ export default function NeumorphicDatePicker({
               e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
-            title="Clear date & time"
+            title="Clear date"
           >
             <X size={12} strokeWidth={2.2} />
           </motion.span>
-        ) : (
-          <Clock size={12} style={{ opacity: 0.35, flexShrink: 0, marginLeft: 2 }} />
-        )}
+        ) : null}
       </motion.button>
 
       {/* Neumorphic Dropdown Popover */}
@@ -551,144 +499,6 @@ export default function NeumorphicDatePicker({
                   </motion.button>
                 );
               })}
-            </div>
-
-            {/* Time Selector */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 12px',
-                borderRadius: 12,
-                backgroundColor: 'hsl(var(--card))',
-                boxShadow: 'var(--neu-shadow-input)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Clock size={13} color="hsl(var(--primary))" />
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'hsl(var(--muted-foreground))' }}>Time</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {/* Hours */}
-                <input
-                  type="text"
-                  maxLength={2}
-                  value={hours}
-                  onChange={e => {
-                    const v = e.target.value.replace(/\D/g, '');
-                    if (v === '' || (parseInt(v, 10) >= 1 && parseInt(v, 10) <= 12)) {
-                      setHours(v);
-                    }
-                  }}
-                  onBlur={() => {
-                    const h = parseInt(hours, 10) || 12;
-                    const hFormatted = String(h).padStart(2, '0');
-                    setHours(hFormatted);
-                    if (selectedDate) {
-                      onChange(computeIso(selectedDate, hFormatted, minutes, ampm));
-                    }
-                  }}
-                  style={{
-                    width: 32,
-                    textAlign: 'center',
-                    padding: '2px 4px',
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    backgroundColor: 'hsl(var(--card))',
-                    boxShadow: 'var(--neu-shadow-raised-sm)',
-                    border: 'none',
-                    outline: 'none',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                />
-
-                <span style={{ fontWeight: 700, color: 'hsl(var(--muted-foreground))' }}>:</span>
-
-                {/* Minutes */}
-                <input
-                  type="text"
-                  maxLength={2}
-                  value={minutes}
-                  onChange={e => {
-                    const v = e.target.value.replace(/\D/g, '');
-                    if (v === '' || (parseInt(v, 10) >= 0 && parseInt(v, 10) <= 59)) {
-                      setMinutes(v);
-                    }
-                  }}
-                  onBlur={() => {
-                    const m = parseInt(minutes, 10) || 0;
-                    const mFormatted = String(m).padStart(2, '0');
-                    setMinutes(mFormatted);
-                    if (selectedDate) {
-                      onChange(computeIso(selectedDate, hours, mFormatted, ampm));
-                    }
-                  }}
-                  style={{
-                    width: 32,
-                    textAlign: 'center',
-                    padding: '2px 4px',
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    backgroundColor: 'hsl(var(--card))',
-                    boxShadow: 'var(--neu-shadow-raised-sm)',
-                    border: 'none',
-                    outline: 'none',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                />
-
-                {/* AM / PM Toggle */}
-                <div style={{ display: 'flex', gap: 2, marginLeft: 4 }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAmpm('AM');
-                      if (selectedDate) {
-                        onChange(computeIso(selectedDate, hours, minutes, 'AM'));
-                      }
-                    }}
-                    style={{
-                      padding: '2px 6px',
-                      borderRadius: 6,
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      border: 'none',
-                      backgroundColor: ampm === 'AM' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                      color: ampm === 'AM' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                      boxShadow: ampm === 'AM' ? 'var(--neu-shadow-raised-sm)' : 'none'
-                    }}
-                  >
-                    AM
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAmpm('PM');
-                      if (selectedDate) {
-                        onChange(computeIso(selectedDate, hours, minutes, 'PM'));
-                      }
-                    }}
-                    style={{
-                      padding: '2px 6px',
-                      borderRadius: 6,
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      border: 'none',
-                      backgroundColor: ampm === 'PM' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                      color: ampm === 'PM' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                      boxShadow: ampm === 'PM' ? 'var(--neu-shadow-raised-sm)' : 'none'
-                    }}
-                  >
-                    PM
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Popover Actions */}
