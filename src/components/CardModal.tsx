@@ -2283,32 +2283,34 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               </motion.button>
             </div>
 
-            {/* Scheduled Start & Due Date (all boards) */}
+            {/* Scheduled Start & Scheduled End (all boards) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
                 <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
-                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Start Date</label>
+                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled Start</label>
                   <NeumorphicDatePicker
                     value={card.startDate || null}
                     onChange={newStart => {
                       updateCard(cardId, { startDate: newStart });
                     }}
+                    placeholder="Scheduled start..."
                     align="left"
                   />
                 </div>
                 <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
-                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Due Date</label>
+                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled End</label>
                   <NeumorphicDatePicker
                     value={card.dueDate}
                     onChange={newDue => {
                       updateCard(cardId, { dueDate: newDue });
                     }}
+                    placeholder="Scheduled end..."
                     align="right"
                   />
                 </div>
               </div>
 
-              {/* Actual Start & End — Roadmap boards only */}
+              {/* Actual Start & Actual End — Roadmap boards only */}
               {isRoadmap && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
                   <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
@@ -2347,9 +2349,9 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       <label
                         className="field-label"
                         style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                        title={card.completed ? 'Actual End Date' : 'Actual / Projected End'}
+                        title="Actual End Date"
                       >
-                        {card.completed ? 'Actual End' : 'Projected End'}
+                        Actual End
                       </label>
                       {(() => {
                         const targetDue = card.dueDate ? new Date(card.dueDate) : null;
@@ -2398,7 +2400,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       onChange={newActual => {
                         updateCard(cardId, { actualEndDate: newActual });
                       }}
-                      placeholder={card.completed ? 'Actual end...' : 'Auto-projected...'}
+                      placeholder="Actual end..."
                       align="right"
                     />
                   </div>
@@ -2534,6 +2536,159 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               </div>
             )}
 
+            {/* Work Suspensions (Paused Periods) — Roadmap boards only */}
+            {isRoadmap && (
+              <div className="form-group" style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                    Work Suspensions
+                    {(card.workSuspensions || []).length > 0 && (
+                      <span style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: 6,
+                        backgroundColor: 'rgba(245,158,11,0.15)',
+                        color: '#f59e0b',
+                        marginLeft: 4,
+                      }}>
+                        {(card.workSuspensions || []).length} pause{(card.workSuspensions || []).length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ height: 26, fontSize: 11, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 7 }}
+                    onClick={() => {
+                      const existing = card.workSuspensions || [];
+                      const today = new Date().toISOString().slice(0, 10);
+                      const updated = [...existing, { from: today, to: today, reason: '' }];
+                      const cleanedDays = (card.workedDays || []).filter(d => !updated.some(s => d >= s.from.slice(0, 10) && d <= s.to.slice(0, 10)));
+                      updateCard(cardId, {
+                        workSuspensions: updated,
+                        ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
+                      });
+                    }}
+                  >
+                    + Add Pause
+                  </button>
+                </div>
+                {(card.workSuspensions || []).length === 0 ? (
+                  <p style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', margin: 0, padding: '6px 0' }}>
+                    No work pauses logged. Add a pause if work was stopped and resumed (e.g. client hold, holiday shutdown). Paused days are excluded from variance calculations.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {(card.workSuspensions as WorkSuspension[]).map((s, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          position: 'relative',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 6,
+                          padding: '8px 10px',
+                          paddingRight: 38,
+                          borderRadius: 8,
+                          background: 'hsl(var(--card) / 0.6)',
+                          border: '1px solid hsl(var(--border) / 0.5)',
+                        }}
+                      >
+                        {/* Delete button - top right */}
+                        <button
+                          type="button"
+                          title="Remove this suspension"
+                          onClick={() => {
+                            const updated = (card.workSuspensions as WorkSuspension[]).filter((_, i) => i !== idx);
+                            updateCard(cardId, { workSuspensions: updated });
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 6,
+                            width: 26,
+                            height: 26,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 7,
+                            border: '1px solid hsl(var(--border) / 0.6)',
+                            background: 'transparent',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <X size={13} />
+                        </button>
+                        {/* Row 1: From / To */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
+                          <div style={{ minWidth: 0 }}>
+                            <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
+                            <NeumorphicDatePicker
+                              value={s.from}
+                              onChange={val => {
+                                const updated = [...(card.workSuspensions as WorkSuspension[])];
+                                updated[idx] = { ...updated[idx], from: val || updated[idx].from };
+                                const cleanedDays = (card.workedDays || []).filter(d => !updated.some(sp => d >= sp.from.slice(0, 10) && d <= sp.to.slice(0, 10)));
+                                updateCard(cardId, {
+                                  workSuspensions: updated,
+                                  ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
+                                });
+                              }}
+                              align="left"
+                            />
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
+                            <NeumorphicDatePicker
+                              value={s.to}
+                              onChange={val => {
+                                const updated = [...(card.workSuspensions as WorkSuspension[])];
+                                updated[idx] = { ...updated[idx], to: val || updated[idx].to };
+                                const cleanedDays = (card.workedDays || []).filter(d => !updated.some(sp => d >= sp.from.slice(0, 10) && d <= sp.to.slice(0, 10)));
+                                updateCard(cardId, {
+                                  workSuspensions: updated,
+                                  ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
+                                });
+                              }}
+                              align="right"
+                            />
+                          </div>
+                        </div>
+                        {/* Row 2: Reason (full width) */}
+                        <div>
+                          <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>Reason (optional)</label>
+                          <input
+                            type="text"
+                            value={s.reason || ''}
+                            placeholder="e.g. Client hold, Holiday"
+                            onChange={e => {
+                              const updated = [...(card.workSuspensions as WorkSuspension[])];
+                              updated[idx] = { ...updated[idx], reason: e.target.value };
+                              updateCard(cardId, { workSuspensions: updated });
+                            }}
+                            style={{
+                              width: '100%',
+                              height: 32,
+                              fontSize: 11.5,
+                              padding: '4px 8px',
+                              borderRadius: 7,
+                              border: '1px solid hsl(var(--border))',
+                              background: 'hsl(var(--background))',
+                              color: 'hsl(var(--foreground))',
+                              outline: 'none',
+                              boxSizing: 'border-box',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Daily Work Confirmation & Worked Days Tracking — Roadmap boards only */}
             {isRoadmap && (() => {
@@ -2947,160 +3102,6 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 </div>
               );
             })()}
-
-            {/* Work Suspensions (Paused Periods) — Roadmap boards only */}
-            {isRoadmap && (
-              <div className="form-group" style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                    Work Suspensions
-                    {(card.workSuspensions || []).length > 0 && (
-                      <span style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        padding: '1px 6px',
-                        borderRadius: 6,
-                        backgroundColor: 'rgba(245,158,11,0.15)',
-                        color: '#f59e0b',
-                        marginLeft: 4,
-                      }}>
-                        {(card.workSuspensions || []).length} pause{(card.workSuspensions || []).length !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </label>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{ height: 26, fontSize: 11, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 7 }}
-                    onClick={() => {
-                      const existing = card.workSuspensions || [];
-                      const today = new Date().toISOString().slice(0, 10);
-                      const updated = [...existing, { from: today, to: today, reason: '' }];
-                      const cleanedDays = (card.workedDays || []).filter(d => !updated.some(s => d >= s.from.slice(0, 10) && d <= s.to.slice(0, 10)));
-                      updateCard(cardId, {
-                        workSuspensions: updated,
-                        ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
-                      });
-                    }}
-                  >
-                    + Add Pause
-                  </button>
-                </div>
-                {(card.workSuspensions || []).length === 0 ? (
-                  <p style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', margin: 0, padding: '6px 0' }}>
-                    No work pauses logged. Add a pause if work was stopped and resumed (e.g. client hold, holiday shutdown). Paused days are excluded from variance calculations.
-                  </p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {(card.workSuspensions as WorkSuspension[]).map((s, idx) => (
-                      <div
-                        key={idx}
-                        style={{
-                          position: 'relative',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 6,
-                          padding: '8px 10px',
-                          paddingRight: 38,
-                          borderRadius: 8,
-                          background: 'hsl(var(--card) / 0.6)',
-                          border: '1px solid hsl(var(--border) / 0.5)',
-                        }}
-                      >
-                        {/* Delete button - top right */}
-                        <button
-                          type="button"
-                          title="Remove this suspension"
-                          onClick={() => {
-                            const updated = (card.workSuspensions as WorkSuspension[]).filter((_, i) => i !== idx);
-                            updateCard(cardId, { workSuspensions: updated });
-                          }}
-                          style={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 6,
-                            width: 26,
-                            height: 26,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: 7,
-                            border: '1px solid hsl(var(--border) / 0.6)',
-                            background: 'transparent',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <X size={13} />
-                        </button>
-                        {/* Row 1: From / To */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
-                          <div style={{ minWidth: 0 }}>
-                            <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
-                            <NeumorphicDatePicker
-                              value={s.from}
-                              onChange={val => {
-                                const updated = [...(card.workSuspensions as WorkSuspension[])];
-                                updated[idx] = { ...updated[idx], from: val || updated[idx].from };
-                                const cleanedDays = (card.workedDays || []).filter(d => !updated.some(sp => d >= sp.from.slice(0, 10) && d <= sp.to.slice(0, 10)));
-                                updateCard(cardId, {
-                                  workSuspensions: updated,
-                                  ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
-                                });
-                              }}
-                              align="left"
-                            />
-                          </div>
-                          <div style={{ minWidth: 0 }}>
-                            <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
-                            <NeumorphicDatePicker
-                              value={s.to}
-                              onChange={val => {
-                                const updated = [...(card.workSuspensions as WorkSuspension[])];
-                                updated[idx] = { ...updated[idx], to: val || updated[idx].to };
-                                const cleanedDays = (card.workedDays || []).filter(d => !updated.some(sp => d >= sp.from.slice(0, 10) && d <= sp.to.slice(0, 10)));
-                                updateCard(cardId, {
-                                  workSuspensions: updated,
-                                  ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
-                                });
-                              }}
-                              align="right"
-                            />
-                          </div>
-                        </div>
-                        {/* Row 2: Reason (full width) */}
-                        <div>
-                          <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>Reason (optional)</label>
-                          <input
-                            type="text"
-                            value={s.reason || ''}
-                            placeholder="e.g. Client hold, Holiday"
-                            onChange={e => {
-                              const updated = [...(card.workSuspensions as WorkSuspension[])];
-                              updated[idx] = { ...updated[idx], reason: e.target.value };
-                              updateCard(cardId, { workSuspensions: updated });
-                            }}
-                            style={{
-                              width: '100%',
-                              height: 32,
-                              fontSize: 11.5,
-                              padding: '4px 8px',
-                              borderRadius: 7,
-                              border: '1px solid hsl(var(--border))',
-                              background: 'hsl(var(--background))',
-                              color: 'hsl(var(--foreground))',
-                              outline: 'none',
-                              boxSizing: 'border-box',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Project Phase & Milestone — Roadmap boards only */}
             {isRoadmap && (
