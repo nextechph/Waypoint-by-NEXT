@@ -1330,46 +1330,24 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
         </div>
 
         {/* Zoom Controls */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          backgroundColor: 'hsl(var(--card))',
-          borderRadius: 8,
-          padding: '2px 5px',
-          boxShadow: 'var(--neu-shadow-raised-sm)',
-          border: '1px solid hsl(var(--border) / 0.5)',
-          flexShrink: 0,
-        }}>
+        <div className="roadmap-zoom-group">
           <button
             type="button"
-            className="icon-btn"
-            style={{ width: 22, height: 22, minWidth: 22, fontSize: 13, fontWeight: 700 }}
+            className="roadmap-zoom-btn"
             onClick={() => setZoomLevel(z => Math.max(0.6, +(z - 0.2).toFixed(2)))}
             title="Zoom out timeline"
           >−</button>
           <button
             type="button"
+            className={`roadmap-zoom-label ${zoomLevel !== 1 ? 'is-zoomed' : ''}`}
             onClick={() => setZoomLevel(1)}
             title="Click to reset zoom to 100%"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 11,
-              fontWeight: 700,
-              minWidth: 38,
-              textAlign: 'center',
-              color: zoomLevel !== 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              padding: '0 2px'
-            }}
           >
             {Math.round(zoomLevel * 100)}%
           </button>
           <button
             type="button"
-            className="icon-btn"
-            style={{ width: 22, height: 22, minWidth: 22, fontSize: 13, fontWeight: 700 }}
+            className="roadmap-zoom-btn"
             onClick={() => setZoomLevel(z => Math.min(2.2, +(z + 0.2).toFixed(2)))}
             title="Zoom in timeline"
           >+</button>
