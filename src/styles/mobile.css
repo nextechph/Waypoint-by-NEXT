@@ -985,8 +985,13 @@
   }
 
   /* Timeline Header & Canvas in Mobile */
+  .roadmap-timeline-header-track,
   .roadmap-timeline-header {
     height: 44px !important;
+  }
+
+  .roadmap-delete-btn {
+    opacity: 0.6 !important;
   }
 
   .roadmap-pane-header {

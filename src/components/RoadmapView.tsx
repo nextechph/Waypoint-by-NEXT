@@ -317,6 +317,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const [quickTaskIsMilestone, setQuickTaskIsMilestone] = useState(false);
 
   const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const timelineHeaderRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
 
   // Draggable tasks table pane width with persistence
@@ -371,6 +372,9 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     if (taskListRef.current) {
       taskListRef.current.scrollTop = e.currentTarget.scrollTop;
     }
+    if (timelineHeaderRef.current) {
+      timelineHeaderRef.current.scrollLeft = e.currentTarget.scrollLeft;
+    }
   };
 
   const handleTimelineWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -381,9 +385,19 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       const isScrollableVertically = el.scrollHeight > el.clientHeight + 4;
       if (!isScrollableVertically || e.altKey) {
         el.scrollLeft += e.deltaY;
+        if (timelineHeaderRef.current) {
+          timelineHeaderRef.current.scrollLeft = el.scrollLeft;
+        }
       }
     }
   };
+
+  // Keep timeline header synchronized horizontally when scale or zoom changes
+  useEffect(() => {
+    if (timelineContainerRef.current && timelineHeaderRef.current) {
+      timelineHeaderRef.current.scrollLeft = timelineContainerRef.current.scrollLeft;
+    }
+  }, [currentDate, scale, zoomLevel]);
 
   // Today marker calculation
   const today = useMemo(() => {
@@ -1376,6 +1390,28 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           >+</button>
         </div>
 
+        {/* Date Navigation & Jump Today */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <motion.button whileTap={{ scale: 0.92 }} type="button" className="icon-btn"
+            onClick={() => handleNav('prev')} title="Go back" style={{ width: 24, height: 24, minWidth: 24 }}>
+            <ChevronLeft size={13} />
+          </motion.button>
+          <span className="roadmap-date-label" style={{ fontSize: 11, fontWeight: 600, minWidth: 85, textAlign: 'center' }}>
+            {viewStart.toLocaleDateString([], { month: 'short', year: 'numeric' })}
+            {viewStart.getMonth() !== viewEnd.getMonth() && (
+              <span> – {viewEnd.toLocaleDateString([], { month: 'short', year: 'numeric' })}</span>
+            )}
+          </span>
+          <motion.button whileTap={{ scale: 0.92 }} type="button" className="icon-btn"
+            onClick={() => handleNav('next')} title="Go forward" style={{ width: 24, height: 24, minWidth: 24 }}>
+            <ChevronRight size={13} />
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} type="button"
+            className="btn btn-secondary today-btn" onClick={handleJumpToday} title="Jump to today"
+            style={{ fontSize: 10.5, padding: '1px 7px', height: 22 }}
+          >Today</motion.button>
+        </div>
+
         {/* Group By */}
         <NeumorphicSelect<GroupByMode>
           value={groupBy}
@@ -1394,6 +1430,28 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           size="sm"
           style={{ minWidth: 120, flex: '0 0 auto' }}
         />
+
+        {/* Timeline Legend */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 10, color: 'hsl(var(--muted-foreground))',
+          marginLeft: 'auto', flexWrap: 'wrap'
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ width: 8, height: 5, borderRadius: 2, background: '#10b981', display: 'inline-block' }} />
+            <span style={{ fontWeight: 800, color: '#10b981', fontSize: 9 }}>[S]</span>
+            Schedule
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ width: 8, height: 5, borderRadius: 2, background: '#f97316', display: 'inline-block' }} />
+            <span style={{ fontWeight: 800, color: '#f97316', fontSize: 9 }}>[A]</span>
+            Actual
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ width: 2, height: 10, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
+            Today
+          </span>
+        </div>
       </div>
 
       {/* ── Split Pane ── */}
@@ -1523,6 +1581,17 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                   }
                                 </button>
 
+                                {!isObserver && (
+                                  <button
+                                    type="button"
+                                    className="roadmap-delete-btn"
+                                    onClick={(e) => handleDeleteCard(e, t.card.id, t.card.title)}
+                                    title={`Delete "${t.card.title}"`}
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                )}
+
                                 {isMilestone && (
                                   <div title="Key Milestone" className="roadmap-milestone-marker" />
                                 )}
@@ -1606,18 +1675,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                 <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px', borderRadius: 20, background: statusPill.bg, color: statusPill.color, whiteSpace: 'nowrap' }}>{statusPill.label}</span>
                                 <span style={{ fontSize: 9, color: 'hsl(var(--muted-foreground))' }}>{formatShortDate(t.targetEndDate)}</span>
                               </div>
-
-                              {/* Delete button (shown on row hover) */}
-                              {!isObserver && (
-                                <button
-                                  type="button"
-                                  className="roadmap-delete-btn"
-                                  onClick={(e) => handleDeleteCard(e, t.card.id, t.card.title)}
-                                  title={`Delete "${t.card.title}"`}
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              )}
                             </div>
                           );
                         })
@@ -1662,81 +1719,20 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
         {/* Right Side: Gantt Canvas */}
         <div className="roadmap-canvas-pane">
 
-          {/* Canvas Header: Date nav + legend strip */}
-          <div style={{
-            flexShrink: 0,
-            background: 'hsl(var(--card))',
-            borderBottom: '1px solid hsl(var(--border) / 0.5)',
-            display: 'flex', flexDirection: 'column',
-          }}>
-            {/* Nav row */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '4px 8px', borderBottom: '1px solid hsl(var(--border) / 0.3)',
-            }}>
-              <motion.button whileTap={{ scale: 0.92 }} type="button" className="icon-btn"
-                onClick={() => handleNav('prev')} title="Go back" style={{ width: 24, height: 24, minWidth: 24 }}>
-                <ChevronLeft size={13} />
-              </motion.button>
-              <span className="roadmap-date-label" style={{ fontSize: 11, fontWeight: 600, flex: 1, textAlign: 'center' }}>
-                {viewStart.toLocaleDateString([], { month: 'short', year: 'numeric' })}
-                {viewStart.getMonth() !== viewEnd.getMonth() && (
-                  <span> – {viewEnd.toLocaleDateString([], { month: 'short', year: 'numeric' })}</span>
-                )}
-              </span>
-              <motion.button whileTap={{ scale: 0.92 }} type="button" className="icon-btn"
-                onClick={() => handleNav('next')} title="Go forward" style={{ width: 24, height: 24, minWidth: 24 }}>
-                <ChevronRight size={13} />
-              </motion.button>
-              <motion.button whileTap={{ scale: 0.95 }} type="button"
-                className="btn btn-secondary today-btn" onClick={handleJumpToday} title="Jump to today"
-                style={{ fontSize: 10.5, padding: '1px 7px', height: 22 }}
-              >Today</motion.button>
-            </div>
-
-            {/* Legend strip — always visible */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '4px 8px',
-              fontSize: 10, color: 'hsl(var(--muted-foreground))'
-            }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 8, height: 5, borderRadius: 2, background: '#10b981', display: 'inline-block' }} />
-                <span style={{ fontWeight: 800, color: '#10b981', fontSize: 9 }}>[S]</span>
-                Schedule / Plan
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 8, height: 5, borderRadius: 2, background: '#f97316', display: 'inline-block' }} />
-                <span style={{ fontWeight: 800, color: '#f97316', fontSize: 9 }}>[A]</span>
-                Actual / Work Done
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 8, height: 5, borderRadius: 2, background: 'repeating-linear-gradient(90deg,#ef444460 0,#ef444460 4px,transparent 4px,transparent 8px)', display: 'inline-block' }} />
-                Behind schedule
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 2, height: 12, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
-                Today
-              </span>
-            </div>
-          </div>
-
-          {/* Scrollable timeline canvas */}
+          {/* Timeline Column Headers (pinned at top, synced horizontally with timeline canvas) */}
           <div
-            ref={timelineContainerRef}
-            onScroll={handleTimelineScroll}
-            onWheel={handleTimelineWheel}
-            className="roadmap-canvas-scroll-area"
+            ref={timelineHeaderRef}
+            className="roadmap-timeline-header-track"
             style={{
-              flex: 1,
-              minHeight: 0,
-              overflow: 'auto',
+              height: 42,
+              overflow: 'hidden',
+              flexShrink: 0,
+              borderBottom: '1px solid hsl(var(--border) / 0.5)',
+              backgroundColor: 'hsl(var(--card))',
               position: 'relative',
-              WebkitOverflowScrolling: 'touch',
             }}
           >
-            {/* Timeline column headers */}
-            <div className="roadmap-timeline-header" style={{ width: totalTimelineWidth }}>
+            <div className="roadmap-timeline-header" style={{ width: totalTimelineWidth, height: 42, borderBottom: 'none' }}>
               {intervals.map((intDate, i) => {
                 const isToday = intDate.toDateString() === today.toDateString();
                 let label = '';
@@ -1759,6 +1755,22 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                 );
               })}
             </div>
+          </div>
+
+          {/* Scrollable timeline canvas */}
+          <div
+            ref={timelineContainerRef}
+            onScroll={handleTimelineScroll}
+            onWheel={handleTimelineWheel}
+            className="roadmap-canvas-scroll-area"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'auto',
+              position: 'relative',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
 
             {/* Bars area */}
             <div className="roadmap-bars-area" style={{ width: totalTimelineWidth }}>

@@ -1921,6 +1921,7 @@ select option {
   cursor: pointer;
   transition: background-color 0.12s ease;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .roadmap-task-row:hover {
@@ -1928,14 +1929,14 @@ select option {
 }
 
 .roadmap-task-row:hover .roadmap-delete-btn {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 .roadmap-task-row.completed {
   opacity: 0.72;
 }
 
-/* Delete button (visible on row hover) */
+/* Delete button (positioned directly next to the checkbox) */
 .roadmap-delete-btn {
   opacity: 0;
   background: none;
@@ -1949,12 +1950,14 @@ select option {
   border-radius: 4px;
   transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
   flex-shrink: 0;
-  margin-left: auto;
+  width: 20px;
+  height: 20px;
 }
 
 .roadmap-delete-btn:hover {
+  opacity: 1 !important;
   color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(239, 68, 68, 0.12);
 }
 
 /* Add task footer row inside each section */
@@ -2211,14 +2214,11 @@ select option {
 }
 
 .roadmap-timeline-header {
-  height: 40px;
+  height: 42px;
   display: flex;
-  border-bottom: 1px solid hsl(var(--border) / 0.5);
   background-color: hsl(var(--card));
-  position: sticky;
-  top: 0;
-  z-index: 10;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .roadmap-timeline-cell {
@@ -2315,7 +2315,7 @@ select option {
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid hsl(var(--border) / 0.2);
 }
 
 /* ── Top Track: Target (Baseline / Planned) ── */
