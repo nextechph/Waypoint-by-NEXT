@@ -133,7 +133,7 @@ export default function BoardArea({
   // Standard task boards cannot be in 'roadmap' view; roadmaps cannot be in 'board' view.
   useEffect(() => {
     if (!board || !onSelectView) return;
-    if (board.type === 'roadmap' && viewMode !== 'roadmap') {
+    if (board.type === 'roadmap' && viewMode === 'board') {
       onSelectView('roadmap');
     } else if (board.type !== 'roadmap' && viewMode === 'roadmap') {
       onSelectView('board');
@@ -320,7 +320,7 @@ export default function BoardArea({
       )}
 
       <AnimatePresence mode="wait">
-        {board.type === 'roadmap' && (
+        {board.type === 'roadmap' && viewMode !== 'calendar' && (
           <motion.div
             key="roadmap-view"
             variants={isMobile ? viewMobileVariants : view3DVariants}
@@ -337,7 +337,7 @@ export default function BoardArea({
           </motion.div>
         )}
 
-        {board.type !== 'roadmap' && viewMode === 'calendar' && (
+        {viewMode === 'calendar' && (
           <motion.div
             key="calendar-view"
             variants={isMobile ? viewMobileVariants : view3DVariants}
