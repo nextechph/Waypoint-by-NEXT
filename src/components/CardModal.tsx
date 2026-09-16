@@ -2712,7 +2712,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                                 updated[idx] = { ...updated[idx], to: val || updated[idx].to };
                                 updateCard(cardId, { workSuspensions: updated });
                               }}
-                              align="left"
+                              align="right"
                             />
                           </div>
                         </div>

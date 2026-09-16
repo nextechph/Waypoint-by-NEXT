@@ -70,6 +70,41 @@ export default function NeumorphicDatePicker({
     }
   }, [value]);
 
+  // Dynamic alignment check to prevent popover cutoff on container edges
+  const [effectiveAlign, setEffectiveAlign] = useState<'left' | 'right'>(align);
+
+  useEffect(() => {
+    setEffectiveAlign(align);
+  }, [align]);
+
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+    const updateAlign = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const popoverWidth = 290;
+
+      // Check boundary against clipping containers or window
+      const clipParent = containerRef.current.closest('.modal-body') ||
+                         containerRef.current.closest('.card-modal-grid') ||
+                         containerRef.current.closest('.modal-content');
+      const maxRight = clipParent ? clipParent.getBoundingClientRect().right : window.innerWidth;
+      const minLeft = clipParent ? clipParent.getBoundingClientRect().left : 0;
+
+      if (align === 'left' && rect.left + popoverWidth > maxRight - 8) {
+        setEffectiveAlign('right');
+      } else if (align === 'right' && rect.right - popoverWidth < minLeft + 8) {
+        setEffectiveAlign('left');
+      } else {
+        setEffectiveAlign(align);
+      }
+    };
+
+    updateAlign();
+    window.addEventListener('resize', updateAlign);
+    return () => window.removeEventListener('resize', updateAlign);
+  }, [isOpen, align]);
+
   // Click outside to close
   useEffect(() => {
     if (!isOpen) return;
@@ -382,10 +417,12 @@ export default function NeumorphicDatePicker({
             style={{
               position: 'absolute',
               top: '100%',
-              ...(align === 'right' ? { right: 0 } : { left: 0 }),
+              ...(effectiveAlign === 'right' ? { right: 0 } : { left: 0 }),
               marginTop: 6,
               zIndex: 120,
-              width: 300,
+              width: 290,
+              maxWidth: 'calc(100vw - 24px)',
+              boxSizing: 'border-box',
               backgroundColor: 'hsl(var(--popover))',
               borderRadius: 16,
               boxShadow: 'var(--neu-shadow-floating)',
