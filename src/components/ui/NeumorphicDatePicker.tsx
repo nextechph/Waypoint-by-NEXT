@@ -19,6 +19,18 @@ const MONTH_NAMES = [
 
 const DAYS_OF_WEEK = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
+export function parseDateValue(val?: string | null): Date | null {
+  if (!val) return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [y, m, d] = trimmed.split('-').map(Number);
+    return new Date(y, m - 1, d, 12, 0, 0, 0);
+  }
+  const parsed = new Date(trimmed);
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
 export default function NeumorphicDatePicker({
   value,
   onChange,
@@ -30,20 +42,18 @@ export default function NeumorphicDatePicker({
 
   // Parse existing value or fallback to today
   const initialDate = useMemo(() => {
-    if (!value) return new Date();
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? new Date() : d;
+    return parseDateValue(value) || new Date();
   }, [value]);
 
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? initialDate : null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? parseDateValue(value) : null);
 
   // Sync state when value changes from outside
   useEffect(() => {
     if (value) {
-      const d = new Date(value);
-      if (!isNaN(d.getTime())) {
+      const d = parseDateValue(value);
+      if (d) {
         setViewYear(d.getFullYear());
         setViewMonth(d.getMonth());
         setSelectedDate(d);
@@ -88,17 +98,27 @@ export default function NeumorphicDatePicker({
     return () => window.removeEventListener('resize', updateAlign);
   }, [isOpen, align]);
 
-  // Click outside to close
+  // Click outside to close (revert temporary selection if unapplied)
   useEffect(() => {
     if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (!containerRef.current?.contains(e.target as Node)) {
+        if (value) {
+          const d = parseDateValue(value);
+          if (d) {
+            setViewYear(d.getFullYear());
+            setViewMonth(d.getMonth());
+            setSelectedDate(d);
+          }
+        } else {
+          setSelectedDate(null);
+        }
         setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, value]);
 
   const computeIso = (d: Date | null) => {
     if (!d) return null;
@@ -124,13 +144,11 @@ export default function NeumorphicDatePicker({
     }
   };
 
+  // Clicking a date selects it (highlighting it) without closing popover, allowing user to press Apply
   const handleSelectDate = (dateObj: Date) => {
     setViewMonth(dateObj.getMonth());
     setViewYear(dateObj.getFullYear());
     setSelectedDate(dateObj);
-    const iso = computeIso(dateObj);
-    if (iso) onChange(iso);
-    setIsOpen(false);
   };
 
   const handleQuickPreset = (preset: 'today' | 'tomorrow' | 'nextWeek' | 'endOfWeek') => {
@@ -154,10 +172,6 @@ export default function NeumorphicDatePicker({
     setViewYear(d.getFullYear());
     setViewMonth(d.getMonth());
     setSelectedDate(d);
-
-    const iso = computeIso(d);
-    if (iso) onChange(iso);
-    setIsOpen(false);
   };
 
   const handleApply = () => {
@@ -165,6 +179,20 @@ export default function NeumorphicDatePicker({
     setSelectedDate(targetDate);
     const iso = computeIso(targetDate);
     if (iso) onChange(iso);
+    setIsOpen(false);
+  };
+
+  const handleCancel = () => {
+    if (value) {
+      const d = parseDateValue(value);
+      if (d) {
+        setViewYear(d.getFullYear());
+        setViewMonth(d.getMonth());
+        setSelectedDate(d);
+      }
+    } else {
+      setSelectedDate(null);
+    }
     setIsOpen(false);
   };
 
@@ -208,9 +236,8 @@ export default function NeumorphicDatePicker({
 
   // Display trigger string (clean date only, without time)
   const formatted = useMemo(() => {
-    if (!value) return null;
-    const d = new Date(value);
-    if (isNaN(d.getTime())) return null;
+    const d = parseDateValue(value);
+    if (!d) return null;
 
     const datePart = d.toLocaleDateString(undefined, {
       month: 'short',
@@ -219,6 +246,23 @@ export default function NeumorphicDatePicker({
     });
     return { datePart };
   }, [value]);
+
+  const handleToggleOpen = () => {
+    if (!isOpen) {
+      const current = parseDateValue(value);
+      if (current) {
+        setSelectedDate(current);
+        setViewYear(current.getFullYear());
+        setViewMonth(current.getMonth());
+      } else {
+        setSelectedDate(null);
+        const now = new Date();
+        setViewYear(now.getFullYear());
+        setViewMonth(now.getMonth());
+      }
+    }
+    setIsOpen(o => !o);
+  };
 
   const isToday = (d: Date) => {
     const today = new Date();
@@ -266,7 +310,7 @@ export default function NeumorphicDatePicker({
           transition: 'all 0.18s ease',
           boxSizing: 'border-box',
         }}
-        onClick={() => setIsOpen(o => !o)}
+        onClick={handleToggleOpen}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1, overflow: 'hidden' }}>
           <div
@@ -467,6 +511,12 @@ export default function NeumorphicDatePicker({
                     whileTap={{ scale: 0.92 }}
                     whileHover={{ scale: 1.08 }}
                     onClick={() => handleSelectDate(item.dateObj)}
+                    onDoubleClick={() => {
+                      handleSelectDate(item.dateObj);
+                      const iso = computeIso(item.dateObj);
+                      if (iso) onChange(iso);
+                      setIsOpen(false);
+                    }}
                     style={{
                       height: 32,
                       display: 'flex',
@@ -519,7 +569,7 @@ export default function NeumorphicDatePicker({
                   whileTap={{ scale: 0.95 }}
                   className="btn btn-secondary"
                   style={{ fontSize: 11.5, padding: '4px 10px' }}
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleCancel}
                 >
                   Cancel
                 </motion.button>
