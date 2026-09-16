@@ -12,6 +12,7 @@ import { formatDueDate, avatarInitials, uid, deriveCardProgress } from '../utils
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useConfirmStore } from '../store/useConfirmStore';
 import AvatarBorder from './ui/AvatarBorder';
 import NeumorphicDatePicker from './ui/NeumorphicDatePicker';
 import { NeumorphicSelect, SelectOption } from './ui/NeumorphicSelect';
@@ -265,6 +266,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const startSprint = useWorkStore(s => s.startSprint);
   const completeSprint = useWorkStore(s => s.completeSprint);
   const showToast = useToastStore(s => s.showToast);
+  const showConfirm = useConfirmStore(s => s.showConfirm);
   const currentUser = useAuthStore(s => s.user);
 
   // View state: default to 'days' timeline
@@ -934,10 +936,17 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   // Quick Add Task Handler
   const handleDeleteCard = (e: React.MouseEvent, cardId: string, cardTitle: string) => {
     e.stopPropagation();
-    if (window.confirm(`Delete "${cardTitle}"? This cannot be undone.`)) {
-      deleteCard(cardId);
-      showToast(`Deleted "${cardTitle}"`, 'success');
-    }
+    showConfirm({
+      title: `Delete "${cardTitle}"?`,
+      message: `Are you sure you want to permanently delete this task? This action cannot be undone.`,
+      confirmText: 'Delete Task',
+      variant: 'danger',
+      icon: 'trash',
+      onConfirm: () => {
+        deleteCard(cardId);
+        showToast(`Deleted "${cardTitle}"`, 'info');
+      }
+    });
   };
 
   const handleQuickAddTask = () => {
