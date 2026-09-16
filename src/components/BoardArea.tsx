@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   Plus, Edit3, Trash2, Layout, X, Inbox,
   Calendar, CheckSquare, Square, Filter, ChevronRight, ChevronLeft, User, Eye,
-  KanbanSquare, Milestone
+  Milestone
 } from 'lucide-react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
@@ -258,29 +258,6 @@ export default function BoardArea({
               )}
             </motion.button>
 
-            {/* In-Board View Switcher Tabs */}
-            {onSelectView && (
-              <div className="board-view-segmented-tabs">
-                <button
-                  type="button"
-                  className={`board-view-tab-btn ${viewMode === 'board' ? 'active' : ''}`}
-                  onClick={() => onSelectView('board')}
-                  title="Kanban Board View"
-                >
-                  <KanbanSquare size={13} />
-                  <span>Board</span>
-                </button>
-                <button
-                  type="button"
-                  className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
-                  onClick={() => onSelectView('calendar')}
-                  title="Calendar View"
-                >
-                  <Calendar size={13} />
-                  <span>Calendar</span>
-                </button>
-              </div>
-            )}
 
             {/* Observer Role Indicator */}
             {isObserver && (
