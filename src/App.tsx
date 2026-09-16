@@ -50,8 +50,11 @@ export default function App() {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const initializeAuth = useAuthStore(s => s.initializeAuth);
   const boards = useWorkStore(s => s.boards);
+  const getVisibleBoards = useWorkStore(s => s.getVisibleBoards);
   const activeBoardId = useWorkStore(s => s.activeBoardId);
-  const currentBoard = useMemo(() => boards.find(b => b.id === activeBoardId) || boards[0] || null, [boards, activeBoardId]);
+  const currentUser = useAuthStore(s => s.user);
+  const visibleBoards = useMemo(() => getVisibleBoards(currentUser?.email), [getVisibleBoards, currentUser?.email, boards]);
+  const currentBoard = useMemo(() => visibleBoards.find(b => b.id === activeBoardId) || visibleBoards[0] || null, [visibleBoards, activeBoardId]);
   const switchBoard = useWorkStore(s => s.switchBoard);
   const updateCard = useWorkStore(s => s.updateCard);
   const syncCurrentUserProfile = useWorkStore(s => s.syncCurrentUserProfile);
@@ -62,7 +65,6 @@ export default function App() {
   const addNotification = useNotifStore(s => s.addNotification);
   const showToast = useToastStore(s => s.showToast);
   const isDark = useThemeStore(s => s.isDark);
-  const currentUser = useAuthStore(s => s.user);
 
   // Track whether auth has been resolved (prevents login-page flash on reload)
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -387,7 +389,7 @@ export default function App() {
   // Synchronize page type if active board changes or loads
   useEffect(() => {
     if (activeBoardId && page !== 'dashboard') {
-      const active = boards.find(b => b.id === activeBoardId);
+      const active = visibleBoards.find(b => b.id === activeBoardId);
       if (active) {
         const expectedPage = active.type === 'roadmap' ? 'roadmap' : 'board';
         if (page !== expectedPage) {
@@ -395,7 +397,7 @@ export default function App() {
         }
       }
     }
-  }, [activeBoardId, boards, page]);
+  }, [activeBoardId, visibleBoards, page]);
 
   // When user logs out, reset to dashboard and clean storage/URL
   useEffect(() => {
@@ -416,10 +418,10 @@ export default function App() {
   // If currently on a board or roadmap that gets deleted or left, safely return to dashboard
   useEffect(() => {
     // Wait until boards have loaded once before deciding whether to fallback to dashboard
-    if (!hasLoadedOnce && boards.length === 0) return;
+    if (!hasLoadedOnce && visibleBoards.length === 0) return;
 
     if (page === 'board' || page === 'roadmap') {
-      if (boards.length === 0) {
+      if (visibleBoards.length === 0) {
         if (hasLoadedOnce) {
           setPage('dashboard');
           try {
@@ -429,7 +431,7 @@ export default function App() {
         }
         return;
       }
-      const boardExists = boards.some(b => b.id === activeBoardId);
+      const boardExists = visibleBoards.some(b => b.id === activeBoardId);
       if (!boardExists) {
         setPage('dashboard');
         try {
@@ -438,13 +440,13 @@ export default function App() {
         } catch {}
       }
     }
-  }, [page, activeBoardId, boards, hasLoadedOnce]);
+  }, [page, activeBoardId, visibleBoards, hasLoadedOnce]);
 
   const handleSelectBoard = useCallback((boardId: string, view?: 'board' | 'roadmap' | 'calendar') => {
     switchBoard(boardId);
     setShowBoardSelector(false);
     const storeBoards = useWorkStore.getState().boards;
-    const targetBoard = storeBoards.find(b => b.id === boardId) || boards.find(b => b.id === boardId);
+    const targetBoard = visibleBoards.find(b => b.id === boardId) || storeBoards.find(b => b.id === boardId);
     const isRoadmap = targetBoard ? targetBoard.type === 'roadmap' : view === 'roadmap';
     const targetPage = isRoadmap ? 'roadmap' : 'board';
     setPage(targetPage);
@@ -910,7 +912,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       <MobileBoardSelector
         isOpen={showBoardSelector}
         onClose={() => setShowBoardSelector(false)}
-        boards={boards}
+        boards={visibleBoards}
         activeBoardId={activeBoardId}
         onSelectBoard={(boardId) => {
           handleSelectBoard(boardId);

@@ -41,14 +41,17 @@ export default function Topbar({
   onToggleMobileMenu,
   onOpenBoardSelector,
 }: Props) {
+  const getVisibleBoards  = useWorkStore(s => s.getVisibleBoards);
   const boards            = useWorkStore(s => s.boards);
-  const activeBoard       = useWorkStore(s => s.boards.find(b => b.id === s.activeBoardId));
+  const activeBoardId     = useWorkStore(s => s.activeBoardId);
   const updateBoardColor  = useWorkStore(s => s.updateBoardColor);
   const showToast         = useToastStore(s => s.showToast);
-  const board             = page === 'dashboard' ? null : activeBoard;
-  const rawNotifications  = useNotifStore(s => s.notifications);
   const user              = useAuthStore(s => s.user);
   const logout            = useAuthStore(s => s.logout);
+  const visibleBoards     = useMemo(() => getVisibleBoards(user?.email), [getVisibleBoards, user?.email, boards]);
+  const activeBoard       = useMemo(() => visibleBoards.find(b => b.id === activeBoardId) || null, [visibleBoards, activeBoardId]);
+  const board             = page === 'dashboard' ? null : activeBoard;
+  const rawNotifications  = useNotifStore(s => s.notifications);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const canEditBoard = board ? (!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) : false;

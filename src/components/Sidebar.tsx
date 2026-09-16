@@ -114,7 +114,7 @@ export default function Sidebar({
   const isDark  = useThemeStore(s => s.isDark);
   const toggleTheme = useThemeStore(s => s.toggle);
 
-  const activeBoard = useMemo(() => allBoards.find(b => b.id === activeBoardId) || (page === 'board' ? allBoards[0] : undefined), [allBoards, activeBoardId, page]);
+  const activeBoard = useMemo(() => boards.find(b => b.id === activeBoardId) || (page === 'board' ? boards[0] : undefined), [boards, activeBoardId, page]);
   const teamMembers = useMemo(
     () => sortMembersWithOwnerFirst(activeBoard?.members ?? [], activeBoard?.createdBy),
     [activeBoard?.members, activeBoard?.createdBy]

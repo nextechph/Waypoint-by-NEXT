@@ -355,11 +355,15 @@ export const useWorkStore = create<WorkState>()(
                 };
               });
 
-              // Include newly created boards that haven't propagated to cloud yet
+              // Include newly created boards that haven't propagated to cloud yet (only if owned/member by user)
               s.boards.forEach(lb => {
                 const hasPendingSync = syncTimers.has(lb.id) || activeSyncBoards.has(lb.id);
                 if (hasPendingSync && !finalBoards.some(b => b.id === lb.id)) {
-                  finalBoards.push(lb);
+                  const isUserSpecific = (lb.createdBy && lb.createdBy.toLowerCase().trim() === cleanEmail) ||
+                    (lb.members && lb.members.some(m => m.email && m.email.toLowerCase().trim() === cleanEmail));
+                  if (isUserSpecific) {
+                    finalBoards.push(lb);
+                  }
                 }
               });
 
@@ -403,13 +407,16 @@ export const useWorkStore = create<WorkState>()(
 
       // ── Board actions ──────────────────────────────────
       createBoard: async (name, color, createdBy, creatorName) => {
-        const creatorEmail = createdBy ? createdBy.toLowerCase().trim() : '';
+        const authUser = useAuthStore.getState().user;
+        const creatorEmail = (createdBy || authUser?.email || '').toLowerCase().trim();
+        const resolvedName = creatorName || authUser?.name || (creatorEmail ? creatorEmail.split('@')[0] : 'Owner');
         const creatorMember: Member | null = creatorEmail
           ? {
               id: uid(),
-              name: creatorName && creatorName.trim() ? creatorName.trim() : creatorEmail.split('@')[0],
+              name: resolvedName,
               email: creatorEmail,
-              color: AVATAR_COLORS[0]
+              color: AVATAR_COLORS[0],
+              role: 'owner',
             }
           : null;
 
@@ -438,13 +445,16 @@ export const useWorkStore = create<WorkState>()(
       },
 
       createRoadmap: async (name, color, createdBy, creatorName, description, templatePhases) => {
-        const creatorEmail = createdBy ? createdBy.toLowerCase().trim() : '';
+        const authUser = useAuthStore.getState().user;
+        const creatorEmail = (createdBy || authUser?.email || '').toLowerCase().trim();
+        const resolvedName = creatorName || authUser?.name || (creatorEmail ? creatorEmail.split('@')[0] : 'Owner');
         const creatorMember: Member | null = creatorEmail
           ? {
               id: uid(),
-              name: creatorName && creatorName.trim() ? creatorName.trim() : creatorEmail.split('@')[0],
+              name: resolvedName,
               email: creatorEmail,
-              color: AVATAR_COLORS[0]
+              color: AVATAR_COLORS[0],
+              role: 'owner',
             }
           : null;
 
@@ -593,17 +603,11 @@ export const useWorkStore = create<WorkState>()(
           }
           return b;
         }).filter(b => {
-          // Always visible to the board creator
+          // Strictly user-specific for both standard boards and roadmaps:
+          // 1. Always visible to the creator / owner
           if (b.createdBy && b.createdBy.toLowerCase().trim() === email) return true;
-          // Always visible to board members (covers standard boards and roadmaps alike)
+          // 2. Always visible to explicit board / roadmap members
           if (b.members && b.members.some(m => m.email && m.email.toLowerCase().trim() === email)) return true;
-          // Boards with no owner/members are visible to everyone (newly created, local-only boards)
-          if (!b.createdBy && (!b.members || b.members.length === 0)) return true;
-          // For roadmaps: also visible if the user is an assignee on any card
-          if (b.type === 'roadmap') {
-            const allCards = (b.columns || []).flatMap(col => col.cards || []).concat(b.inboxCards || []);
-            if (allCards.some(card => (card.assignees || []).some(a => a.toLowerCase().trim() === email))) return true;
-          }
           return false;
         });
       },

@@ -53,6 +53,7 @@ function getFileTypeInfo(fileName: string, type: string) {
 
 export default function CardModal({ cardId, boardId, onClose }: Props) {
   const boards = useWorkStore(s => s.boards);
+  const getVisibleBoards = useWorkStore(s => s.getVisibleBoards);
   const switchBoard = useWorkStore(s => s.switchBoard);
   const createRoadmap = useWorkStore(s => s.createRoadmap);
   const updateCard = useWorkStore(s => s.updateCard);
@@ -135,7 +136,11 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
     [board.members, board.createdBy]
   );
   const allLabels = [...LABELS, ...customLabels];
-  const roadmaps = useMemo(() => boards.filter(b => b.type === 'roadmap'), [boards]);
+  const visibleBoards = useMemo(
+    () => getVisibleBoards(currentUser?.email),
+    [getVisibleBoards, currentUser?.email, boards]
+  );
+  const roadmaps = useMemo(() => visibleBoards.filter(b => b.type === 'roadmap'), [visibleBoards]);
   const linkedRoadmap = useMemo(() => {
     if (!card?.linkedRoadmapId) return null;
     return roadmaps.find(r => r.id === card.linkedRoadmapId) || null;
