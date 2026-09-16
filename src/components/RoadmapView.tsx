@@ -419,17 +419,13 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     base.setHours(0, 0, 0, 0);
 
     if (scale === 'days') {
-      // 30-day window centered 7 days prior
-      const start = new Date(base);
-      start.setDate(start.getDate() - 7);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(start);
-      end.setDate(end.getDate() + 30);
-      end.setHours(0, 0, 0, 0);
+      // 2-month window: from 1st of current month to end of following month (e.g., Sept 1 to Oct 31)
+      const start = new Date(base.getFullYear(), base.getMonth(), 1, 0, 0, 0, 0);
+      const end = new Date(base.getFullYear(), base.getMonth() + 2, 1, 0, 0, 0, 0);
 
       const days: Date[] = [];
       const curr = new Date(start);
-      for (let i = 0; i < 30; i++) {
+      while (curr < end) {
         days.push(new Date(curr));
         curr.setDate(curr.getDate() + 1);
       }
@@ -850,6 +846,11 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   // Jump to Today
   const handleJumpToday = () => {
     setCurrentDate(new Date());
+    if (timelineContainerRef.current) {
+      const container = timelineContainerRef.current;
+      const targetScroll = Math.max(0, todayXPos - container.clientWidth / 2);
+      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    }
   };
 
   // Escape key listener for roadmap modals
@@ -869,7 +870,8 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     const delta = direction === 'next' ? 1 : -1;
     const next = new Date(currentDate);
     if (scale === 'days') {
-      next.setDate(next.getDate() + (delta * 14));
+      next.setDate(1);
+      next.setMonth(next.getMonth() + delta);
     } else if (scale === 'weeks') {
       next.setDate(next.getDate() + (delta * 28));
     } else {
@@ -1423,8 +1425,8 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           </motion.button>
           <span className="roadmap-date-label" style={{ fontSize: 11, fontWeight: 600, minWidth: 85, textAlign: 'center' }}>
             {viewStart.toLocaleDateString([], { month: 'short', year: 'numeric' })}
-            {viewStart.getMonth() !== viewEnd.getMonth() && (
-              <span> – {viewEnd.toLocaleDateString([], { month: 'short', year: 'numeric' })}</span>
+            {intervals.length > 0 && (viewStart.getMonth() !== intervals[intervals.length - 1].getMonth() || viewStart.getFullYear() !== intervals[intervals.length - 1].getFullYear()) && (
+              <span> – {intervals[intervals.length - 1].toLocaleDateString([], { month: 'short', year: 'numeric' })}</span>
             )}
           </span>
           <motion.button whileTap={{ scale: 0.92 }} type="button" className="icon-btn"
