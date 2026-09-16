@@ -267,8 +267,8 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const showToast = useToastStore(s => s.showToast);
   const currentUser = useAuthStore(s => s.user);
 
-  // View state: default to 'column' (By Stage / Phase) which maps directly to physical project stages
-  const [scale, setScale] = useState<TimeScale>('weeks');
+  // View state: default to 'days' timeline
+  const [scale, setScale] = useState<TimeScale>('days');
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [groupBy, setGroupBy] = useState<GroupByMode>('column');
   const [searchQuery, setSearchQuery] = useState('');
@@ -370,7 +370,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
   // Sync scrolling between left task list and right timeline canvas
   const handleTaskListScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (timelineContainerRef.current) {
+    if (taskListRef.current && timelineContainerRef.current) {
       timelineContainerRef.current.scrollTop = e.currentTarget.scrollTop;
     }
   };
@@ -422,12 +422,14 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       // 30-day window centered 7 days prior
       const start = new Date(base);
       start.setDate(start.getDate() - 7);
+      start.setHours(0, 0, 0, 0);
       const end = new Date(start);
-      end.setDate(end.getDate() + 29);
+      end.setDate(end.getDate() + 30);
+      end.setHours(0, 0, 0, 0);
 
       const days: Date[] = [];
       const curr = new Date(start);
-      while (curr <= end) {
+      for (let i = 0; i < 30; i++) {
         days.push(new Date(curr));
         curr.setDate(curr.getDate() + 1);
       }
@@ -436,12 +438,14 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       // 14 weeks window (standard 3-month sprint planning view)
       const start = new Date(base);
       start.setDate(start.getDate() - start.getDay() - 14);
+      start.setHours(0, 0, 0, 0);
       const end = new Date(start);
-      end.setDate(end.getDate() + (14 * 7) - 1);
+      end.setDate(end.getDate() + (14 * 7));
+      end.setHours(0, 0, 0, 0);
 
       const weeks: Date[] = [];
       const curr = new Date(start);
-      while (curr <= end) {
+      for (let i = 0; i < 14; i++) {
         weeks.push(new Date(curr));
         curr.setDate(curr.getDate() + 7);
       }
@@ -449,11 +453,13 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     } else {
       // 8 months window (executive business roadmap view)
       const start = new Date(base.getFullYear(), base.getMonth() - 2, 1);
-      const end = new Date(base.getFullYear(), base.getMonth() + 6, 0);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(base.getFullYear(), base.getMonth() + 6, 1);
+      end.setHours(0, 0, 0, 0);
 
       const months: Date[] = [];
       const curr = new Date(start);
-      while (curr <= end) {
+      for (let i = 0; i < 8; i++) {
         months.push(new Date(curr));
         curr.setMonth(curr.getMonth() + 1);
       }
@@ -1184,7 +1190,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   // Pixel sizing per interval with scale & zoom
   const baseIntervalWidth = scale === 'days' ? 52 : scale === 'weeks' ? 115 : 160;
   const intervalWidthPx = Math.round(baseIntervalWidth * zoomLevel);
-  const totalTimelineWidth = Math.max(intervals.length * intervalWidthPx, 900);
+  const totalTimelineWidth = intervals.length * intervalWidthPx;
 
   // Today marker X position percentage
   const todayMs = today.getTime() + 12 * 3600 * 1000;
@@ -1815,8 +1821,12 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                   let sprintBand = null;
                   if (section.sprint) {
-                    const spStart = new Date(section.sprint.startDate).getTime();
-                    const spEnd = new Date(section.sprint.endDate).getTime();
+                    const spStartDate = new Date(section.sprint.startDate);
+                    spStartDate.setHours(0, 0, 0, 0);
+                    const spEndDate = new Date(section.sprint.endDate);
+                    spEndDate.setHours(23, 59, 59, 999);
+                    const spStart = Math.max(viewStart.getTime(), spStartDate.getTime());
+                    const spEnd = Math.min(viewEnd.getTime(), spEndDate.getTime() + 1);
                     const spLeftPct = Math.max(0, Math.min(100, ((spStart - viewStart.getTime()) / totalViewMs) * 100));
                     const spRightPct = Math.max(0, Math.min(100, ((spEnd - viewStart.getTime()) / totalViewMs) * 100));
                     const spWidthPct = Math.max(1, spRightPct - spLeftPct);
@@ -1848,26 +1858,32 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                             const isMilestone = isMilestoneTask(t.card);
                             const statusPill = getStatusPill(t);
 
-                            // Positions
+                            // Positions - snap end to next day midnight (+1 ms) so it cleanly fills the whole day column
                             const targetStartMs = Math.max(viewStart.getTime(), t.targetStartDate.getTime());
-                            const targetEndMs = Math.min(viewEnd.getTime(), t.targetEndDate.getTime());
+                            const targetEndMs = Math.min(viewEnd.getTime(), t.targetEndDate.getTime() + 1);
                             const targetLeftPct = Math.max(0, Math.min(100, ((targetStartMs - viewStart.getTime()) / totalViewMs) * 100));
                             const targetRightPct = Math.max(0, Math.min(100, ((targetEndMs - viewStart.getTime()) / totalViewMs) * 100));
-                            const targetWidthPct = Math.max(2.0, targetRightPct - targetLeftPct);
+                            const targetWidthPct = Math.max(0.5, targetRightPct - targetLeftPct);
 
                             const actualStartMs = Math.max(viewStart.getTime(), t.actualStartDate.getTime());
-                            const actualEndMs = Math.min(viewEnd.getTime(), t.actualOrProjectedEndDate.getTime());
+                            const actualEndMs = Math.min(viewEnd.getTime(), t.actualOrProjectedEndDate.getTime() + 1);
                             const actualLeftPct = Math.max(0, Math.min(100, ((actualStartMs - viewStart.getTime()) / totalViewMs) * 100));
                             const actualRightPct = Math.max(0, Math.min(100, ((actualEndMs - viewStart.getTime()) / totalViewMs) * 100));
-                            const actualTotalWidthPct = Math.max(2.0, actualRightPct - actualLeftPct);
+                            const actualTotalWidthPct = Math.max(0.5, actualRightPct - actualLeftPct);
 
                             let fillCapMs: number;
                             if (t.card.completed) {
                               fillCapMs = actualEndMs;
                             } else if (t.isWorkedToday) {
-                              fillCapMs = Math.min(actualEndMs, today.getTime() + 12 * 3600000);
+                              // If work is confirmed today, fill through the entire end of today (full day)
+                              const todayEndMs = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0, 0).getTime();
+                              fillCapMs = Math.min(actualEndMs, todayEndMs);
                             } else if (t.lastWorkedDate) {
-                              fillCapMs = Math.min(actualEndMs, Math.max(actualStartMs, t.lastWorkedDate.getTime()));
+                              // If last worked date, fill through the entire end of that worked day (full day)
+                              const lastWorkedEnd = new Date(t.lastWorkedDate);
+                              lastWorkedEnd.setHours(0, 0, 0, 0);
+                              lastWorkedEnd.setDate(lastWorkedEnd.getDate() + 1);
+                              fillCapMs = Math.min(actualEndMs, Math.max(actualStartMs, lastWorkedEnd.getTime()));
                             } else {
                               fillCapMs = actualStartMs;
                             }
@@ -1970,10 +1986,11 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                   {((t.card.workSuspensions || []) as WorkSuspension[]).map((s, sIdx) => {
                                     if (!s.from || !s.to) return null;
                                     const sStart = new Date(s.from);
+                                    sStart.setHours(0, 0, 0, 0);
                                     const sEnd = new Date(s.to);
-                                    if (s.to.length <= 10) sEnd.setHours(23, 59, 59, 999);
+                                    sEnd.setHours(23, 59, 59, 999);
                                     const sStartMs = sStart.getTime();
-                                    const sEndMs = sEnd.getTime();
+                                    const sEndMs = sEnd.getTime() + 1;
                                     if (isNaN(sStartMs) || isNaN(sEndMs) || sEndMs <= sStartMs) return null;
 
                                     const clipStartMs = Math.max(actualStartMs, sStartMs);
