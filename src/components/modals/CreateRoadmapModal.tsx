@@ -97,7 +97,10 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
       >
         <div className="modal-header">
           <div>
-            <h2 className="modal-title" style={{ margin: 0, fontSize: 16 }}>Create Project Roadmap</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+              <h2 className="modal-title" style={{ margin: 0, fontSize: 16 }}>Create Project Roadmap</h2>
+              <span className="sidebar-beta-tag">BETA</span>
+            </div>
             <p style={{ margin: 0, fontSize: 11.5, color: 'hsl(var(--muted-foreground))' }}>
               Track project phases, scheduled deadlines, and actual progress
             </p>

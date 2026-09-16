@@ -560,7 +560,10 @@ export default function Sidebar({
             {/* Project Roadmaps section */}
             <div className="sidebar-section">
               <div className="sidebar-section-header">
-                <span>Roadmaps</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>Roadmaps</span>
+                  <span className="sidebar-beta-tag">BETA</span>
+                </div>
                 <motion.button
                   whileTap={{ scale: 0.92 }}
                   className="sidebar-action-icon-btn"
@@ -887,8 +890,9 @@ export default function Sidebar({
                     title="Project Roadmap"
                   >
                     <Milestone size={14} color="hsl(var(--primary))" />
-                    <span style={{ flex: 1, fontWeight: activeView === 'roadmap' ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      Roadmap
+                    <span style={{ flex: 1, fontWeight: activeView === 'roadmap' ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span>Roadmap</span>
+                      <span className="sidebar-beta-tag">BETA</span>
                     </span>
                     {scheduledCount > 0 && (
                       <span

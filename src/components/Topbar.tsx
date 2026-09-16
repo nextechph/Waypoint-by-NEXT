@@ -183,7 +183,10 @@ export default function Topbar({
                   <ChevronDown size={14} style={{ opacity: 0.65, flexShrink: 0 }} />
                 </button>
               ) : (
-                <span>{board.name}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span>{board.name}</span>
+                  {board.type === 'roadmap' && <span className="sidebar-beta-tag">BETA</span>}
+                </span>
               )}
               <AnimatePresence>
                 {showColorPicker && (
