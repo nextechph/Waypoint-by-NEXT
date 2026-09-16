@@ -569,9 +569,17 @@ export const useWorkStore = create<WorkState>()(
         if (!userEmail) return boards;
         const email = userEmail.toLowerCase().trim();
         return boards.filter(b => {
+          // Always visible to the board creator
           if (b.createdBy && b.createdBy.toLowerCase().trim() === email) return true;
+          // Always visible to board members (covers standard boards and roadmaps alike)
           if (b.members && b.members.some(m => m.email && m.email.toLowerCase().trim() === email)) return true;
+          // Boards with no owner/members are visible to everyone (newly created, local-only boards)
           if (!b.createdBy && (!b.members || b.members.length === 0)) return true;
+          // For roadmaps: also visible if the user is an assignee on any card
+          if (b.type === 'roadmap') {
+            const allCards = (b.columns || []).flatMap(col => col.cards || []).concat(b.inboxCards || []);
+            if (allCards.some(card => (card.assignees || []).some(a => a.toLowerCase().trim() === email))) return true;
+          }
           return false;
         });
       },

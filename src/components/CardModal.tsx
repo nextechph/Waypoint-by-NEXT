@@ -129,6 +129,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
   if (!cardId || !result) return null;
 
   const { card, column, board, isInbox } = result;
+  const isRoadmap = board.type === 'roadmap';
   const members = useMemo(
     () => sortMembersWithOwnerFirst(board.members || [], board.createdBy),
     [board.members, board.createdBy]
@@ -2273,11 +2274,11 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               </motion.button>
             </div>
 
-            {/* Target Dates & Actual / Projected Schedule */}
+            {/* Scheduled Start & Due Date (all boards) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div className="form-group">
-                  <label className="field-label">Scheduled Start</label>
+                  <label className="field-label">Start Date</label>
                   <NeumorphicDatePicker
                     value={card.startDate || null}
                     onChange={newStart => {
@@ -2287,7 +2288,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="field-label">Scheduled Date</label>
+                  <label className="field-label">Due Date</label>
                   <NeumorphicDatePicker
                     value={card.dueDate}
                     onChange={newDue => {
@@ -2298,100 +2299,102 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 </div>
               </div>
 
-              {/* Actual Start & End — Manual override for real work dates */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div className="form-group">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <label className="field-label" style={{ margin: 0 }}>Actual Start</label>
-                    {card.actualStartDate && card.startDate && (() => {
-                      const sched = new Date(card.startDate);
-                      const actual = new Date(card.actualStartDate);
-                      const diff = Math.round((actual.getTime() - sched.getTime()) / 86400000);
-                      if (diff < 0) return (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
-                          {Math.abs(diff)}d early
-                        </span>
-                      );
-                      if (diff > 0) return (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
-                          {diff}d late
-                        </span>
-                      );
-                      return null;
-                    })()}
-                  </div>
-                  <NeumorphicDatePicker
-                    value={card.actualStartDate || null}
-                    onChange={newActualStart => {
-                      updateCard(cardId, { actualStartDate: newActualStart });
-                    }}
-                    placeholder="When did work actually begin?"
-                    align="left"
-                  />
-                </div>
-
-                {/* Actual / Projected End */}
-                <div className="form-group">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <label className="field-label" style={{ margin: 0 }}>
-                      {card.completed ? 'Actual End Date' : 'Actual / Projected End'}
-                    </label>
-                    {(() => {
-                      const targetDue = card.dueDate ? new Date(card.dueDate) : null;
-                      const actualOrProj = card.actualEndDate
-                        ? new Date(card.actualEndDate)
-                        : (card.completed && card.completedAt ? new Date(card.completedAt) : null);
-
-                      if (!targetDue) return null;
-                      if (actualOrProj) {
-                        const diffDays = Math.round((actualOrProj.getTime() - targetDue.getTime()) / 86400000);
-                        if (diffDays > 0) return (
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
-                            +{diffDays}d Delay
-                          </span>
-                        );
-                        if (diffDays < 0) return (
+              {/* Actual Start & End — Roadmap boards only */}
+              {isRoadmap && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="form-group">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <label className="field-label" style={{ margin: 0 }}>Actual Start</label>
+                      {card.actualStartDate && card.startDate && (() => {
+                        const sched = new Date(card.startDate);
+                        const actual = new Date(card.actualStartDate);
+                        const diff = Math.round((actual.getTime() - sched.getTime()) / 86400000);
+                        if (diff < 0) return (
                           <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
-                            {Math.abs(diffDays)}d Early
+                            {Math.abs(diff)}d early
                           </span>
                         );
-                        return (
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>
-                            On Target
+                        if (diff > 0) return (
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                            {diff}d late
                           </span>
                         );
-                      } else {
-                        const now = new Date();
-                        if (now.getTime() > targetDue.getTime() && !card.completed) {
-                          const diffDays = Math.max(1, Math.round((now.getTime() - targetDue.getTime()) / 86400000));
+                        return null;
+                      })()}
+                    </div>
+                    <NeumorphicDatePicker
+                      value={card.actualStartDate || null}
+                      onChange={newActualStart => {
+                        updateCard(cardId, { actualStartDate: newActualStart });
+                      }}
+                      placeholder="When did work actually begin?"
+                      align="left"
+                    />
+                  </div>
+
+                  {/* Actual / Projected End */}
+                  <div className="form-group">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <label className="field-label" style={{ margin: 0 }}>
+                        {card.completed ? 'Actual End Date' : 'Actual / Projected End'}
+                      </label>
+                      {(() => {
+                        const targetDue = card.dueDate ? new Date(card.dueDate) : null;
+                        const actualOrProj = card.actualEndDate
+                          ? new Date(card.actualEndDate)
+                          : (card.completed && card.completedAt ? new Date(card.completedAt) : null);
+
+                        if (!targetDue) return null;
+                        if (actualOrProj) {
+                          const diffDays = Math.round((actualOrProj.getTime() - targetDue.getTime()) / 86400000);
+                          if (diffDays > 0) return (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                              +{diffDays}d Delay
+                            </span>
+                          );
+                          if (diffDays < 0) return (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                              {Math.abs(diffDays)}d Early
+                            </span>
+                          );
                           return (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                              Projected +{diffDays}d
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>
+                              On Target
+                            </span>
+                          );
+                        } else {
+                          const now = new Date();
+                          if (now.getTime() > targetDue.getTime() && !card.completed) {
+                            const diffDays = Math.max(1, Math.round((now.getTime() - targetDue.getTime()) / 86400000));
+                            return (
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                                Projected +{diffDays}d
+                              </span>
+                            );
+                          }
+                          return (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                              On Track
                             </span>
                           );
                         }
-                        return (
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6, backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
-                            On Track
-                          </span>
-                        );
-                      }
-                    })()}
+                      })()}
+                    </div>
+                    <NeumorphicDatePicker
+                      value={card.actualEndDate || (card.completed ? (card.completedAt || null) : null)}
+                      onChange={newActual => {
+                        updateCard(cardId, { actualEndDate: newActual });
+                      }}
+                      placeholder={card.completed ? 'Set actual completion date...' : 'Leave blank to auto-project...'}
+                      align="right"
+                    />
                   </div>
-                  <NeumorphicDatePicker
-                    value={card.actualEndDate || (card.completed ? (card.completedAt || null) : null)}
-                    onChange={newActual => {
-                      updateCard(cardId, { actualEndDate: newActual });
-                    }}
-                    placeholder={card.completed ? 'Set actual completion date...' : 'Leave blank to auto-project...'}
-                    align="right"
-                  />
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Linked Project Roadmap (For Tasks on Boards) */}
-            {board.type !== 'roadmap' && (
+            {/* Linked Project Roadmap (Standard boards only — allows linking a task to a Roadmap) */}
+            {!isRoadmap && (
               <div className="form-group" style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
@@ -2519,8 +2522,8 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
             )}
 
 
-            {/* Daily Work Confirmation (Option A: Manual Mark + Option B: Activity Detection) */}
-            {(() => {
+            {/* Daily Work Confirmation — Roadmap boards only */}
+            {isRoadmap && (() => {
               const now = new Date();
               const actStart = card.actualStartDate
                 ? new Date(card.actualStartDate)
@@ -2601,190 +2604,194 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               );
             })()}
 
-            {/* Work Suspensions (Paused Periods) */}
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                  Work Suspensions
-                  {(card.workSuspensions || []).length > 0 && (
-                    <span style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      padding: '1px 6px',
-                      borderRadius: 6,
-                      backgroundColor: 'rgba(245,158,11,0.15)',
-                      color: '#f59e0b',
-                      marginLeft: 4,
-                    }}>
-                      {(card.workSuspensions || []).length} pause{(card.workSuspensions || []).length !== 1 ? 's' : ''}
-                    </span>
-                  )}
-                </label>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  style={{ height: 26, fontSize: 11, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 7 }}
-                  onClick={() => {
-                    const existing = card.workSuspensions || [];
-                    const today = new Date().toISOString().slice(0, 10);
-                    updateCard(cardId, { workSuspensions: [...existing, { from: today, to: today, reason: '' }] });
-                  }}
-                >
-                  + Add Pause
-                </button>
-              </div>
-              {(card.workSuspensions || []).length === 0 ? (
-                <p style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', margin: 0, padding: '6px 0' }}>
-                  No work pauses logged. Add a pause if work was stopped and resumed (e.g. client hold, holiday shutdown). Paused days are excluded from variance calculations.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {(card.workSuspensions as WorkSuspension[]).map((s, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        position: 'relative',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 6,
-                        padding: '8px 10px',
-                        paddingRight: 38,
-                        borderRadius: 8,
-                        background: 'hsl(var(--card) / 0.6)',
-                        border: '1px solid hsl(var(--border) / 0.5)',
-                      }}
-                    >
-                      {/* Delete button - top right */}
-                      <button
-                        type="button"
-                        title="Remove this suspension"
-                        onClick={() => {
-                          const updated = (card.workSuspensions as WorkSuspension[]).filter((_, i) => i !== idx);
-                          updateCard(cardId, { workSuspensions: updated });
-                        }}
+            {/* Work Suspensions (Paused Periods) — Roadmap boards only */}
+            {isRoadmap && (
+              <div className="form-group" style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                    Work Suspensions
+                    {(card.workSuspensions || []).length > 0 && (
+                      <span style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: 6,
+                        backgroundColor: 'rgba(245,158,11,0.15)',
+                        color: '#f59e0b',
+                        marginLeft: 4,
+                      }}>
+                        {(card.workSuspensions || []).length} pause{(card.workSuspensions || []).length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ height: 26, fontSize: 11, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 7 }}
+                    onClick={() => {
+                      const existing = card.workSuspensions || [];
+                      const today = new Date().toISOString().slice(0, 10);
+                      updateCard(cardId, { workSuspensions: [...existing, { from: today, to: today, reason: '' }] });
+                    }}
+                  >
+                    + Add Pause
+                  </button>
+                </div>
+                {(card.workSuspensions || []).length === 0 ? (
+                  <p style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', margin: 0, padding: '6px 0' }}>
+                    No work pauses logged. Add a pause if work was stopped and resumed (e.g. client hold, holiday shutdown). Paused days are excluded from variance calculations.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {(card.workSuspensions as WorkSuspension[]).map((s, idx) => (
+                      <div
+                        key={idx}
                         style={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 6,
-                          width: 26,
-                          height: 26,
+                          position: 'relative',
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: 7,
-                          border: '1px solid hsl(var(--border) / 0.6)',
-                          background: 'transparent',
-                          color: '#ef4444',
-                          cursor: 'pointer',
-                          flexShrink: 0,
+                          flexDirection: 'column',
+                          gap: 6,
+                          padding: '8px 10px',
+                          paddingRight: 38,
+                          borderRadius: 8,
+                          background: 'hsl(var(--card) / 0.6)',
+                          border: '1px solid hsl(var(--border) / 0.5)',
                         }}
                       >
-                        <X size={13} />
-                      </button>
-                      {/* Row 1: From / To */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                        <div>
-                          <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
-                          <NeumorphicDatePicker
-                            value={s.from}
-                            onChange={val => {
-                              const updated = [...(card.workSuspensions as WorkSuspension[])];
-                              updated[idx] = { ...updated[idx], from: val || updated[idx].from };
-                              updateCard(cardId, { workSuspensions: updated });
-                            }}
-                            align="left"
-                          />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
-                          <NeumorphicDatePicker
-                            value={s.to}
-                            onChange={val => {
-                              const updated = [...(card.workSuspensions as WorkSuspension[])];
-                              updated[idx] = { ...updated[idx], to: val || updated[idx].to };
-                              updateCard(cardId, { workSuspensions: updated });
-                            }}
-                            align="left"
-                          />
-                        </div>
-                      </div>
-                      {/* Row 2: Reason (full width) */}
-                      <div>
-                        <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>Reason (optional)</label>
-                        <input
-                          type="text"
-                          value={s.reason || ''}
-                          placeholder="e.g. Client hold, Holiday"
-                          onChange={e => {
-                            const updated = [...(card.workSuspensions as WorkSuspension[])];
-                            updated[idx] = { ...updated[idx], reason: e.target.value };
+                        {/* Delete button - top right */}
+                        <button
+                          type="button"
+                          title="Remove this suspension"
+                          onClick={() => {
+                            const updated = (card.workSuspensions as WorkSuspension[]).filter((_, i) => i !== idx);
                             updateCard(cardId, { workSuspensions: updated });
                           }}
                           style={{
-                            width: '100%',
-                            height: 32,
-                            fontSize: 11.5,
-                            padding: '4px 8px',
+                            position: 'absolute',
+                            top: 8,
+                            right: 6,
+                            width: 26,
+                            height: 26,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                             borderRadius: 7,
-                            border: '1px solid hsl(var(--border))',
-                            background: 'hsl(var(--background))',
-                            color: 'hsl(var(--foreground))',
-                            outline: 'none',
-                            boxSizing: 'border-box',
+                            border: '1px solid hsl(var(--border) / 0.6)',
+                            background: 'transparent',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            flexShrink: 0,
                           }}
-                        />
+                        >
+                          <X size={13} />
+                        </button>
+                        {/* Row 1: From / To */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                          <div>
+                            <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
+                            <NeumorphicDatePicker
+                              value={s.from}
+                              onChange={val => {
+                                const updated = [...(card.workSuspensions as WorkSuspension[])];
+                                updated[idx] = { ...updated[idx], from: val || updated[idx].from };
+                                updateCard(cardId, { workSuspensions: updated });
+                              }}
+                              align="left"
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
+                            <NeumorphicDatePicker
+                              value={s.to}
+                              onChange={val => {
+                                const updated = [...(card.workSuspensions as WorkSuspension[])];
+                                updated[idx] = { ...updated[idx], to: val || updated[idx].to };
+                                updateCard(cardId, { workSuspensions: updated });
+                              }}
+                              align="left"
+                            />
+                          </div>
+                        </div>
+                        {/* Row 2: Reason (full width) */}
+                        <div>
+                          <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>Reason (optional)</label>
+                          <input
+                            type="text"
+                            value={s.reason || ''}
+                            placeholder="e.g. Client hold, Holiday"
+                            onChange={e => {
+                              const updated = [...(card.workSuspensions as WorkSuspension[])];
+                              updated[idx] = { ...updated[idx], reason: e.target.value };
+                              updateCard(cardId, { workSuspensions: updated });
+                            }}
+                            style={{
+                              width: '100%',
+                              height: 32,
+                              fontSize: 11.5,
+                              padding: '4px 8px',
+                              borderRadius: 7,
+                              border: '1px solid hsl(var(--border))',
+                              background: 'hsl(var(--background))',
+                              color: 'hsl(var(--foreground))',
+                              outline: 'none',
+                              boxSizing: 'border-box',
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Project Phase & Milestone */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'end', marginBottom: 16 }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Layers size={12} /> Project Phase
-                </label>
-                <NeumorphicSelect
-                  value={card.sprintId || ''}
-                  options={[
-                    { value: '', label: 'No Phase (General Timeline)' },
-                    ...(board?.sprints || []).map(sp => ({
-                      value: sp.id,
-                      label: `${sp.name} ${sp.status === 'active' ? '(Current Phase)' : `(${sp.status})`}`,
-                    })),
-                  ]}
-                  onChange={val => {
-                    updateCard(cardId, { sprintId: val || null });
-                  }}
-                  size="sm"
-                  style={{ width: '100%' }}
-                />
+                    ))}
+                  </div>
+                )}
               </div>
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.95 }}
-                className={`btn ${card.isMilestone ? 'btn-primary' : 'btn-secondary'}`}
-                style={{
-                  height: 32,
-                  fontSize: 11.5,
-                  padding: '4px 10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  borderRadius: 8,
-                }}
-                onClick={() => updateCard(cardId, { isMilestone: !card.isMilestone })}
-                title="Toggle as a key Project Milestone / Handover deliverable"
-              >
-                <Milestone size={13} color={card.isMilestone ? '#fff' : 'hsl(var(--primary))'} />
-                <span>{card.isMilestone ? 'Milestone' : 'Set Milestone'}</span>
-              </motion.button>
-            </div>
+            )}
 
-            {/* Automated Progress Indicator */}
-            {(() => {
+            {/* Project Phase & Milestone — Roadmap boards only */}
+            {isRoadmap && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'end', marginBottom: 16 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Layers size={12} /> Project Phase
+                  </label>
+                  <NeumorphicSelect
+                    value={card.sprintId || ''}
+                    options={[
+                      { value: '', label: 'No Phase (General Timeline)' },
+                      ...(board?.sprints || []).map(sp => ({
+                        value: sp.id,
+                        label: `${sp.name} ${sp.status === 'active' ? '(Current Phase)' : `(${sp.status})`}`,
+                      })),
+                    ]}
+                    onChange={val => {
+                      updateCard(cardId, { sprintId: val || null });
+                    }}
+                    size="sm"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  className={`btn ${card.isMilestone ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{
+                    height: 32,
+                    fontSize: 11.5,
+                    padding: '4px 10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    borderRadius: 8,
+                  }}
+                  onClick={() => updateCard(cardId, { isMilestone: !card.isMilestone })}
+                  title="Toggle as a key Project Milestone / Handover deliverable"
+                >
+                  <Milestone size={13} color={card.isMilestone ? '#fff' : 'hsl(var(--primary))'} />
+                  <span>{card.isMilestone ? 'Milestone' : 'Set Milestone'}</span>
+                </motion.button>
+              </div>
+            )}
+
+            {/* Automated Progress Indicator — Roadmap boards only */}
+            {isRoadmap && (() => {
               const autoProgress = deriveCardProgress(card, column?.name || '');
               return (
                 <div className="form-group">

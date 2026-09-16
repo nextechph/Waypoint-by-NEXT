@@ -20,7 +20,7 @@ import sidebarDarkImg from '../assets/sidebar-dark.png';
 import logoImg from '../assets/logo.png';
 
 interface Props {
-  page: 'dashboard' | 'board';
+  page: 'dashboard' | 'board' | 'roadmap';
   activeView: 'board' | 'roadmap' | 'calendar';
   onSelectView: (view: 'board' | 'roadmap' | 'calendar') => void;
   onOpenInbox: () => void;
@@ -250,7 +250,7 @@ export default function Sidebar({
               <motion.button
                 whileTap={{ scale: 0.92 }}
                 className={`icon-btn ${activeView === 'roadmap' ? 'active' : ''}`}
-                title={`Roadmap (Gantt & Sprints)${activeSprint ? ` • ${activeSprint.name}` : ''}`}
+                title={`Roadmap${activeSprint ? ` • ${activeSprint.name}` : ''}`}
                 onClick={() => handleSelectView('roadmap')}
                 style={{ position: 'relative' }}
               >
@@ -502,8 +502,12 @@ export default function Sidebar({
                                         variant: 'danger',
                                         icon: 'trash',
                                         onConfirm: () => {
+                                          const wasActive = b.id === activeBoardId;
                                           deleteBoard(b.id);
                                           showToast(`Deleted board "${b.name}"`, 'info');
+                                          if (wasActive) {
+                                            onGoToDashboard();
+                                          }
                                         }
                                       });
                                     }}
@@ -524,10 +528,14 @@ export default function Sidebar({
                                           confirmText: 'Leave Board',
                                           variant: 'danger',
                                           icon: 'logout',
-                                          onConfirm: () => {
+                                           onConfirm: () => {
                                             if (user?.email) {
+                                              const wasActive = b.id === activeBoardId;
                                               leaveBoard(b.id, user.email);
                                               showToast(`You left "${b.name}"`, 'info');
+                                              if (wasActive) {
+                                                onGoToDashboard();
+                                              }
                                             }
                                           }
                                         });
@@ -690,9 +698,13 @@ export default function Sidebar({
                                       confirmText: 'Delete Roadmap',
                                       variant: 'danger',
                                       icon: 'trash',
-                                      onConfirm: () => {
+                                       onConfirm: () => {
+                                        const wasActive = b.id === activeBoardId;
                                         deleteBoard(b.id);
                                         showToast(`Deleted roadmap "${b.name}"`, 'info');
+                                        if (wasActive) {
+                                          onGoToDashboard();
+                                        }
                                       }
                                     });
                                   }}
@@ -810,7 +822,7 @@ export default function Sidebar({
                               setColorPickerBoardId(colorPickerBoardId === activeBoard.id ? null : activeBoard.id);
                             } : undefined}
                           />
-                          <span style={{ fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <span style={{ fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {activeBoard.name}
                           </span>
                           {activeBoard.type === 'roadmap' && (
@@ -938,7 +950,7 @@ export default function Sidebar({
                   >
                     <Milestone size={14} color="hsl(var(--primary))" />
                     <span style={{ flex: 1, fontWeight: activeView === 'roadmap' ? 700 : 500 }}>
-                      Roadmap (Gantt)
+                      Roadmap
                     </span>
                     {activeSprint ? (
                       <span

@@ -13,7 +13,7 @@ import logoImg from '../assets/logo.png';
 import type { Member } from '../types';
 
 interface Props {
-  page?: 'dashboard' | 'board';
+  page?: 'dashboard' | 'board' | 'roadmap';
   title?: string;
   onOpenSearch: () => void;
   onOpenInbox?: () => void;
@@ -134,7 +134,7 @@ export default function Topbar({
               <ChevronRight size={13} className="topbar-crumb-sep" />
             </>
           )}
-          {page === 'board' && board ? (
+          {(page === 'board' || page === 'roadmap') && board ? (
             <span className="topbar-crumb-active" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, position: 'relative', zIndex: showColorPicker ? 40 : undefined }}>
               <button
                 type="button"
@@ -149,7 +149,7 @@ export default function Topbar({
                   boxShadow: 'var(--neu-shadow-raised-sm)',
                   display: 'inline-block',
                 }}
-                title={canEditBoard ? "Change board color" : undefined}
+                title={canEditBoard ? (board.type === 'roadmap' ? "Change roadmap color" : "Change board color") : undefined}
                 onClick={canEditBoard ? (e) => {
                   e.stopPropagation();
                   setShowColorPicker(s => !s);
@@ -191,7 +191,7 @@ export default function Topbar({
                     currentColor={board.color}
                     onSelectColor={(col) => {
                       updateBoardColor(board.id, col);
-                      showToast('Board color updated', 'success');
+                      showToast(board.type === 'roadmap' ? 'Roadmap color updated' : 'Board color updated', 'success');
                     }}
                     onClose={() => setShowColorPicker(false)}
                     align="left"

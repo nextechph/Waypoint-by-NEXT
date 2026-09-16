@@ -130,7 +130,8 @@ export default function Card({
 
   const col = board?.columns.find(c => c.id === colId);
   const columnName = col?.name || '';
-  const scheduleHealth = getScheduleHealth(card, columnName);
+  const isRoadmapBoard = board?.type === 'roadmap';
+  const scheduleHealth = isRoadmapBoard ? getScheduleHealth(card, columnName) : null;
 
   // Helper to find target column by touch coordinates using bounding rectangles
   const getTargetColumn = (clientX: number, clientY: number): HTMLElement | null => {
@@ -334,8 +335,8 @@ export default function Card({
             {priority.label}
           </span>
 
-          {/* Schedule Health Pill (Gantt-aware) */}
-          {scheduleHealth && !card.completed && (
+          {/* Schedule Health Pill (Roadmap/Gantt-aware — shown only on Roadmap boards) */}
+          {isRoadmapBoard && scheduleHealth && !card.completed && (
             <span
               style={{
                 fontSize: 10,
@@ -349,15 +350,15 @@ export default function Card({
                 alignItems: 'center',
                 gap: 4
               }}
-              title={`Gantt Timeline: ${scheduleHealth.label}`}
+              title={`Timeline: ${scheduleHealth.label}`}
             >
               <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: scheduleHealth.color }} />
               {scheduleHealth.label}
             </span>
           )}
 
-          {/* Linked Project Roadmap Badge */}
-          {linkedRoadmap && (
+          {/* Linked Project Roadmap Badge — shown on standard boards only when linked */}
+          {!isRoadmapBoard && linkedRoadmap && (
             <span
               style={{
                 fontSize: 10,
@@ -587,8 +588,8 @@ export default function Card({
         </div>
       </div>
 
-      {/* Mini Timeline Bar (bottom edge of card) */}
-      {scheduleHealth && scheduleHealth.timelinePct !== undefined && !card.completed && (
+      {/* Mini Timeline Bar (bottom edge of card — Roadmap boards only) */}
+      {isRoadmapBoard && scheduleHealth && scheduleHealth.timelinePct !== undefined && !card.completed && (
         <div
           style={{
             margin: '4px -12px -11px -12px',

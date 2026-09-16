@@ -241,13 +241,17 @@ export default function App() {
       const urlView = params.get('view') as 'board' | 'roadmap' | 'calendar' | null;
       const urlCard = params.get('card') || params.get('c');
 
-      const savedPage = localStorage.getItem('worklane_current_page_v1') as 'dashboard' | 'board' | null;
+      const savedPage = localStorage.getItem('worklane_current_page_v1') as 'dashboard' | 'board' | 'roadmap' | null;
       const savedView = localStorage.getItem('worklane_current_view_mode_v1') as 'board' | 'roadmap' | 'calendar' | null;
       const savedCard = localStorage.getItem('worklane_current_card_v1');
 
-      let initialPage: 'dashboard' | 'board' = 'dashboard';
-      if (urlPage === 'board' || urlBoard || (urlPage !== 'dashboard' && (savedPage === 'board' || (!savedPage && initialBoardId)))) {
+      let initialPage: 'dashboard' | 'board' | 'roadmap' = 'dashboard';
+      if (urlPage === 'roadmap') {
+        initialPage = 'roadmap';
+      } else if (urlPage === 'board') {
         initialPage = 'board';
+      } else if (urlBoard || (urlPage !== 'dashboard' && (savedPage === 'board' || savedPage === 'roadmap' || (!savedPage && initialBoardId)))) {
+        initialPage = savedPage === 'roadmap' ? 'roadmap' : 'board';
       }
 
       const validViews: Array<'board' | 'roadmap' | 'calendar'> = ['board', 'roadmap', 'calendar'];
@@ -255,7 +259,7 @@ export default function App() {
         ? (urlView as 'board' | 'roadmap' | 'calendar')
         : validViews.includes(savedView as any)
         ? (savedView as 'board' | 'roadmap' | 'calendar')
-        : 'board';
+        : (initialPage === 'roadmap' ? 'roadmap' : 'board');
 
       return {
         page: initialPage,
@@ -275,9 +279,9 @@ export default function App() {
 
   const initialRouting = useMemo(() => getInitialRouting(), []);
 
-  // Page routing: dashboard (home) or board (active board view)
+  // Page routing: dashboard (home), board (active board view), or roadmap (dedicated roadmap view)
   const isMobile = useIsMobile(860);
-  const [page, setPage] = useState<'dashboard' | 'board'>(initialRouting.page);
+  const [page, setPage] = useState<'dashboard' | 'board' | 'roadmap'>(initialRouting.page);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -348,12 +352,21 @@ export default function App() {
           params.delete('card');
           params.delete('c');
           params.delete('view');
-        } else if (page === 'board') {
-          params.delete('page');
+        } else if (page === 'board' || page === 'roadmap') {
+          if (page === 'roadmap') {
+            params.set('page', 'roadmap');
+          } else {
+            params.delete('page');
+          }
           const boardToSet = activeBoardId || initialRouting.boardId;
           if (boardToSet) params.set('board', boardToSet);
-          if (viewMode !== 'board') params.set('view', viewMode);
-          else params.delete('view');
+          if (page === 'roadmap' && viewMode === 'roadmap') {
+            params.delete('view');
+          } else if (page === 'board' && viewMode === 'board') {
+            params.delete('view');
+          } else {
+            params.set('view', viewMode);
+          }
           if (openCardId) params.set('card', openCardId);
           else params.delete('card');
         }
@@ -364,6 +377,19 @@ export default function App() {
       }
     } catch {}
   }, [page, activeBoardId, viewMode, openCardId, isAuthenticated, initialRouting.boardId]);
+
+  // Synchronize page type if active board changes or loads
+  useEffect(() => {
+    if (activeBoardId && page !== 'dashboard') {
+      const active = boards.find(b => b.id === activeBoardId);
+      if (active) {
+        const expectedPage = active.type === 'roadmap' ? 'roadmap' : 'board';
+        if (page !== expectedPage) {
+          setPage(expectedPage);
+        }
+      }
+    }
+  }, [activeBoardId, boards, page]);
 
   // When user logs out, reset to dashboard and clean storage/URL
   useEffect(() => {
@@ -381,39 +407,45 @@ export default function App() {
     }
   }, [isAuthenticated]);
 
-  // If currently on a board that gets deleted or left, safely switch to next board or return to overview
+  // If currently on a board or roadmap that gets deleted or left, safely return to dashboard
   useEffect(() => {
-    // Wait until boards have loaded once before deciding whether to switch or fallback to dashboard
+    // Wait until boards have loaded once before deciding whether to fallback to dashboard
     if (!hasLoadedOnce && boards.length === 0) return;
 
-    if (page === 'board') {
+    if (page === 'board' || page === 'roadmap') {
       if (boards.length === 0) {
-        if (hasLoadedOnce) setPage('dashboard');
+        if (hasLoadedOnce) {
+          setPage('dashboard');
+          try {
+            localStorage.setItem('worklane_current_page_v1', 'dashboard');
+            localStorage.removeItem('worklane_current_board_id_v1');
+          } catch {}
+        }
         return;
       }
       const boardExists = boards.some(b => b.id === activeBoardId);
       if (!boardExists) {
-        const initialTarget = initialRouting.boardId;
-        if (initialTarget && boards.some(b => b.id === initialTarget)) {
-          switchBoard(initialTarget);
-        } else {
-          switchBoard(boards[0].id);
-        }
+        setPage('dashboard');
+        try {
+          localStorage.setItem('worklane_current_page_v1', 'dashboard');
+          localStorage.removeItem('worklane_current_board_id_v1');
+        } catch {}
       }
     }
-  }, [page, activeBoardId, boards, hasLoadedOnce, initialRouting.boardId, switchBoard]);
+  }, [page, activeBoardId, boards, hasLoadedOnce]);
 
   const handleSelectBoard = useCallback((boardId: string, view?: 'board' | 'roadmap' | 'calendar') => {
     switchBoard(boardId);
-    setPage('board');
     setShowBoardSelector(false);
     const targetBoard = boards.find(b => b.id === boardId);
+    const targetPage = targetBoard?.type === 'roadmap' ? 'roadmap' : 'board';
+    setPage(targetPage);
     const resolvedView = view || (targetBoard?.type === 'roadmap' ? 'roadmap' : undefined);
     if (resolvedView) {
       setViewMode(resolvedView);
     }
     try {
-      localStorage.setItem('worklane_current_page_v1', 'board');
+      localStorage.setItem('worklane_current_page_v1', targetPage);
       localStorage.setItem('worklane_current_board_id_v1', boardId);
       if (resolvedView) {
         localStorage.setItem('worklane_current_view_mode_v1', resolvedView);
@@ -425,6 +457,8 @@ export default function App() {
     setPage('dashboard');
     try {
       localStorage.setItem('worklane_current_page_v1', 'dashboard');
+      localStorage.removeItem('worklane_current_board_id_v1');
+      localStorage.removeItem('worklane_current_card_v1');
     } catch {}
   }, []);
 
@@ -690,7 +724,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
               </motion.div>
             ) : (
               <motion.div
-                key="page-board"
+                key={`page-${page}`}
                 variants={isMobile ? pageMobileVariants : page3DVariants}
                 initial="initial"
                 animate="animate"
@@ -698,6 +732,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
                 style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '100%' }}
               >
                 <Topbar
+                  page={page}
                   onOpenSearch={() => setShowSearch(true)}
                   onOpenInbox={() => setShowInbox(s => !s)}
                   onManageMembers={() => setShowMembers(true)}
@@ -740,8 +775,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
             setFilterMemberId(memberId);
             setShowSearch(false);
           }}
-          scope={page === 'board' ? 'board' : 'global'}
-          activeBoardId={page === 'board' ? activeBoardId : null}
+          scope={page !== 'dashboard' ? 'board' : 'global'}
+          activeBoardId={page !== 'dashboard' ? activeBoardId : null}
         />
       )}
       {showSettings && (
@@ -824,7 +859,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           setShowBoardSelector(false);
         }}
         onSelectBoardView={(mode) => {
-          setPage('board');
+          const active = boards.find(b => b.id === activeBoardId);
+          setPage(active?.type === 'roadmap' ? 'roadmap' : 'board');
           setViewMode(mode);
           setMobileMenuOpen(false);
           setShowBoardSelector(false);

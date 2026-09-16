@@ -3,7 +3,7 @@ import { LayoutDashboard, KanbanSquare, Calendar, Inbox, Plus } from 'lucide-rea
 import { motion } from 'framer-motion';
 
 interface MobileBottomNavProps {
-  page: 'dashboard' | 'board';
+  page: 'dashboard' | 'board' | 'roadmap';
   viewMode: 'board' | 'roadmap' | 'calendar';
   showInbox: boolean;
   onGoHome: () => void;
@@ -37,7 +37,7 @@ export default function MobileBottomNav({
 
       <button
         type="button"
-        className={`mobile-nav-tab ${page === 'board' && viewMode === 'board' ? 'active' : ''}`}
+        className={`mobile-nav-tab ${(page === 'board' || page === 'roadmap') && viewMode === 'board' ? 'active' : ''}`}
         onClick={() => {
           if (onOpenBoardSelector) {
             onOpenBoardSelector();
@@ -68,7 +68,7 @@ export default function MobileBottomNav({
 
       <button
         type="button"
-        className={`mobile-nav-tab ${page === 'board' && viewMode === 'calendar' ? 'active' : ''}`}
+        className={`mobile-nav-tab ${(page === 'board' || page === 'roadmap') && viewMode === 'calendar' ? 'active' : ''}`}
         onClick={() => onSelectBoardView('calendar')}
         title="Calendar View"
       >

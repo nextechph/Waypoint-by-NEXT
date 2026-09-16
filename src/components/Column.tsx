@@ -43,6 +43,9 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
   const undoLastMove       = useWorkStore(s => s.undoLastMove);
   const showToast          = useToastStore(s => s.showToast);
   const showConfirm        = useConfirmStore(s => s.showConfirm);
+  const boards             = useWorkStore(s => s.boards);
+  const activeBoardId      = useWorkStore(s => s.activeBoardId);
+  const isRoadmapBoard     = boards.find(b => b.id === activeBoardId)?.type === 'roadmap';
 
   // Detect column type for auto-date propagation
   const getColType = (name: string): 'in-progress' | 'done' | 'other' => {
@@ -93,35 +96,36 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
     if (!dragState) return;
 
     const colType = getColType(col.name);
-    const todayIso = new Date().toISOString().split('T')[0];
 
     if (dragState.fromInbox) {
       moveInboxCardToColumn(dragState.cardId, col.id, afterCardId);
       setDragState(null);
-      if (colType === 'in-progress') {
-        showToast(`Moved to "${col.name}" — Gantt start date recorded`, 'success', 4000);
+      if (isRoadmapBoard && colType === 'in-progress') {
+        showToast(`Moved to "${col.name}" — Timeline start date recorded`, 'success', 4000);
+      } else if (isRoadmapBoard && colType === 'done') {
+        showToast(`Phase complete — Timeline finish date recorded`, 'success', 4000);
       } else if (colType === 'done') {
-        showToast(`Marked complete — Gantt finish date recorded`, 'success', 4000);
+        showToast(`Moved to "${col.name}" — Marked complete`, 'success', 3500);
       } else {
-        showToast(`Moved to ${col.name}`, 'info');
+        showToast(`Moved to "${col.name}"`, 'info');
       }
       return;
     }
 
     moveCard(dragState.cardId, dragState.fromColId, col.id, afterCardId);
 
-    if (colType === 'in-progress') {
-      showToast(`Moved to "${col.name}" — Gantt start date recorded`, 'success', 4000, {
+    if (isRoadmapBoard && colType === 'in-progress') {
+      showToast(`Moved to "${col.name}" — Timeline start date recorded`, 'success', 4000, {
         label: 'Undo',
         onClick: undoLastMove,
       });
-    } else if (colType === 'done') {
-      showToast(`Marked complete — Gantt finish date recorded`, 'success', 4000, {
+    } else if (isRoadmapBoard && colType === 'done') {
+      showToast(`Phase complete — Timeline finish date recorded`, 'success', 4000, {
         label: 'Undo',
         onClick: undoLastMove,
       });
     } else {
-      showToast('Card moved', 'info', 5000, {
+      showToast(`Moved to "${col.name}"`, 'info', 5000, {
         label: 'Undo',
         onClick: undoLastMove,
       });
