@@ -243,7 +243,7 @@ export default function Sidebar({
                 <motion.button
                   whileTap={{ scale: 0.92 }}
                   className={`icon-btn ${activeView === 'roadmap' ? 'active' : ''}`}
-                  title="Roadmap & Timeline"
+                  title="Roadmap"
                   onClick={() => handleSelectView('roadmap')}
                 >
                   <Milestone size={16} color={activeView === 'roadmap' ? 'hsl(var(--primary))' : undefined} />
@@ -876,7 +876,7 @@ export default function Sidebar({
             {/* Views */}
             <div className="sidebar-section">
               <div className="sidebar-section-header">
-                <span>{activeBoard?.type === 'roadmap' ? 'Project Views' : 'Views'}</span>
+                <span>Views</span>
               </div>
               {activeBoard?.type === 'roadmap' ? (
                 <>
@@ -884,11 +884,11 @@ export default function Sidebar({
                     whileTap={{ scale: 0.97 }}
                     className={`sidebar-nav-item ${activeView === 'roadmap' ? 'active' : ''}`}
                     onClick={() => handleSelectView('roadmap')}
-                    title="Project Roadmap and subtask Gantt timeline"
+                    title="Project Roadmap"
                   >
                     <Milestone size={14} color="hsl(var(--primary))" />
-                    <span style={{ flex: 1, fontWeight: activeView === 'roadmap' ? 700 : 500 }}>
-                      Roadmap & Timeline
+                    <span style={{ flex: 1, fontWeight: activeView === 'roadmap' ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      Roadmap
                     </span>
                     {scheduledCount > 0 && (
                       <span
@@ -899,12 +899,13 @@ export default function Sidebar({
                           borderRadius: 10,
                           background: 'hsl(var(--muted))',
                           color: 'hsl(var(--muted-foreground))',
+                          flexShrink: 0,
                         }}
                       >
                         {scheduledCount}
                       </span>
                     )}
-                    {activeView === 'roadmap' && <Check size={13} color="hsl(var(--primary))" />}
+                    {activeView === 'roadmap' && <Check size={13} color="hsl(var(--primary))" style={{ flexShrink: 0 }} />}
                   </motion.button>
                   <motion.button
                     whileTap={{ scale: 0.97 }}

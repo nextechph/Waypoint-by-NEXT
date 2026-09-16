@@ -279,6 +279,7 @@ html, body, #root {
   align-items: center;
   gap: 9px;
   padding: 7px 10px;
+  min-height: 34px;
   border-radius: var(--radius);
   font-size: 13px;
   font-weight: 500;
@@ -289,6 +290,7 @@ html, body, #root {
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
+  white-space: nowrap;
 }
 
 .sidebar-nav-item:hover,
