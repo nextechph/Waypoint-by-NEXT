@@ -1438,11 +1438,12 @@ select option {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
   height: 100%;
   background-color: hsl(var(--background));
-  padding: 14px 20px;
-  gap: 12px;
+  padding: 8px 14px 10px;
+  gap: 6px;
   box-sizing: border-box;
 }
 
@@ -1670,8 +1671,8 @@ select option {
 .roadmap-split-pane {
   display: flex;
   flex: 1;
-  min-height: 480px;
-  border-radius: 14px;
+  min-height: 0;
+  border-radius: 12px;
   background-color: hsl(var(--card));
   box-shadow: var(--neu-shadow-raised);
   border: 1px solid hsl(var(--border) / 0.5);
@@ -1680,9 +1681,9 @@ select option {
 
 /* Left Pane */
 .roadmap-tasks-pane {
-  width: 420px;
-  min-width: 320px;
-  max-width: 500px;
+  width: 330px;
+  min-width: 260px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   border-right: 1px solid hsl(var(--border) / 0.6);
@@ -1691,13 +1692,13 @@ select option {
 }
 
 .roadmap-pane-header {
-  height: 52px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 12px;
   border-bottom: 1px solid hsl(var(--border) / 0.5);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1716,10 +1717,10 @@ select option {
 }
 
 .roadmap-col-header {
-  height: 38px;
+  height: 30px;
   display: flex;
   align-items: center;
-  padding: 0 14px;
+  padding: 0 10px;
   background-color: hsl(var(--secondary) / 0.35);
   cursor: pointer;
   user-select: none;
@@ -1731,30 +1732,30 @@ select option {
 }
 
 .roadmap-col-badge {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 9999px;
   background-color: hsl(var(--card));
   color: hsl(var(--muted-foreground));
 }
 
 .roadmap-empty-col-row {
-  height: 44px;
+  height: 34px;
   display: flex;
   align-items: center;
-  padding: 0 14px;
-  font-size: 12px;
+  padding: 0 12px;
+  font-size: 11px;
   color: hsl(var(--muted-foreground) / 0.7);
   font-style: italic;
 }
 
 .roadmap-task-row {
-  height: 56px;
+  height: 40px;
   display: flex;
   align-items: center;
-  padding: 0 12px 0 14px;
-  gap: 10px;
+  padding: 0 10px 0 12px;
+  gap: 8px;
   border-bottom: 1px solid hsl(var(--border) / 0.2);
   cursor: pointer;
   transition: background-color 0.12s ease;
@@ -1816,14 +1817,35 @@ select option {
 /* Right Canvas Pane */
 .roadmap-canvas-pane {
   flex: 1;
-  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
+.roadmap-canvas-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.4) transparent;
+}
+.roadmap-canvas-scroll-area::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.roadmap-canvas-scroll-area::-webkit-scrollbar-track {
+  background: hsl(var(--secondary) / 0.25);
+}
+.roadmap-canvas-scroll-area::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.35);
+  border-radius: 4px;
+}
+.roadmap-canvas-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.7);
+}
+
 .roadmap-timeline-header {
-  height: 52px;
+  height: 40px;
   display: flex;
   border-bottom: 1px solid hsl(var(--border) / 0.5);
   background-color: hsl(var(--card));
@@ -1838,7 +1860,7 @@ select option {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 1px;
   border-right: 1px solid hsl(var(--border) / 0.25);
   flex-shrink: 0;
   box-sizing: border-box;
@@ -1849,15 +1871,15 @@ select option {
 }
 
 .roadmap-timeline-cell .cell-day {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   color: hsl(var(--muted-foreground));
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 .roadmap-timeline-cell .cell-num {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 700;
   color: hsl(var(--foreground));
 }
@@ -1865,9 +1887,9 @@ select option {
 .roadmap-timeline-cell .today-pill {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
-  padding: 2px 8px;
+  padding: 1px 6px;
   border-radius: 9999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -1904,14 +1926,14 @@ select option {
 
 .roadmap-today-marker .today-badge {
   position: absolute;
-  top: 4px;
+  top: 3px;
   left: 50%;
   transform: translateX(-50%);
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
   white-space: nowrap;
 }
@@ -1922,7 +1944,7 @@ select option {
 }
 
 .roadmap-bar-row {
-  height: 56px;
+  height: 40px;
   position: relative;
   display: flex;
   align-items: center;
@@ -1933,17 +1955,17 @@ select option {
 /* ── Top Track: Target (Baseline / Planned) ── */
 .roadmap-target-baseline-bar {
   position: absolute;
-  top: 6px;
-  height: 21px;
-  border-radius: 5px;
+  top: 4px;
+  height: 15px;
+  border-radius: 3px;
   background-color: #10b981; /* Solid emerald green matching Excel reference */
   color: #ffffff;
-  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.35);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
-  font-size: 10.5px;
+  padding: 0 6px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -1952,7 +1974,7 @@ select option {
   box-sizing: border-box;
   z-index: 5;
   transition: all 0.15s ease;
-  min-width: 28px;
+  min-width: 24px;
 }
 
 .roadmap-target-baseline-bar:hover {
@@ -1964,9 +1986,9 @@ select option {
 /* ── Bottom Track: Actual / Accomplished ── */
 .roadmap-actual-track {
   position: absolute;
-  top: 29px;
-  height: 21px;
-  border-radius: 5px;
+  top: 21px;
+  height: 15px;
+  border-radius: 3px;
   background-color: hsl(var(--secondary) / 0.45);
   border: 1px dashed hsl(var(--border) / 0.8);
   box-sizing: border-box;
@@ -1976,7 +1998,7 @@ select option {
   overflow: hidden;
   z-index: 4;
   transition: border-color 0.15s ease;
-  min-width: 28px;
+  min-width: 24px;
 }
 
 .roadmap-actual-track:hover {
@@ -1987,30 +2009,30 @@ select option {
 .roadmap-actual-filled-bar {
   height: 100%;
   background: linear-gradient(135deg, #f97316, #ea580c); /* Vibrant orange fill */
-  border-radius: 4px 0 0 4px;
+  border-radius: 3px 0 0 3px;
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 6px;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
-  box-shadow: 0 1px 5px rgba(249, 115, 22, 0.35);
+  box-shadow: 0 1px 4px rgba(249, 115, 22, 0.35);
   transition: width 0.25s ease;
   box-sizing: border-box;
 }
 
 .roadmap-actual-filled-bar.completed {
   background: linear-gradient(135deg, #f97316, #ea580c);
-  border-radius: 4px;
-  box-shadow: 0 1px 6px rgba(249, 115, 22, 0.45);
+  border-radius: 3px;
+  box-shadow: 0 1px 5px rgba(249, 115, 22, 0.45);
 }
 
 .roadmap-actual-track-label {
   position: absolute;
-  right: 8px;
-  font-size: 10px;
+  right: 6px;
+  font-size: 8.5px;
   font-weight: 700;
   color: hsl(var(--muted-foreground));
   pointer-events: none;
@@ -2091,26 +2113,26 @@ select option {
 
 .roadmap-gantt-bar {
   position: absolute;
-  height: 34px;
-  border-radius: 8px;
+  height: 24px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
-  gap: 8px;
+  padding: 0 8px;
+  gap: 6px;
   color: #ffffff;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   user-select: none;
   box-sizing: border-box;
   transition: box-shadow 0.15s ease, filter 0.15s ease;
-  min-width: 48px;
+  min-width: 36px;
   overflow: hidden;
 }
 
 .roadmap-gantt-bar:hover {
   filter: brightness(1.08);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
   z-index: 8;
 }
 
@@ -2119,7 +2141,7 @@ select option {
 }
 
 .roadmap-gantt-bar .bar-title {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
