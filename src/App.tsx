@@ -255,11 +255,17 @@ export default function App() {
       }
 
       const validViews: Array<'board' | 'roadmap' | 'calendar'> = ['board', 'roadmap', 'calendar'];
-      const initialView = validViews.includes(urlView as any)
+      let initialView = validViews.includes(urlView as any)
         ? (urlView as 'board' | 'roadmap' | 'calendar')
         : validViews.includes(savedView as any)
         ? (savedView as 'board' | 'roadmap' | 'calendar')
         : (initialPage === 'roadmap' ? 'roadmap' : 'board');
+
+      if (initialPage === 'board' && initialView === 'roadmap') {
+        initialView = 'board';
+      } else if (initialPage === 'roadmap' && initialView === 'board') {
+        initialView = 'roadmap';
+      }
 
       return {
         page: initialPage,
@@ -438,20 +444,30 @@ export default function App() {
     switchBoard(boardId);
     setShowBoardSelector(false);
     const targetBoard = boards.find(b => b.id === boardId);
-    const targetPage = targetBoard?.type === 'roadmap' ? 'roadmap' : 'board';
+    const isRoadmap = targetBoard?.type === 'roadmap';
+    const targetPage = isRoadmap ? 'roadmap' : 'board';
     setPage(targetPage);
-    const resolvedView = view || (targetBoard?.type === 'roadmap' ? 'roadmap' : undefined);
-    if (resolvedView) {
-      setViewMode(resolvedView);
+    let resolvedView = view;
+    if (!resolvedView) {
+      if (isRoadmap) {
+        resolvedView = viewMode === 'calendar' ? 'calendar' : 'roadmap';
+      } else {
+        resolvedView = viewMode === 'calendar' ? 'calendar' : 'board';
+      }
+    } else {
+      if (!isRoadmap && resolvedView === 'roadmap') {
+        resolvedView = 'board';
+      } else if (isRoadmap && resolvedView === 'board') {
+        resolvedView = 'roadmap';
+      }
     }
+    setViewMode(resolvedView);
     try {
       localStorage.setItem('worklane_current_page_v1', targetPage);
       localStorage.setItem('worklane_current_board_id_v1', boardId);
-      if (resolvedView) {
-        localStorage.setItem('worklane_current_view_mode_v1', resolvedView);
-      }
+      localStorage.setItem('worklane_current_view_mode_v1', resolvedView);
     } catch {}
-  }, [switchBoard, boards]);
+  }, [switchBoard, boards, viewMode]);
 
   const handleGoToDashboard = useCallback(() => {
     setPage('dashboard');
@@ -860,8 +876,12 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
         }}
         onSelectBoardView={(mode) => {
           const active = boards.find(b => b.id === activeBoardId);
-          setPage(active?.type === 'roadmap' ? 'roadmap' : 'board');
-          setViewMode(mode);
+          const isRoadmap = active?.type === 'roadmap';
+          setPage(isRoadmap ? 'roadmap' : 'board');
+          const finalMode = isRoadmap
+            ? (mode === 'board' ? 'roadmap' : mode)
+            : (mode === 'roadmap' ? 'board' : mode);
+          setViewMode(finalMode);
           setMobileMenuOpen(false);
           setShowBoardSelector(false);
         }}

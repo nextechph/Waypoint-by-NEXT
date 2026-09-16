@@ -239,37 +239,25 @@ export default function Sidebar({
               >
                 <ArrowLeft size={16} />
               </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                className={`icon-btn ${activeView === 'board' ? 'active' : ''}`}
-                title="Board View"
-                onClick={() => handleSelectView('board')}
-              >
-                <KanbanSquare size={16} />
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                className={`icon-btn ${activeView === 'roadmap' ? 'active' : ''}`}
-                title={`Roadmap${activeSprint ? ` • ${activeSprint.name}` : ''}`}
-                onClick={() => handleSelectView('roadmap')}
-                style={{ position: 'relative' }}
-              >
-                <Milestone size={16} color={activeView === 'roadmap' ? 'hsl(var(--primary))' : undefined} />
-                {activeSprint && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: 3,
-                      right: 3,
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      backgroundColor: 'hsl(var(--primary))',
-                      boxShadow: '0 0 6px hsl(var(--primary))',
-                    }}
-                  />
-                )}
-              </motion.button>
+              {activeBoard?.type === 'roadmap' ? (
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
+                  className={`icon-btn ${activeView === 'roadmap' ? 'active' : ''}`}
+                  title="Roadmap & Timeline"
+                  onClick={() => handleSelectView('roadmap')}
+                >
+                  <Milestone size={16} color={activeView === 'roadmap' ? 'hsl(var(--primary))' : undefined} />
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
+                  className={`icon-btn ${activeView === 'board' ? 'active' : ''}`}
+                  title="Board View"
+                  onClick={() => handleSelectView('board')}
+                >
+                  <KanbanSquare size={16} />
+                </motion.button>
+              )}
               <motion.button
                 whileTap={{ scale: 0.92 }}
                 className={`icon-btn ${activeView === 'calendar' ? 'active' : ''}`}
@@ -941,48 +929,6 @@ export default function Sidebar({
                     <KanbanSquare size={14} />
                     <span style={{ flex: 1 }}>Board</span>
                     {activeView === 'board' && <Check size={13} color="hsl(var(--primary))" />}
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    className={`sidebar-nav-item ${activeView === 'roadmap' ? 'active' : ''}`}
-                    onClick={() => handleSelectView('roadmap')}
-                    title="Roadmap & Gantt chart for sprint development and project timelines"
-                  >
-                    <Milestone size={14} color="hsl(var(--primary))" />
-                    <span style={{ flex: 1, fontWeight: activeView === 'roadmap' ? 700 : 500 }}>
-                      Roadmap
-                    </span>
-                    {activeSprint ? (
-                      <span
-                        style={{
-                          fontSize: 9.5,
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: 4,
-                          background: 'hsl(var(--primary) / 0.15)',
-                          color: 'hsl(var(--primary))',
-                          letterSpacing: '0.03em',
-                          textTransform: 'uppercase',
-                        }}
-                        title={`Active Sprint: ${activeSprint.name}`}
-                      >
-                        Sprint
-                      </span>
-                    ) : scheduledCount > 0 ? (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: 10,
-                          background: 'hsl(var(--muted))',
-                          color: 'hsl(var(--muted-foreground))',
-                        }}
-                      >
-                        {scheduledCount}
-                      </span>
-                    ) : null}
-                    {activeView === 'roadmap' && <Check size={13} color="hsl(var(--primary))" />}
                   </motion.button>
                   <motion.button
                     whileTap={{ scale: 0.97 }}

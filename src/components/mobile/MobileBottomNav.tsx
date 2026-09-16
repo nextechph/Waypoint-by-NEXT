@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, KanbanSquare, Calendar, Inbox, Plus } from 'lucide-react';
+import { LayoutDashboard, KanbanSquare, Calendar, Inbox, Plus, Milestone } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface MobileBottomNavProps {
@@ -8,9 +8,9 @@ interface MobileBottomNavProps {
   showInbox: boolean;
   onGoHome: () => void;
   onSelectBoardView: (view: 'board' | 'roadmap' | 'calendar') => void;
-  onOpenBoardSelector?: () => void;
-  onCreateBoard: () => void;
   onToggleInbox: () => void;
+  onCreateBoard: () => void;
+  onOpenBoardSelector?: () => void;
 }
 
 export default function MobileBottomNav({
@@ -19,10 +19,15 @@ export default function MobileBottomNav({
   showInbox,
   onGoHome,
   onSelectBoardView,
-  onOpenBoardSelector,
-  onCreateBoard,
   onToggleInbox,
+  onCreateBoard,
+  onOpenBoardSelector,
 }: MobileBottomNavProps) {
+  const isRoadmap = page === 'roadmap';
+  const isMainViewActive = isRoadmap
+    ? (page === 'roadmap' && viewMode === 'roadmap')
+    : (page === 'board' && viewMode === 'board');
+
   return (
     <nav className="mobile-bottom-nav" aria-label="Quick Mobile Navigation">
       <button
@@ -37,18 +42,18 @@ export default function MobileBottomNav({
 
       <button
         type="button"
-        className={`mobile-nav-tab ${(page === 'board' || page === 'roadmap') && viewMode === 'board' ? 'active' : ''}`}
+        className={`mobile-nav-tab ${isMainViewActive ? 'active' : ''}`}
         onClick={() => {
           if (onOpenBoardSelector) {
             onOpenBoardSelector();
           } else {
-            onSelectBoardView('board');
+            onSelectBoardView(isRoadmap ? 'roadmap' : 'board');
           }
         }}
-        title="Board View"
+        title={isRoadmap ? "Roadmap View" : "Board View"}
       >
-        <KanbanSquare size={17} />
-        <span>Board</span>
+        {isRoadmap ? <Milestone size={17} /> : <KanbanSquare size={17} />}
+        <span>{isRoadmap ? "Roadmap" : "Board"}</span>
       </button>
 
       {/* Prominent Neumorphic Center Circle Plus Button */}

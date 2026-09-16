@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Plus, Edit3, Trash2, Layout, X, Inbox,
   Calendar, CheckSquare, Square, Filter, ChevronRight, ChevronLeft, User, Eye,
@@ -129,6 +129,17 @@ export default function BoardArea({
     setRenameColId(null);
   };
 
+  // Ensure viewMode strictly corresponds to the board type:
+  // Standard task boards cannot be in 'roadmap' view; roadmaps cannot be in 'board' view.
+  useEffect(() => {
+    if (!board || !onSelectView) return;
+    if (board.type === 'roadmap' && viewMode === 'board') {
+      onSelectView('roadmap');
+    } else if (board.type !== 'roadmap' && viewMode === 'roadmap') {
+      onSelectView('board');
+    }
+  }, [board?.id, board?.type, viewMode, onSelectView]);
+
   if (!board) {
     return (
       <div className="board-area" style={{ alignItems: 'center', justifyContent: 'center', perspective: 1000 }}>
@@ -249,33 +260,49 @@ export default function BoardArea({
           {/* In-Board View Switcher Tabs */}
           {onSelectView && (
             <div className="board-view-segmented-tabs">
-              <button
-                type="button"
-                className={`board-view-tab-btn ${viewMode === 'board' ? 'active' : ''}`}
-                onClick={() => onSelectView('board')}
-                title="Kanban Board View"
-              >
-                <KanbanSquare size={13} />
-                <span>Board</span>
-              </button>
-              <button
-                type="button"
-                className={`board-view-tab-btn ${viewMode === 'roadmap' ? 'active' : ''}`}
-                onClick={() => onSelectView('roadmap')}
-                title="Roadmap & Gantt Chart (Sprint Development & Timeline)"
-              >
-                <Milestone size={13} />
-                <span>Roadmap</span>
-              </button>
-              <button
-                type="button"
-                className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
-                onClick={() => onSelectView('calendar')}
-                title="Calendar View"
-              >
-                <Calendar size={13} />
-                <span>Calendar</span>
-              </button>
+              {board.type === 'roadmap' ? (
+                <>
+                  <button
+                    type="button"
+                    className={`board-view-tab-btn ${viewMode === 'roadmap' ? 'active' : ''}`}
+                    onClick={() => onSelectView('roadmap')}
+                    title="Roadmap & Timeline View"
+                  >
+                    <Milestone size={13} />
+                    <span>Roadmap</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+                    onClick={() => onSelectView('calendar')}
+                    title="Calendar View"
+                  >
+                    <Calendar size={13} />
+                    <span>Calendar</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className={`board-view-tab-btn ${viewMode === 'board' ? 'active' : ''}`}
+                    onClick={() => onSelectView('board')}
+                    title="Kanban Board View"
+                  >
+                    <KanbanSquare size={13} />
+                    <span>Board</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+                    onClick={() => onSelectView('calendar')}
+                    title="Calendar View"
+                  >
+                    <Calendar size={13} />
+                    <span>Calendar</span>
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -316,7 +343,7 @@ export default function BoardArea({
         </div>
 
       <AnimatePresence mode="wait">
-        {viewMode === 'roadmap' && (
+        {board.type === 'roadmap' && viewMode !== 'calendar' && (
           <motion.div
             key="roadmap-view"
             variants={isMobile ? viewMobileVariants : view3DVariants}
@@ -509,7 +536,7 @@ export default function BoardArea({
           </motion.div>
         )}
 
-        {viewMode === 'board' && (
+        {board.type !== 'roadmap' && viewMode !== 'calendar' && (
           <motion.div
             key="board-view"
             variants={isMobile ? viewMobileVariants : view3DVariants}

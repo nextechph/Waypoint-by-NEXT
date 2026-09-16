@@ -209,6 +209,23 @@ export default function MobileBoardSelector({
                             >
                               {board.name}
                             </span>
+                            {board.type === 'roadmap' && (
+                              <span
+                                style={{
+                                  fontSize: 9.5,
+                                  fontWeight: 700,
+                                  padding: '1px 5px',
+                                  borderRadius: 5,
+                                  backgroundColor: 'hsl(var(--primary) / 0.14)',
+                                  color: 'hsl(var(--primary))',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.04em',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                Roadmap
+                              </span>
+                            )}
                             {isActive && (
                               <span
                                 style={{
