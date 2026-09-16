@@ -2,8 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   ChevronLeft, ChevronRight,
   CheckSquare, Square,
-  ChevronDown, ChevronUp, Layers, Plus,
-  X, Milestone,
+  ChevronDown, ChevronUp, Plus,
+  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Board, Card as CardType, Member, Sprint } from '../types';
@@ -1147,19 +1147,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           gap: 12,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 34,
-              height: 34,
-              borderRadius: 8,
-              background: 'hsl(var(--primary) / 0.15)',
-              color: 'hsl(var(--primary))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <Milestone size={18} />
-            </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h1 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: 'hsl(var(--foreground))' }}>
@@ -1921,8 +1908,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                   style={{ width: 440, maxWidth: '100%' }}
                 >
                   <div className="roadmap-modal-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Layers size={18} color="hsl(var(--primary))" />
+                    <div>
                       <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
                         {editingSprint ? 'Edit Phase' : 'Create Project Phase'}
                       </h3>
@@ -2059,8 +2045,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                   style={{ width: 460, maxWidth: '100%' }}
                 >
                   <div className="roadmap-modal-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Plus size={18} color="hsl(var(--primary))" />
+                    <div>
                       <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
                         {board.type === 'roadmap' ? 'Add Phase / Subtask to Roadmap' : 'Add Task / Milestone to Roadmap'}
                       </h3>

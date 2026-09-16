@@ -195,12 +195,14 @@
     min-width: 0 !important;
   }
   .dashboard-stat-card {
-    padding: 12px 10px !important;
-    gap: 8px !important;
+    padding: 12px 14px !important;
+    gap: 2px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
   }
   .dashboard-stat-icon {
     width: 34px !important;
@@ -535,12 +537,14 @@
     min-width: 0 !important;
   }
   .dashboard-stat-card {
-    padding: 12px 10px !important;
-    gap: 8px !important;
+    padding: 12px 14px !important;
+    gap: 2px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
   }
   .dashboard-stat-icon {
     width: 34px !important;

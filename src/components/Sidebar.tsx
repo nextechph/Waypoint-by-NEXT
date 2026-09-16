@@ -560,10 +560,7 @@ export default function Sidebar({
             {/* Project Roadmaps section */}
             <div className="sidebar-section">
               <div className="sidebar-section-header">
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Milestone size={12} color="hsl(var(--primary))" />
-                  <span>Roadmaps</span>
-                </span>
+                <span>Roadmaps</span>
                 <motion.button
                   whileTap={{ scale: 0.92 }}
                   className="sidebar-action-icon-btn"

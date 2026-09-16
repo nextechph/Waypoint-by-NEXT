@@ -1096,10 +1096,11 @@ html, body, #root {
   background-color: hsl(var(--card));
   box-shadow: var(--neu-shadow-raised);
   border-radius: 14px;
-  padding: 18px;
+  padding: 18px 22px;
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
 }
 
 .dashboard-stat-icon {

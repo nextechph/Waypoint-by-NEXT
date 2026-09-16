@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Milestone, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useToastStore } from '../../store/useToastStore';
@@ -96,22 +96,11 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
         onClick={e => e.stopPropagation()}
       >
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff',
-              boxShadow: '0 2px 8px rgba(99,102,241,0.35)',
-            }}>
-              <Milestone size={16} />
-            </div>
-            <div>
-              <h2 className="modal-title" style={{ margin: 0, fontSize: 16 }}>Create Project Roadmap</h2>
-              <p style={{ margin: 0, fontSize: 11.5, color: 'hsl(var(--muted-foreground))' }}>
-                Track project phases, scheduled deadlines, and actual progress
-              </p>
-            </div>
+          <div>
+            <h2 className="modal-title" style={{ margin: 0, fontSize: 16 }}>Create Project Roadmap</h2>
+            <p style={{ margin: 0, fontSize: 11.5, color: 'hsl(var(--muted-foreground))' }}>
+              Track project phases, scheduled deadlines, and actual progress
+            </p>
           </div>
           <motion.button whileTap={{ scale: 0.92 }} className="icon-btn" onClick={() => onClose()}>
             <X size={15} />
@@ -303,12 +292,8 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
             style={{
               opacity: (name.trim() && !isSubmitting) ? 1 : 0.5,
               cursor: (name.trim() && !isSubmitting) ? 'pointer' : 'not-allowed',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
             }}
           >
-            <Milestone size={14} />
             Create Roadmap
           </motion.button>
         </div>

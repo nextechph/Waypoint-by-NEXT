@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
-  KanbanSquare, Plus, CheckSquare, Clock,
-  Layers, Zap, CheckCircle2, Milestone,
+  KanbanSquare, Plus, CheckCircle2, CheckSquare, Clock,
   Calendar, Activity, ArrowUpRight, Sparkles, Trash2, LogOut, Pencil, Check, X, Palette
 } from 'lucide-react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
@@ -204,7 +203,7 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
               onClick={onCreateRoadmap}
               style={{ fontSize: 13, padding: '8px 16px', boxShadow: 'var(--neu-shadow-raised-sm)', display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              <Milestone size={15} color="hsl(var(--primary))" /> New Roadmap
+              New Roadmap
             </motion.button>
           )}
           <motion.button
@@ -213,7 +212,7 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
             onClick={onCreateBoard}
             style={{ fontSize: 13, padding: '8px 18px', boxShadow: 'var(--neu-shadow-raised-sm)' }}
           >
-            <Plus size={15} /> New Board
+            New Board
           </motion.button>
         </div>
       </motion.div>
@@ -222,56 +221,36 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
       <motion.div variants={isMobile ? itemMobileVariants : item3DVariants} className="dashboard-stats-row">
         <Tilt3D maxTilt={8} scale={1.02}>
           <div className="dashboard-stat-card">
-            <div className="dashboard-stat-icon">
-              <Layers size={18} />
-            </div>
-            <div>
-              <div className="dashboard-stat-value">{boards.length}</div>
-              <div className="dashboard-stat-label">Active Boards</div>
-            </div>
+            <div className="dashboard-stat-value">{boards.length}</div>
+            <div className="dashboard-stat-label">Active Boards</div>
           </div>
         </Tilt3D>
 
         <Tilt3D maxTilt={8} scale={1.02}>
           <div className="dashboard-stat-card">
-            <div className="dashboard-stat-icon" style={{ color: '#10b981' }}>
-              <CheckSquare size={18} />
-            </div>
-            <div>
-              <div className="dashboard-stat-value">{completedTasks}</div>
-              <div className="dashboard-stat-label">Tasks Completed</div>
-            </div>
+            <div className="dashboard-stat-value">{completedTasks}</div>
+            <div className="dashboard-stat-label">Tasks Completed</div>
           </div>
         </Tilt3D>
 
         <Tilt3D maxTilt={8} scale={1.02}>
           <div className="dashboard-stat-card">
-            <div className="dashboard-stat-icon" style={{ color: '#3b82f6' }}>
-              <Zap size={18} />
-            </div>
-            <div>
-              <div className="dashboard-stat-value">{inProgressTasks}</div>
-              <div className="dashboard-stat-label">In Progress</div>
-            </div>
+            <div className="dashboard-stat-value">{inProgressTasks}</div>
+            <div className="dashboard-stat-label">In Progress</div>
           </div>
         </Tilt3D>
 
         <Tilt3D maxTilt={8} scale={1.02}>
           <div className="dashboard-stat-card">
-            <div className="dashboard-stat-icon" style={{ color: overdueTasks > 0 ? '#ef4444' : 'hsl(var(--muted-foreground))' }}>
-              <Clock size={18} />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span className="dashboard-stat-value" style={{ color: overdueTasks > 0 ? '#ef4444' : undefined }}>{overdueTasks}</span>
+              {overdueTasks > 0 && (
+                <span style={{ fontSize: 10.5, fontWeight: 700, padding: '1px 6px', borderRadius: 9999, backgroundColor: '#fef2f2', color: '#b91c1c' }}>
+                  Action needed
+                </span>
+              )}
             </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span className="dashboard-stat-value" style={{ color: overdueTasks > 0 ? '#ef4444' : undefined }}>{overdueTasks}</span>
-                {overdueTasks > 0 && (
-                  <span style={{ fontSize: 10.5, fontWeight: 700, padding: '1px 6px', borderRadius: 9999, backgroundColor: '#fef2f2', color: '#b91c1c' }}>
-                    Action needed
-                  </span>
-                )}
-              </div>
-              <div className="dashboard-stat-label">Overdue Tasks</div>
-            </div>
+            <div className="dashboard-stat-label">Overdue Tasks</div>
           </div>
         </Tilt3D>
       </motion.div>
@@ -360,46 +339,24 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
                       </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1, overflow: 'hidden' }}>
-                        {isRoadmap ? (
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: (!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? 'pointer' : 'default'
-                            }}
-                            title={(!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? "Change roadmap color" : "Roadmap"}
-                            onClick={(!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? (e) => {
-                              e.stopPropagation();
-                              setColorPickerBoardId(colorPickerBoardId === board.id ? null : board.id);
-                            } : undefined}
-                          >
-                            <Milestone
-                              size={14}
-                              color={board.color || 'hsl(var(--primary))'}
-                              style={{ flexShrink: 0 }}
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              width: 12,
-                              height: 12,
-                              minWidth: 12,
-                              minHeight: 12,
-                              flexShrink: 0,
-                              borderRadius: '50%',
-                              backgroundColor: board.color,
-                              boxShadow: 'var(--neu-shadow-raised-sm)',
-                              cursor: (!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? 'pointer' : 'default',
-                            }}
-                            title={(!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? "Change board color" : undefined}
-                            onClick={(!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? (e) => {
-                              e.stopPropagation();
-                              setColorPickerBoardId(colorPickerBoardId === board.id ? null : board.id);
-                            } : undefined}
-                          />
-                        )}
+                        <div
+                          style={{
+                            width: 12,
+                            height: 12,
+                            minWidth: 12,
+                            minHeight: 12,
+                            flexShrink: 0,
+                            borderRadius: '50%',
+                            backgroundColor: board.color || 'hsl(var(--primary))',
+                            boxShadow: 'var(--neu-shadow-raised-sm)',
+                            cursor: (!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? 'pointer' : 'default',
+                          }}
+                          title={(!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? (isRoadmap ? "Change roadmap color" : "Change board color") : undefined}
+                          onClick={(!board.createdBy || (user?.email && board.createdBy.toLowerCase().trim() === user.email.toLowerCase().trim()) || (board.members && board.members.some(m => m.email && user?.email && m.email.toLowerCase().trim() === user.email.toLowerCase().trim() && m.role !== 'observer'))) ? (e) => {
+                            e.stopPropagation();
+                            setColorPickerBoardId(colorPickerBoardId === board.id ? null : board.id);
+                          } : undefined}
+                        />
                         <span
                           style={{
                             fontSize: 14,
@@ -572,16 +529,10 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: 'hsl(var(--muted-foreground))', paddingTop: 6, width: '100%', minWidth: 0 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                        {isRoadmap ? (
-                          <>
-                            <Milestone size={12} /> {totalCards} {totalCards === 1 ? 'phase' : 'phases'}
-                          </>
-                        ) : (
-                          <>
-                            <KanbanSquare size={12} /> {board.columns?.length ?? 0} columns
-                          </>
-                        )}
+                      <span style={{ flexShrink: 0 }}>
+                        {isRoadmap
+                          ? `${totalCards} ${totalCards === 1 ? 'phase' : 'phases'}`
+                          : `${board.columns?.length ?? 0} columns`}
                       </span>
 
                       {/* Member Avatars */}
@@ -696,7 +647,6 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
                 <motion.div variants={isMobile ? itemMobileVariants : item3DVariants} style={{ display: 'flex', flexDirection: 'column', gap: 14, width: '100%', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Milestone size={16} color="hsl(var(--primary))" />
                       <h2 style={{ fontSize: 15, fontWeight: 700, color: 'hsl(var(--foreground))' }}>Project Roadmaps</h2>
                       <span style={{ fontSize: 11, fontWeight: 600, padding: '1px 7px', borderRadius: 9999, backgroundColor: 'hsl(var(--card))', boxShadow: 'var(--neu-shadow-input)', color: 'hsl(var(--muted-foreground))' }}>
                         {roadmaps.length}
@@ -707,9 +657,9 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
                         whileTap={{ scale: 0.92 }}
                         className="btn btn-secondary"
                         onClick={onCreateRoadmap}
-                        style={{ fontSize: 12, padding: '4px 10px', gap: 4 }}
+                        style={{ fontSize: 12, padding: '4px 12px' }}
                       >
-                        <Plus size={13} /> New Roadmap
+                        New Roadmap
                       </motion.button>
                     )}
                   </div>
@@ -732,7 +682,7 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
                       </div>
                       {onCreateRoadmap && (
                         <motion.button whileTap={{ scale: 0.95 }} className="btn btn-secondary" onClick={onCreateRoadmap}>
-                          <Milestone size={14} color="hsl(var(--primary))" /> Create First Roadmap
+                          Create First Roadmap
                         </motion.button>
                       )}
                     </div>
