@@ -257,7 +257,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [showUnscheduled, setShowUnscheduled] = useState(false);
-  const [showProjectionComparison, setShowProjectionComparison] = useState(false);
   const [mobileTab, setMobileTab] = useState<'deliverables' | 'timeline'>('deliverables');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
   const [showHelpGuide, setShowHelpGuide] = useState(false);
@@ -957,131 +956,95 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
             ? today.getTime() + 24 * 3600 * 1000
             : (t.lastWorkedDate ? t.lastWorkedDate.getTime() + 24 * 3600 * 1000 : actualStartDay.getTime()));
 
-      if (showProjectionComparison) {
-        // --- ROW 1: Planned Goal ---
-        const planRowMeta = [
-          `"${(t.card.title || '').replace(/"/g, '""')}"`,
-          `"${(t.columnName || '').replace(/"/g, '""')}"`,
-          `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
-          `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
-          '"Planned Goal"',
-          formatDateForExport(t.card.startDate || t.targetStartDate),
-          formatDateForExport(t.card.dueDate || t.targetEndDate),
-          formatDateForExport(t.actualOrProjectedEndDate),
-          `"${progressPct}%"`,
-          `"${varianceStr}"`,
-          `"${t.card.completed ? 'Completed' : (t.targetEndDate < today ? 'Overdue' : 'In Progress')}"`,
-          `"${t.card.isMilestone ? 'Yes' : 'No'}"`,
-          String(t.workedDaysCount),
-          `"${suspensionsStr.replace(/"/g, '""')}"`
-        ];
+      // --- ROW 1: Planned Goal ---
+      const planRowMeta = [
+        `"${(t.card.title || '').replace(/"/g, '""')}"`,
+        `"${(t.columnName || '').replace(/"/g, '""')}"`,
+        `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
+        `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
+        '"Planned Goal"',
+        formatDateForExport(t.card.startDate || t.targetStartDate),
+        formatDateForExport(t.card.dueDate || t.targetEndDate),
+        formatDateForExport(t.actualOrProjectedEndDate),
+        `"${progressPct}%"`,
+        `"${varianceStr}"`,
+        `"${t.card.completed ? 'Completed' : (t.targetEndDate < today ? 'Overdue' : 'In Progress')}"`,
+        `"${t.card.isMilestone ? 'Yes' : 'No'}"`,
+        String(t.workedDaysCount),
+        `"${suspensionsStr.replace(/"/g, '""')}"`
+      ];
 
-        const planCells = exportDates.map(d => {
-          const dTime = d.getTime();
-          if (t.card.isMilestone) {
-            return d.toDateString() === t.targetEndDate.toDateString() ? '"◆ Milestone"' : '""';
-          }
-          if (dTime >= targetStartDay.getTime() && dTime <= targetEndDay.getTime()) {
-            return '"■ Plan"';
-          }
+      const planCells = exportDates.map(d => {
+        const dTime = d.getTime();
+        if (t.card.isMilestone) {
+          return d.toDateString() === t.targetEndDate.toDateString() ? '"◆ Milestone"' : '""';
+        }
+        if (dTime >= targetStartDay.getTime() && dTime <= targetEndDay.getTime()) {
+          return '"■ Plan"';
+        }
+        return '""';
+      });
+
+      rows.push([...planRowMeta, ...planCells]);
+
+      // --- ROW 2: Work Done ---
+      const actualRowMeta = [
+        `"  ↳ ${(t.card.title || '').replace(/"/g, '""')}"`,
+        `"${(t.columnName || '').replace(/"/g, '""')}"`,
+        `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
+        `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
+        '"Work Done"',
+        formatDateForExport(t.card.actualStartDate || t.actualStartDate),
+        formatDateForExport(t.card.dueDate || t.targetEndDate),
+        formatDateForExport(t.actualOrProjectedEndDate),
+        `"${progressPct}%"`,
+        `"${varianceStr}"`,
+        `"${t.card.completed ? 'Completed' : (t.targetEndDate < today ? 'Overdue' : 'In Progress')}"`,
+        `"${t.card.isMilestone ? 'Yes' : 'No'}"`,
+        String(t.workedDaysCount),
+        `"${suspensionsStr.replace(/"/g, '""')}"`
+      ];
+
+      const actualCells = exportDates.map(d => {
+        const dTime = d.getTime();
+        if (dTime < actualStartDay.getTime() || dTime > actualEndDay.getTime()) {
           return '""';
-        });
+        }
 
-        rows.push([...planRowMeta, ...planCells]);
+        if (t.card.isMilestone) {
+          return d.toDateString() === t.actualOrProjectedEndDate.toDateString() ? '"◆ Done"' : '""';
+        }
 
-        // --- ROW 2: Work Done ---
-        const actualRowMeta = [
-          `"  ↳ ${(t.card.title || '').replace(/"/g, '""')}"`,
-          `"${(t.columnName || '').replace(/"/g, '""')}"`,
-          `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
-          `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
-          '"Work Done"',
-          formatDateForExport(t.card.actualStartDate || t.actualStartDate),
-          formatDateForExport(t.card.dueDate || t.targetEndDate),
-          formatDateForExport(t.actualOrProjectedEndDate),
-          `"${progressPct}%"`,
-          `"${varianceStr}"`,
-          `"${t.card.completed ? 'Completed' : (t.targetEndDate < today ? 'Overdue' : 'In Progress')}"`,
-          `"${t.card.isMilestone ? 'Yes' : 'No'}"`,
-          String(t.workedDaysCount),
-          `"${suspensionsStr.replace(/"/g, '""')}"`
-        ];
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
 
-        const actualCells = exportDates.map(d => {
-          const dTime = d.getTime();
-          if (dTime < actualStartDay.getTime() || dTime > actualEndDay.getTime()) {
-            return '""';
-          }
+        const isSuspended = (t.card.workSuspensions || []).some(s => dateStr >= s.from && dateStr <= s.to);
+        if (isSuspended) {
+          return '"⏸ Paused"';
+        }
 
-          if (t.card.isMilestone) {
-            return d.toDateString() === t.actualOrProjectedEndDate.toDateString() ? '"◆ Done"' : '""';
-          }
+        if (t.card.completed) {
+          return dTime > targetEndDay.getTime() ? '"■ Done (Late)"' : '"■ Done"';
+        }
 
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, '0');
-          const dd = String(d.getDate()).padStart(2, '0');
-          const dateStr = `${yyyy}-${mm}-${dd}`;
+        if (dTime > targetEndDay.getTime()) {
+          return '"░ Delayed"';
+        }
 
-          const isSuspended = (t.card.workSuspensions || []).some(s => dateStr >= s.from && dateStr <= s.to);
-          if (isSuspended) {
+        if (dTime <= today.getTime()) {
+          if (dTime <= fillCapMs) {
+            return '"■ Done"';
+          } else {
             return '"⏸ Paused"';
           }
+        }
 
-          if (t.card.completed) {
-            return dTime > targetEndDay.getTime() ? '"■ Done (Late)"' : '"■ Done"';
-          }
+        return '"░ Projected"';
+      });
 
-          if (dTime > targetEndDay.getTime()) {
-            return '"░ Delayed"';
-          }
-
-          if (dTime <= today.getTime()) {
-            if (dTime <= fillCapMs) {
-              return '"■ Done"';
-            } else {
-              return '"⏸ Paused"';
-            }
-          }
-
-          return '"░ Projected"';
-        });
-
-        rows.push([...actualRowMeta, ...actualCells]);
-      } else {
-        // --- Single Unified Row ---
-        const singleRowMeta = [
-          `"${(t.card.title || '').replace(/"/g, '""')}"`,
-          `"${(t.columnName || '').replace(/"/g, '""')}"`,
-          `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
-          `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
-          '"Timeline"',
-          formatDateForExport(t.card.startDate || t.targetStartDate),
-          formatDateForExport(t.card.dueDate || t.targetEndDate),
-          formatDateForExport(t.actualOrProjectedEndDate),
-          `"${progressPct}%"`,
-          `"${varianceStr}"`,
-          `"${t.card.completed ? 'Completed' : (t.targetEndDate < today ? 'Overdue' : 'In Progress')}"`,
-          `"${t.card.isMilestone ? 'Yes' : 'No'}"`,
-          String(t.workedDaysCount),
-          `"${suspensionsStr.replace(/"/g, '""')}"`
-        ];
-
-        const singleCells = exportDates.map(d => {
-          const dTime = d.getTime();
-          if (t.card.isMilestone) {
-            return d.toDateString() === t.actualOrProjectedEndDate.toDateString() ? '"◆ Milestone"' : '""';
-          }
-          if (dTime >= actualStartDay.getTime() && dTime <= actualEndDay.getTime()) {
-            if (t.card.completed) return '"■ Completed"';
-            if (dTime > targetEndDay.getTime()) return '"░ Delayed"';
-            if (dTime <= today.getTime() && dTime <= fillCapMs) return '"■ Done"';
-            return '"■ Plan"';
-          }
-          return '""';
-        });
-
-        rows.push([...singleRowMeta, ...singleCells]);
-      }
+      rows.push([...actualRowMeta, ...actualCells]);
     });
 
     // Append visual legend for Excel users
@@ -1371,17 +1334,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           size="sm"
           style={{ minWidth: 120, flex: '0 0 auto' }}
         />
-
-        {/* Dual View toggle */}
-        <button
-          type="button"
-          className={`btn ${showProjectionComparison ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ fontSize: 11.5, flexShrink: 0 }}
-          onClick={() => setShowProjectionComparison(s => !s)}
-          title="Show both the original plan and actual work done as two separate bars"
-        >
-          {showProjectionComparison ? 'Dual View: On' : 'Dual View'}
-        </button>
       </div>
 
       {/* ── Split Pane ── */}
@@ -1608,41 +1560,22 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               padding: '4px 8px',
               fontSize: 10, color: 'hsl(var(--muted-foreground))'
             }}>
-              {showProjectionComparison ? (
-                <>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 8, height: 5, borderRadius: 2, background: '#10b981', display: 'inline-block' }} />
-                    Original plan
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 8, height: 5, borderRadius: 2, background: '#f97316', display: 'inline-block' }} />
-                    Work done
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 8, height: 5, borderRadius: 2, background: 'repeating-linear-gradient(90deg,#ef444460 0,#ef444460 4px,transparent 4px,transparent 8px)', display: 'inline-block' }} />
-                    Behind schedule
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 8, height: 5, borderRadius: 2, background: '#10b981', display: 'inline-block' }} />
-                    Completed
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 8, height: 5, borderRadius: 2, background: 'hsl(var(--primary))', display: 'inline-block' }} />
-                    In progress
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 8, height: 5, borderRadius: 2, background: '#ef4444', display: 'inline-block' }} />
-                    Overdue
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 2, height: 12, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
-                    Today
-                  </span>
-                </>
-              )}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 8, height: 5, borderRadius: 2, background: '#10b981', display: 'inline-block' }} />
+                Original plan
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 8, height: 5, borderRadius: 2, background: '#f97316', display: 'inline-block' }} />
+                Work done
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 8, height: 5, borderRadius: 2, background: 'repeating-linear-gradient(90deg,#ef444460 0,#ef444460 4px,transparent 4px,transparent 8px)', display: 'inline-block' }} />
+                Behind schedule
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 2, height: 12, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
+                Today
+              </span>
             </div>
           </div>
 
@@ -1792,136 +1725,86 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                               ),
                             ].filter(Boolean).join('\n');
 
-                            // Bar color for simple view
-                            const simpleBarColor = t.card.completed
-                              ? '#10b981'
-                              : (!t.card.completed && t.endDate < today)
-                                ? '#ef4444'
-                                : (section.color || t.columnColor || 'hsl(var(--primary))');
-
                             return (
                               <div key={t.card.id} className="roadmap-bar-row">
                                 <div className="roadmap-mobile-row-label" title={t.card.title}>
                                   <span className="mobile-row-title">{t.card.title}</span>
                                 </div>
 
-                                {showProjectionComparison ? (
-                                  <>
-                                    {/* Top Track: Planned Goal */}
+                                {/* Top Track: Planned Goal */}
+                                <div
+                                  className="roadmap-target-baseline-bar"
+                                  style={{ left: `${targetLeftPct}%`, width: `${targetWidthPct}%` }}
+                                  onClick={() => onOpenCard(t.card.id)}
+                                  title={`Original plan: ${formatShortDate(t.targetStartDate)} to ${formatShortDate(t.targetEndDate)}`}
+                                >
+                                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    {isMilestone && <span style={{ width: 7, height: 7, transform: 'rotate(45deg)', backgroundColor: '#fff', borderRadius: 1, flexShrink: 0 }} />}
+                                    Plan: {formatShortDate(t.targetEndDate)}
+                                  </span>
+                                </div>
+
+                                {/* Bottom Track: Work Done */}
+                                <div
+                                  className="roadmap-actual-track"
+                                  style={{ left: `${actualLeftPct}%`, width: `${actualTotalWidthPct}%` }}
+                                  onClick={() => onOpenCard(t.card.id)}
+                                  title={tooltipText}
+                                >
+                                  {t.startVarianceDays < 0 && (
                                     <div
-                                      className="roadmap-target-baseline-bar"
-                                      style={{ left: `${targetLeftPct}%`, width: `${targetWidthPct}%` }}
-                                      onClick={() => onOpenCard(t.card.id)}
-                                      title={`Original plan: ${formatShortDate(t.targetStartDate)} to ${formatShortDate(t.targetEndDate)}`}
+                                      style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        width: `${Math.min(100, Math.max(0, ((targetLeftPct - actualLeftPct) / actualTotalWidthPct) * 100))}%`,
+                                        top: 0,
+                                        bottom: 0,
+                                        background: 'rgba(16,185,129,0.25)',
+                                        borderRight: '1.5px dashed #10b981',
+                                        borderRadius: '4px 0 0 4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        paddingLeft: 4,
+                                        zIndex: 2,
+                                        pointerEvents: 'none',
+                                      }}
+                                      title={`Started ${Math.abs(t.startVarianceDays)} day(s) before scheduled date`}
                                     >
-                                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                        {isMilestone && <span style={{ width: 7, height: 7, transform: 'rotate(45deg)', backgroundColor: '#fff', borderRadius: 1, flexShrink: 0 }} />}
-                                        Plan: {formatShortDate(t.targetEndDate)}
+                                      <span style={{ fontSize: 8, fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>
+                                        Early Start
                                       </span>
                                     </div>
-
-                                    {/* Bottom Track: Work Done */}
-                                    <div
-                                      className="roadmap-actual-track"
-                                      style={{ left: `${actualLeftPct}%`, width: `${actualTotalWidthPct}%` }}
-                                      onClick={() => onOpenCard(t.card.id)}
-                                      title={tooltipText}
-                                    >
-                                      {t.startVarianceDays < 0 && (
-                                        <div
-                                          style={{
-                                            position: 'absolute',
-                                            left: 0,
-                                            width: `${Math.min(100, Math.max(0, ((targetLeftPct - actualLeftPct) / actualTotalWidthPct) * 100))}%`,
-                                            top: 0,
-                                            bottom: 0,
-                                            background: 'rgba(16,185,129,0.25)',
-                                            borderRight: '1.5px dashed #10b981',
-                                            borderRadius: '4px 0 0 4px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            paddingLeft: 4,
-                                            zIndex: 2,
-                                            pointerEvents: 'none',
-                                          }}
-                                          title={`Started ${Math.abs(t.startVarianceDays)} day(s) before scheduled date`}
-                                        >
-                                          <span style={{ fontSize: 8, fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>
-                                            Early Start
-                                          </span>
-                                        </div>
-                                      )}
-                                      <div
-                                        className={`roadmap-actual-filled-bar ${t.card.completed ? 'completed' : ''}`}
-                                        style={{ width: `${doneRatio * 100}%`, ...(!t.card.completed && !t.isWorkedToday ? { opacity: 0.85 } : {}) }}
-                                      >
-                                        {doneRatio > 0 && (
-                                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                            {t.card.completed ? 'Done' : `${progressPct}%`}
-                                            {!t.card.completed && !t.isWorkedToday && (
-                                              <span style={{ fontSize: 8.5, opacity: 0.9, backgroundColor: 'rgba(0,0,0,0.35)', padding: '1px 3.5px', borderRadius: 3 }}>Paused</span>
-                                            )}
-                                          </span>
+                                  )}
+                                  <div
+                                    className={`roadmap-actual-filled-bar ${t.card.completed ? 'completed' : ''}`}
+                                    style={{ width: `${doneRatio * 100}%`, ...(!t.card.completed && !t.isWorkedToday ? { opacity: 0.85 } : {}) }}
+                                  >
+                                    {doneRatio > 0 && (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                        {t.card.completed ? 'Done' : `${progressPct}%`}
+                                        {!t.card.completed && !t.isWorkedToday && (
+                                          <span style={{ fontSize: 8.5, opacity: 0.9, backgroundColor: 'rgba(0,0,0,0.35)', padding: '1px 3.5px', borderRadius: 3 }}>Paused</span>
                                         )}
-                                      </div>
-                                      {t.varianceDays > 0 && !t.card.completed && targetRightPct < actualRightPct && (
-                                        <div
-                                          className="roadmap-slipped-extension"
-                                          style={{
-                                            left: `${Math.max(0, ((targetRightPct - actualLeftPct) / actualTotalWidthPct) * 100)}%`,
-                                            right: 0,
-                                          }}
-                                          title={`${t.varianceDays} day${t.varianceDays === 1 ? '' : 's'} behind schedule`}
-                                        />
-                                      )}
-                                      {doneRatio < 0.6 && (
-                                        <span className="roadmap-actual-track-label">
-                                          {doneRatio === 0 ? 'Not started' : `${progressPct}%`}
-                                          {t.varianceDays > 0 && !t.card.completed && ` · ${t.varianceDays}d behind`}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </>
-                                ) : (
-                                  /* Simple single bar */
-                                  isMilestone ? (
-                                    <motion.div
-                                      whileHover={{ scale: 1.2, y: -2 }}
-                                      className="roadmap-milestone-marker"
-                                      style={{ left: `${actualLeftPct}%` }}
-                                      onClick={() => onOpenCard(t.card.id)}
-                                      title={tooltipText}
-                                    >
-                                      <div className="milestone-diamond" />
-                                      <span className="milestone-label">{t.card.title}</span>
-                                    </motion.div>
-                                  ) : (
-                                    <motion.div
-                                      whileHover={{ y: -1.5, scale: 1.01 }}
-                                      className={`roadmap-gantt-bar ${t.card.completed ? 'completed' : ''}`}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {t.varianceDays > 0 && !t.card.completed && targetRightPct < actualRightPct && (
+                                    <div
+                                      className="roadmap-slipped-extension"
                                       style={{
-                                        left: `${actualLeftPct}%`,
-                                        width: `${actualTotalWidthPct}%`,
-                                        top: 8,
-                                        backgroundColor: simpleBarColor,
+                                        left: `${Math.max(0, ((targetRightPct - actualLeftPct) / actualTotalWidthPct) * 100)}%`,
+                                        right: 0,
                                       }}
-                                      onClick={() => onOpenCard(t.card.id)}
-                                      title={tooltipText}
-                                    >
-                                      <div className="roadmap-bar-progress-fill" style={{ width: `${progressPct}%` }} />
-                                      <div className="roadmap-bar-content">
-                                        <span className="bar-title">{t.card.title}</span>
-                                        <span style={{
-                                          fontSize: 9.5, fontWeight: 700,
-                                          background: 'rgba(0,0,0,0.28)',
-                                          borderRadius: 3, padding: '1px 5px',
-                                          flexShrink: 0,
-                                          letterSpacing: '0.01em',
-                                        }}>{statusPill.label}</span>
-                                      </div>
-                                    </motion.div>
-                                  )
-                                )}
+                                      title={`${t.varianceDays} day${t.varianceDays === 1 ? '' : 's'} behind schedule`}
+                                    />
+                                  )}
+                                  {doneRatio < 0.6 && (
+                                    <span className="roadmap-actual-track-label">
+                                      {doneRatio === 0 ? 'Not started' : `${progressPct}%`}
+                                      {t.varianceDays > 0 && !t.card.completed && ` · ${t.varianceDays}d behind`}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             );
                           })
