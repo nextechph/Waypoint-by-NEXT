@@ -2690,8 +2690,8 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                           <X size={13} />
                         </button>
                         {/* Row 1: From / To */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                          <div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
+                          <div style={{ minWidth: 0 }}>
                             <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
                             <NeumorphicDatePicker
                               value={s.from}
@@ -2703,7 +2703,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                               align="left"
                             />
                           </div>
-                          <div>
+                          <div style={{ minWidth: 0 }}>
                             <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
                             <NeumorphicDatePicker
                               value={s.to}
@@ -2751,46 +2751,47 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
 
             {/* Project Phase & Milestone — Roadmap boards only */}
             {isRoadmap && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'end', marginBottom: 16 }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div className="form-group" style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+                  <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0, whiteSpace: 'nowrap' }}>
                     <Layers size={12} /> Project Phase
                   </label>
-                  <NeumorphicSelect
-                    value={card.sprintId || ''}
-                    options={[
-                      { value: '', label: 'No Phase (General Timeline)' },
-                      ...(board?.sprints || []).map(sp => ({
-                        value: sp.id,
-                        label: `${sp.name} ${sp.status === 'active' ? '(Current Phase)' : `(${sp.status})`}`,
-                      })),
-                    ]}
-                    onChange={val => {
-                      updateCard(cardId, { sprintId: val || null });
+                  <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.95 }}
+                    className={`btn ${card.isMilestone ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{
+                      height: 26,
+                      fontSize: 11,
+                      padding: '2px 8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      borderRadius: 6,
+                      flexShrink: 0,
                     }}
-                    size="sm"
-                    style={{ width: '100%' }}
-                  />
+                    onClick={() => updateCard(cardId, { isMilestone: !card.isMilestone })}
+                    title="Toggle as a key Project Milestone / Handover deliverable"
+                  >
+                    <Milestone size={11} color={card.isMilestone ? '#fff' : 'hsl(var(--primary))'} />
+                    <span>{card.isMilestone ? 'Milestone' : 'Set Milestone'}</span>
+                  </motion.button>
                 </div>
-                <motion.button
-                  type="button"
-                  whileTap={{ scale: 0.95 }}
-                  className={`btn ${card.isMilestone ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{
-                    height: 32,
-                    fontSize: 11.5,
-                    padding: '4px 10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    borderRadius: 8,
+                <NeumorphicSelect
+                  value={card.sprintId || ''}
+                  options={[
+                    { value: '', label: 'No Phase (General Timeline)' },
+                    ...(board?.sprints || []).map(sp => ({
+                      value: sp.id,
+                      label: `${sp.name} ${sp.status === 'active' ? '(Current Phase)' : `(${sp.status})`}`,
+                    })),
+                  ]}
+                  onChange={val => {
+                    updateCard(cardId, { sprintId: val || null });
                   }}
-                  onClick={() => updateCard(cardId, { isMilestone: !card.isMilestone })}
-                  title="Toggle as a key Project Milestone / Handover deliverable"
-                >
-                  <Milestone size={13} color={card.isMilestone ? '#fff' : 'hsl(var(--primary))'} />
-                  <span>{card.isMilestone ? 'Milestone' : 'Set Milestone'}</span>
-                </motion.button>
+                  size="sm"
+                  style={{ width: '100%', minWidth: 0 }}
+                />
               </div>
             )}
 

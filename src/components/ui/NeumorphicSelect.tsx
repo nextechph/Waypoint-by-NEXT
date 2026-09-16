@@ -129,6 +129,8 @@ export function NeumorphicSelect<T extends string = string>({
         disabled={disabled}
         style={{
           width: '100%',
+          minWidth: 0,
+          maxWidth: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -152,7 +154,7 @@ export function NeumorphicSelect<T extends string = string>({
           opacity: disabled ? 0.6 : 1,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', minWidth: 0, flex: 1 }}>
           {prefix && (
             <span style={{ fontSize: isSmall ? 11 : 12, fontWeight: 600, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }}>
               {prefix}
@@ -163,7 +165,7 @@ export function NeumorphicSelect<T extends string = string>({
               {selectedOption.icon}
             </span>
           )}
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: selectedOption?.color || 'hsl(var(--foreground))' }}>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: selectedOption?.color || 'hsl(var(--foreground))', minWidth: 0 }}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
