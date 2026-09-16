@@ -370,6 +370,28 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     window.addEventListener('mouseup', handleMouseUp);
   };
 
+  // Measure canvas vertical scrollbar width so timeline header viewport precisely matches canvas viewport
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+
+  useEffect(() => {
+    const updateScrollbar = () => {
+      if (timelineContainerRef.current) {
+        const sbw = timelineContainerRef.current.offsetWidth - timelineContainerRef.current.clientWidth;
+        setScrollbarWidth(Math.max(0, sbw));
+      }
+    };
+    updateScrollbar();
+    const el = timelineContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateScrollbar);
+    ro.observe(el);
+    window.addEventListener('resize', updateScrollbar);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateScrollbar);
+    };
+  }, [board, scale, zoomLevel]);
+
   // Sync scrolling between left task list and right timeline canvas
   const handleTaskListScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (taskListRef.current && timelineContainerRef.current) {
@@ -383,6 +405,17 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     }
     if (timelineHeaderRef.current) {
       timelineHeaderRef.current.scrollLeft = e.currentTarget.scrollLeft;
+    }
+  };
+
+  const handleHeaderWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = timelineContainerRef.current;
+    if (el) {
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      el.scrollLeft += delta;
+      if (timelineHeaderRef.current) {
+        timelineHeaderRef.current.scrollLeft = el.scrollLeft;
+      }
     }
   };
 
@@ -401,12 +434,12 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     }
   };
 
-  // Keep timeline header synchronized horizontally when scale or zoom changes
+  // Keep timeline header synchronized horizontally when scale, zoom, or scrollbarWidth changes
   useEffect(() => {
     if (timelineContainerRef.current && timelineHeaderRef.current) {
       timelineHeaderRef.current.scrollLeft = timelineContainerRef.current.scrollLeft;
     }
-  }, [currentDate, scale, zoomLevel]);
+  }, [currentDate, scale, zoomLevel, scrollbarWidth]);
 
   // Today marker calculation
   const today = useMemo(() => {
@@ -1758,6 +1791,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           {/* Timeline Column Headers (pinned at top, synced horizontally with timeline canvas) */}
           <div
             ref={timelineHeaderRef}
+            onWheel={handleHeaderWheel}
             className="roadmap-timeline-header-track"
             style={{
               height: 42,
@@ -1766,6 +1800,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               borderBottom: '1px solid hsl(var(--border) / 0.5)',
               backgroundColor: 'hsl(var(--card))',
               position: 'relative',
+              marginRight: scrollbarWidth,
             }}
           >
             <div className="roadmap-timeline-header" style={{ width: totalTimelineWidth, height: 42, borderBottom: 'none' }}>
@@ -1793,6 +1828,23 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
             </div>
           </div>
 
+          {/* Top-right corner filler matching the canvas vertical scrollbar */}
+          {scrollbarWidth > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: scrollbarWidth,
+                height: 42,
+                backgroundColor: 'hsl(var(--card))',
+                borderBottom: '1px solid hsl(var(--border) / 0.5)',
+                zIndex: 2,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+
           {/* Scrollable timeline canvas */}
           <div
             ref={timelineContainerRef}
@@ -1809,7 +1861,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           >
 
             {/* Bars area */}
-            <div className="roadmap-bars-area" style={{ width: totalTimelineWidth }}>
+            <div className="roadmap-bars-area" style={{ width: totalTimelineWidth, overflow: 'hidden' }}>
               {/* Grid background */}
               <div className="roadmap-grid-background">
                 {intervals.map((_, i) => (

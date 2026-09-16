@@ -2339,7 +2339,7 @@ select option {
   cursor: pointer;
   box-sizing: border-box;
   z-index: 5;
-  transition: all 0.15s ease;
+  transition: filter 0.15s ease, transform 0.15s ease;
   min-width: 24px;
 }
 
@@ -2385,7 +2385,6 @@ select option {
   white-space: nowrap;
   overflow: hidden;
   box-shadow: 0 1px 4px rgba(249, 115, 22, 0.35);
-  transition: width 0.25s ease;
   box-sizing: border-box;
 }
 
