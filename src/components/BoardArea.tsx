@@ -133,7 +133,7 @@ export default function BoardArea({
   // Standard task boards cannot be in 'roadmap' view; roadmaps cannot be in 'board' view.
   useEffect(() => {
     if (!board || !onSelectView) return;
-    if (board.type === 'roadmap' && viewMode === 'board') {
+    if (board.type === 'roadmap' && viewMode !== 'roadmap') {
       onSelectView('roadmap');
     } else if (board.type !== 'roadmap' && viewMode === 'roadmap') {
       onSelectView('board');
@@ -207,104 +207,80 @@ export default function BoardArea({
 
   return (
     <div className="board-view-container" style={{ perspective: 1200, position: 'relative' }}>
-      {/* Board View Subheader with Inbox Toggle & Badges */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: isMobile ? '6px 12px' : '8px 18px',
-          background: 'hsl(var(--card) / 0.6)',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid hsl(var(--border) / 0.5)',
-          gap: 12,
-          flexWrap: 'wrap',
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Inbox Toggle Button */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className={`btn ${showInbox ? 'btn-primary' : 'btn-secondary'}`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: 12,
-              padding: '5px 12px',
-              borderRadius: 8,
-              boxShadow: showInbox ? 'var(--neu-shadow-pressed)' : 'var(--neu-shadow-raised-sm)',
-            }}
-            onClick={toggleInbox}
-            title="Toggle Inbox Drawer"
-          >
-            <Inbox size={14} />
-            <span>Inbox</span>
-            {(board.inboxCards?.length || 0) > 0 && (
-              <span
-                style={{
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  padding: '1px 6px',
-                  borderRadius: 10,
-                  backgroundColor: showInbox ? 'rgba(255,255,255,0.25)' : 'hsl(var(--primary) / 0.18)',
-                  color: showInbox ? '#fff' : 'hsl(var(--primary))',
-                }}
-              >
-                {board.inboxCards?.length}
-              </span>
-            )}
-          </motion.button>
-
-          {/* In-Board View Switcher Tabs */}
-          {onSelectView && (
-            <div className="board-view-segmented-tabs">
-              {board.type === 'roadmap' ? (
-                <>
-                  <button
-                    type="button"
-                    className={`board-view-tab-btn ${viewMode === 'roadmap' ? 'active' : ''}`}
-                    onClick={() => onSelectView('roadmap')}
-                    title="Roadmap & Timeline View"
-                  >
-                    <Milestone size={13} />
-                    <span>Roadmap</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
-                    onClick={() => onSelectView('calendar')}
-                    title="Calendar View"
-                  >
-                    <Calendar size={13} />
-                    <span>Calendar</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className={`board-view-tab-btn ${viewMode === 'board' ? 'active' : ''}`}
-                    onClick={() => onSelectView('board')}
-                    title="Kanban Board View"
-                  >
-                    <KanbanSquare size={13} />
-                    <span>Board</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
-                    onClick={() => onSelectView('calendar')}
-                    title="Calendar View"
-                  >
-                    <Calendar size={13} />
-                    <span>Calendar</span>
-                  </button>
-                </>
+      {/* Board View Subheader with Inbox Toggle & Badges (Standard Boards Only) */}
+      {board.type !== 'roadmap' && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: isMobile ? '6px 12px' : '8px 18px',
+            background: 'hsl(var(--card) / 0.6)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid hsl(var(--border) / 0.5)',
+            gap: 12,
+            flexWrap: 'wrap',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Inbox Toggle Button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              className={`btn ${showInbox ? 'btn-primary' : 'btn-secondary'}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 12,
+                padding: '5px 12px',
+                borderRadius: 8,
+                boxShadow: showInbox ? 'var(--neu-shadow-pressed)' : 'var(--neu-shadow-raised-sm)',
+              }}
+              onClick={toggleInbox}
+              title="Toggle Inbox Drawer"
+            >
+              <Inbox size={14} />
+              <span>Inbox</span>
+              {(board.inboxCards?.length || 0) > 0 && (
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    padding: '1px 6px',
+                    borderRadius: 10,
+                    backgroundColor: showInbox ? 'rgba(255,255,255,0.25)' : 'hsl(var(--primary) / 0.18)',
+                    color: showInbox ? '#fff' : 'hsl(var(--primary))',
+                  }}
+                >
+                  {board.inboxCards?.length}
+                </span>
               )}
-            </div>
-          )}
+            </motion.button>
+
+            {/* In-Board View Switcher Tabs */}
+            {onSelectView && (
+              <div className="board-view-segmented-tabs">
+                <button
+                  type="button"
+                  className={`board-view-tab-btn ${viewMode === 'board' ? 'active' : ''}`}
+                  onClick={() => onSelectView('board')}
+                  title="Kanban Board View"
+                >
+                  <KanbanSquare size={13} />
+                  <span>Board</span>
+                </button>
+                <button
+                  type="button"
+                  className={`board-view-tab-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+                  onClick={() => onSelectView('calendar')}
+                  title="Calendar View"
+                >
+                  <Calendar size={13} />
+                  <span>Calendar</span>
+                </button>
+              </div>
+            )}
 
             {/* Observer Role Indicator */}
             {isObserver && (
@@ -341,9 +317,10 @@ export default function BoardArea({
             </div>
           )}
         </div>
+      )}
 
       <AnimatePresence mode="wait">
-        {board.type === 'roadmap' && viewMode !== 'calendar' && (
+        {board.type === 'roadmap' && (
           <motion.div
             key="roadmap-view"
             variants={isMobile ? viewMobileVariants : view3DVariants}
@@ -360,7 +337,7 @@ export default function BoardArea({
           </motion.div>
         )}
 
-        {viewMode === 'calendar' && (
+        {board.type !== 'roadmap' && viewMode === 'calendar' && (
           <motion.div
             key="calendar-view"
             variants={isMobile ? viewMobileVariants : view3DVariants}
