@@ -6,7 +6,7 @@ import {
   X, Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Board, Card as CardType, Member, Sprint } from '../types';
+import type { Board, Card as CardType, Member, Sprint, WorkSuspension } from '../types';
 import { LABELS } from '../types';
 import { formatDueDate, avatarInitials, uid, deriveCardProgress } from '../utils';
 import { useWorkStore } from '../store/useWorkStore';
@@ -576,6 +576,26 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               }
             } else {
               actOrProjEnd = new Date(targetEnd);
+            }
+          }
+        }
+
+        // Ensure actual track encompasses any logged work suspension dates
+        if (card.workSuspensions && card.workSuspensions.length > 0) {
+          for (const s of card.workSuspensions) {
+            if (s.from) {
+              const sStart = new Date(s.from);
+              sStart.setHours(0, 0, 0, 0);
+              if (!isNaN(sStart.getTime()) && sStart.getTime() < actStart.getTime()) {
+                actStart = new Date(sStart);
+              }
+            }
+            if (s.to) {
+              const sEnd = new Date(s.to);
+              if (s.to.length <= 10) sEnd.setHours(23, 59, 59, 999);
+              if (!isNaN(sEnd.getTime()) && sEnd.getTime() > actOrProjEnd.getTime()) {
+                actOrProjEnd = new Date(sEnd);
+              }
             }
           }
         }
@@ -1859,6 +1879,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                   : 0);
 
                             // Plain-English tooltip
+                            const suspensionCount = (t.card.workSuspensions || []).length;
                             const tooltipText = [
                               t.card.title,
                               `Start: ${formatShortDate(t.targetStartDate)}  ·  Due: ${formatShortDate(t.targetEndDate)}`,
@@ -1869,6 +1890,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                   : t.varianceDays < 0
                                     ? `Status: ${Math.abs(t.varianceDays)} day${Math.abs(t.varianceDays) === 1 ? '' : 's'} ahead of schedule`
                                     : 'Status: On track',
+                              suspensionCount > 0 ? `${suspensionCount} work pause${suspensionCount !== 1 ? 's' : ''} logged` : null,
                               !t.card.completed && (
                                 t.isWorkedToday
                                   ? 'Work confirmed for today'
@@ -1943,6 +1965,52 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                       </span>
                                     )}
                                   </div>
+
+                                  {/* Work Suspension / Pause breaks cutting through the actual line */}
+                                  {((t.card.workSuspensions || []) as WorkSuspension[]).map((s, sIdx) => {
+                                    if (!s.from || !s.to) return null;
+                                    const sStart = new Date(s.from);
+                                    const sEnd = new Date(s.to);
+                                    if (s.to.length <= 10) sEnd.setHours(23, 59, 59, 999);
+                                    const sStartMs = sStart.getTime();
+                                    const sEndMs = sEnd.getTime();
+                                    if (isNaN(sStartMs) || isNaN(sEndMs) || sEndMs <= sStartMs) return null;
+
+                                    const clipStartMs = Math.max(actualStartMs, sStartMs);
+                                    const clipEndMs = Math.min(actualEndMs, sEndMs);
+                                    if (clipEndMs <= clipStartMs) return null;
+
+                                    const trackDurationMs = Math.max(86400000, actualEndMs - actualStartMs);
+                                    const suspLeftRelPct = Math.max(0, Math.min(100, ((clipStartMs - actualStartMs) / trackDurationMs) * 100));
+                                    const suspRightRelPct = Math.max(0, Math.min(100, ((clipEndMs - actualStartMs) / trackDurationMs) * 100));
+                                    const suspWidthRelPct = Math.max(1.0, suspRightRelPct - suspLeftRelPct);
+
+                                    const suspTooltip = `Work Suspension / Pause\nFrom: ${formatShortDate(sStart)}\nTo: ${formatShortDate(sEnd)}${s.reason ? `\nReason: ${s.reason}` : ''}`;
+
+                                    return (
+                                      <div
+                                        key={`susp-${sIdx}`}
+                                        className="roadmap-suspension-gap"
+                                        style={{
+                                          left: `${suspLeftRelPct}%`,
+                                          width: `${suspWidthRelPct}%`,
+                                        }}
+                                        title={suspTooltip}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onOpenCard(t.card.id);
+                                        }}
+                                      >
+                                        {suspWidthRelPct > 6 && (
+                                          <span className="roadmap-suspension-badge">
+                                            <span>⏸</span>
+                                            <span>{s.reason || 'Paused'}</span>
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+
                                   {t.varianceDays > 0 && !t.card.completed && targetRightPct < actualRightPct && (
                                     <div
                                       className="roadmap-slipped-extension"

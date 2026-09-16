@@ -2407,6 +2407,57 @@ select option {
   text-overflow: ellipsis;
 }
 
+/* ── Work Suspension / Pause Break in Actual Track ── */
+.roadmap-suspension-gap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 6;
+  background-color: hsl(var(--card));
+  background-image: repeating-linear-gradient(
+    -45deg,
+    hsl(var(--card)),
+    hsl(var(--card)) 3px,
+    hsl(var(--border) / 0.65) 3px,
+    hsl(var(--border) / 0.65) 6px
+  );
+  border-left: 1.5px dashed hsl(var(--border));
+  border-right: 1.5px dashed hsl(var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  overflow: hidden;
+  min-width: 6px;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.45);
+  transition: filter 0.15s ease, border-color 0.15s ease;
+}
+
+.roadmap-suspension-gap:hover {
+  filter: brightness(1.25);
+  border-left-color: #f59e0b;
+  border-right-color: #f59e0b;
+  z-index: 8;
+}
+
+.roadmap-suspension-badge {
+  font-size: 8px;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  background: hsl(var(--card) / 0.9);
+  border-radius: 2px;
+  line-height: 1.2;
+}
+
 /* ── Target vs Actual Legend ── */
 .roadmap-legend-container {
   display: flex;

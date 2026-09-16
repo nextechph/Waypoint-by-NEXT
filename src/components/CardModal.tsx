@@ -2573,7 +2573,12 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 let addedCount = 0;
                 while (cursor <= toDate) {
                   const dStr = toLocalDateString(cursor);
-                  if (!currentSet.has(dStr)) {
+                  const isSuspended = (card.workSuspensions || []).some(s => {
+                    const sFrom = s.from.slice(0, 10);
+                    const sTo = s.to.slice(0, 10);
+                    return dStr >= sFrom && dStr <= sTo;
+                  });
+                  if (!isSuspended && !currentSet.has(dStr)) {
                     currentSet.add(dStr);
                     addedCount++;
                   }
@@ -2610,7 +2615,12 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 let added = 0;
                 while (cursor <= today) {
                   const dStr = toLocalDateString(cursor);
-                  if (!currentSet.has(dStr)) {
+                  const isSuspended = (card.workSuspensions || []).some(s => {
+                    const sFrom = s.from.slice(0, 10);
+                    const sTo = s.to.slice(0, 10);
+                    return dStr >= sFrom && dStr <= sTo;
+                  });
+                  if (!isSuspended && !currentSet.has(dStr)) {
                     currentSet.add(dStr);
                     added++;
                   }
@@ -2965,7 +2975,12 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                     onClick={() => {
                       const existing = card.workSuspensions || [];
                       const today = new Date().toISOString().slice(0, 10);
-                      updateCard(cardId, { workSuspensions: [...existing, { from: today, to: today, reason: '' }] });
+                      const updated = [...existing, { from: today, to: today, reason: '' }];
+                      const cleanedDays = (card.workedDays || []).filter(d => !updated.some(s => d >= s.from.slice(0, 10) && d <= s.to.slice(0, 10)));
+                      updateCard(cardId, {
+                        workSuspensions: updated,
+                        ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
+                      });
                     }}
                   >
                     + Add Pause
@@ -3028,7 +3043,11 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                               onChange={val => {
                                 const updated = [...(card.workSuspensions as WorkSuspension[])];
                                 updated[idx] = { ...updated[idx], from: val || updated[idx].from };
-                                updateCard(cardId, { workSuspensions: updated });
+                                const cleanedDays = (card.workedDays || []).filter(d => !updated.some(sp => d >= sp.from.slice(0, 10) && d <= sp.to.slice(0, 10)));
+                                updateCard(cardId, {
+                                  workSuspensions: updated,
+                                  ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
+                                });
                               }}
                               align="left"
                             />
@@ -3040,7 +3059,11 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                               onChange={val => {
                                 const updated = [...(card.workSuspensions as WorkSuspension[])];
                                 updated[idx] = { ...updated[idx], to: val || updated[idx].to };
-                                updateCard(cardId, { workSuspensions: updated });
+                                const cleanedDays = (card.workedDays || []).filter(d => !updated.some(sp => d >= sp.from.slice(0, 10) && d <= sp.to.slice(0, 10)));
+                                updateCard(cardId, {
+                                  workSuspensions: updated,
+                                  ...(cleanedDays.length !== (card.workedDays || []).length ? { workedDays: cleanedDays } : {})
+                                });
                               }}
                               align="right"
                             />
