@@ -3,7 +3,7 @@ import {
   ChevronLeft, ChevronRight,
   CheckSquare, Square,
   ChevronDown, ChevronUp, Plus,
-  X,
+  X, Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Board, Card as CardType, Member, Sprint } from '../types';
@@ -251,6 +251,7 @@ export function getCardWorkStatus(card: CardType, actualStartDate: Date, today: 
 export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const updateCard = useWorkStore(s => s.updateCard);
   const addCard = useWorkStore(s => s.addCard);
+  const deleteCard = useWorkStore(s => s.deleteCard);
   const createSprint = useWorkStore(s => s.createSprint);
   const updateSprint = useWorkStore(s => s.updateSprint);
   const deleteSprint = useWorkStore(s => s.deleteSprint);
@@ -882,6 +883,14 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   };
 
   // Quick Add Task Handler
+  const handleDeleteCard = (e: React.MouseEvent, cardId: string, cardTitle: string) => {
+    e.stopPropagation();
+    if (window.confirm(`Delete "${cardTitle}"? This cannot be undone.`)) {
+      deleteCard(cardId);
+      showToast(`Deleted "${cardTitle}"`, 'success');
+    }
+  };
+
   const handleQuickAddTask = () => {
     if (!quickTaskTitle.trim()) {
       showToast('Task title is required', 'warning');
@@ -1597,10 +1606,38 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                                 <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px', borderRadius: 20, background: statusPill.bg, color: statusPill.color, whiteSpace: 'nowrap' }}>{statusPill.label}</span>
                                 <span style={{ fontSize: 9, color: 'hsl(var(--muted-foreground))' }}>{formatShortDate(t.targetEndDate)}</span>
                               </div>
+
+                              {/* Delete button (shown on row hover) */}
+                              {!isObserver && (
+                                <button
+                                  type="button"
+                                  className="roadmap-delete-btn"
+                                  onClick={(e) => handleDeleteCard(e, t.card.id, t.card.title)}
+                                  title={`Delete "${t.card.title}"`}
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
                             </div>
                           );
                         })
                       )}
+                    </div>
+                  )}
+
+                  {/* ── Add Task footer row per section ── */}
+                  {!isCollapsed && !isObserver && (
+                    <div
+                      className="roadmap-add-task-row"
+                      onClick={() => {
+                        setQuickTaskColumnId(section.tasks[0]?.columnId || board.columns?.[0]?.id || '');
+                        setQuickTaskSprintId(section.sprint?.id || '');
+                        setShowQuickAddModal(true);
+                      }}
+                      title="Add a new task to this group"
+                    >
+                      <Plus size={12} color="hsl(var(--muted-foreground))" />
+                      <span>Add task</span>
                     </div>
                   )}
                 </div>
@@ -1916,6 +1953,11 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                             );
                           })
                         )
+                      )}
+
+                      {/* Spacer to match the left pane's "Add task" footer row */}
+                      {!isCollapsed && !isObserver && (
+                        <div style={{ height: 34 }} />
                       )}
                     </div>
                   );

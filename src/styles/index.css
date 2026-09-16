@@ -1872,6 +1872,10 @@ select option {
   border-bottom: 1px solid hsl(var(--border) / 0.3);
 }
 
+.roadmap-col-bars-group {
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
 .roadmap-col-header {
   height: 30px;
   display: flex;
@@ -1923,8 +1927,60 @@ select option {
   background-color: hsl(var(--primary) / 0.05);
 }
 
+.roadmap-task-row:hover .roadmap-delete-btn {
+  opacity: 1;
+}
+
 .roadmap-task-row.completed {
   opacity: 0.72;
+}
+
+/* Delete button (visible on row hover) */
+.roadmap-delete-btn {
+  opacity: 0;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.roadmap-delete-btn:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Add task footer row inside each section */
+.roadmap-add-task-row {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 12px;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  border-top: 1px dashed hsl(var(--border) / 0.4);
+}
+
+.roadmap-add-task-row:hover {
+  background-color: hsl(var(--primary) / 0.04);
+}
+
+.roadmap-add-task-row span {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.roadmap-add-task-row:hover span {
+  color: hsl(var(--primary));
 }
 
 /* Column 1: Task */
