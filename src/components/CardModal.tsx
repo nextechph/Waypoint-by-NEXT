@@ -14,7 +14,7 @@ import { useToastStore } from '../store/useToastStore';
 import { useConfirmStore } from '../store/useConfirmStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAuthStore } from '../store/useAuthStore';
-import { LABELS, type Attachment, type Comment, type Member, type WorkSuspension } from '../types';
+import { LABELS, type Attachment, type Comment, type Member, type WorkSuspension, type Card } from '../types';
 import { avatarInitials, formatBytes, formatTime, uid, truncateFileName, sortMembersWithOwnerFirst, getMemberTeamCategory, getTeamBadgeInfo } from '../utils';
 import { supabaseService } from '../services/supabaseService';
 import NeumorphicDatePicker from './ui/NeumorphicDatePicker';
@@ -214,6 +214,10 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
   const [shakeSave, setShakeSave] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAddWorkedRange, setShowAddWorkedRange] = useState(false);
+  const [workedRangeFrom, setWorkedRangeFrom] = useState<string | null>(null);
+  const [workedRangeTo, setWorkedRangeTo] = useState<string | null>(null);
+  const [showWorkedDaysList, setShowWorkedDaysList] = useState(false);
 
   useEffect(() => {
     setLocalTitle(card.title);
@@ -2526,7 +2530,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
             )}
 
 
-            {/* Daily Work Confirmation — Roadmap boards only */}
+            {/* Daily Work Confirmation & Worked Days Tracking — Roadmap boards only */}
             {isRoadmap && (() => {
               const now = new Date();
               const actStart = card.actualStartDate
@@ -2535,10 +2539,85 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               const workStatus = getCardWorkStatus(card, actStart, now);
               const isWorkedToday = workStatus.isWorkedToday;
               const workedCount = workStatus.workedDaysCount;
+              const loggedDates = Array.from(workStatus.workedDatesSet).sort();
+
+              const handleSaveWorkedRange = () => {
+                if (!workedRangeFrom) {
+                  showToast('Please select a start date', 'warning');
+                  return;
+                }
+                const fromDate = new Date(workedRangeFrom);
+                const toDate = workedRangeTo ? new Date(workedRangeTo) : new Date(workedRangeFrom);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setHours(0, 0, 0, 0);
+
+                if (toDate.getTime() < fromDate.getTime()) {
+                  showToast('End date cannot be before start date', 'error');
+                  return;
+                }
+
+                const currentSet = new Set(card.workedDays || []);
+                const cursor = new Date(fromDate);
+                let addedCount = 0;
+                while (cursor <= toDate) {
+                  const dStr = cursor.toISOString().slice(0, 10);
+                  if (!currentSet.has(dStr)) {
+                    currentSet.add(dStr);
+                    addedCount++;
+                  }
+                  cursor.setDate(cursor.getDate() + 1);
+                }
+
+                const sorted = Array.from(currentSet).sort();
+                const updates: Partial<Card> = { workedDays: sorted };
+
+                // If actualStartDate is not set or later than fromDate, update it
+                if (!card.actualStartDate || new Date(card.actualStartDate).getTime() > fromDate.getTime()) {
+                  updates.actualStartDate = fromDate.toISOString();
+                }
+
+                updateCard(cardId, updates);
+                showToast(`Logged ${addedCount} worked day(s)`, 'success');
+                setShowAddWorkedRange(false);
+                setWorkedRangeFrom(null);
+                setWorkedRangeTo(null);
+              };
+
+              const handleFillFromStartToToday = () => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const cursor = new Date(actStart);
+                cursor.setHours(0, 0, 0, 0);
+
+                if (cursor.getTime() > today.getTime()) {
+                  showToast('Start date is in the future', 'warning');
+                  return;
+                }
+
+                const currentSet = new Set(card.workedDays || []);
+                let added = 0;
+                while (cursor <= today) {
+                  const dStr = cursor.toISOString().slice(0, 10);
+                  if (!currentSet.has(dStr)) {
+                    currentSet.add(dStr);
+                    added++;
+                  }
+                  cursor.setDate(cursor.getDate() + 1);
+                }
+
+                updateCard(cardId, { workedDays: Array.from(currentSet).sort() });
+                showToast(`Marked ${added} day(s) from start to today as worked`, 'success');
+              };
+
+              const handleRemoveWorkedDay = (dateStr: string) => {
+                const updated = (card.workedDays || []).filter(d => d !== dateStr);
+                updateCard(cardId, { workedDays: updated });
+              };
 
               return (
                 <div className="form-group" style={{ marginBottom: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  {/* Section Title & Quick Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                     <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
                       Daily Work Confirmation
                       {workedCount > 0 && (
@@ -2549,35 +2628,164 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                           borderRadius: 6,
                           backgroundColor: 'rgba(16,185,129,0.15)',
                           color: '#10b981',
-                          marginLeft: 4,
                         }}>
                           {workedCount} day{workedCount !== 1 ? 's' : ''} worked
                         </span>
                       )}
                     </label>
-                    <button
-                      type="button"
-                      className={`btn ${isWorkedToday ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{
-                        height: 27,
-                        fontSize: 11,
-                        padding: '3px 12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 7,
-                        fontWeight: 600,
-                        backgroundColor: isWorkedToday ? '#10b981' : undefined,
-                        borderColor: isWorkedToday ? '#10b981' : undefined,
-                        color: isWorkedToday ? '#fff' : undefined,
-                      }}
-                      onClick={() => toggleCardWorkedDay(cardId)}
-                      title={isWorkedToday ? 'Click to unmark work for today' : 'Confirm work done today'}
-                    >
-                      {isWorkedToday ? 'Worked Today' : '+ Mark Worked Today'}
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{
+                          height: 26,
+                          fontSize: 10.5,
+                          padding: '2px 8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          borderRadius: 7,
+                        }}
+                        onClick={() => setShowAddWorkedRange(v => !v)}
+                        title="Log a past worked date or date range"
+                      >
+                        <Plus size={11} /> Log Days
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn ${isWorkedToday ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{
+                          height: 26,
+                          fontSize: 10.5,
+                          padding: '2px 10px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 7,
+                          fontWeight: 600,
+                          backgroundColor: isWorkedToday ? '#10b981' : undefined,
+                          borderColor: isWorkedToday ? '#10b981' : undefined,
+                          color: isWorkedToday ? '#fff' : undefined,
+                        }}
+                        onClick={() => toggleCardWorkedDay(cardId)}
+                        title={isWorkedToday ? 'Click to unmark work for today' : 'Confirm work done today'}
+                      >
+                        {isWorkedToday ? 'Worked Today' : '+ Today'}
+                      </button>
+                    </div>
                   </div>
 
+                  {/* 1. When Work Started (Editable DatePicker) */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                    padding: '6px 10px',
+                    borderRadius: 8,
+                    background: 'hsl(var(--card) / 0.6)',
+                    border: '1px solid hsl(var(--border) / 0.5)',
+                    marginBottom: 8,
+                  }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: 'hsl(var(--foreground))', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <Clock size={12} color="#10b981" />
+                        <span>Work Started</span>
+                      </div>
+                      <span style={{ fontSize: 9.5, color: 'hsl(var(--muted-foreground))' }}>
+                        {card.actualStartDate
+                          ? 'Confirmed actual start date'
+                          : 'Set when work on this task began'}
+                      </span>
+                    </div>
+                    <div style={{ width: 140, flexShrink: 0 }}>
+                      <NeumorphicDatePicker
+                        value={card.actualStartDate || null}
+                        onChange={newActualStart => {
+                          const patch: Partial<Card> = { actualStartDate: newActualStart };
+                          if (newActualStart) {
+                            const dStr = newActualStart.slice(0, 10);
+                            const current = card.workedDays || [];
+                            if (!current.includes(dStr)) {
+                              patch.workedDays = [...current, dStr].sort();
+                            }
+                          }
+                          updateCard(cardId, patch);
+                        }}
+                        placeholder="Select start date..."
+                        align="right"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 2. Add Worked Period Form (Expandable) */}
+                  {showAddWorkedRange && (
+                    <div style={{
+                      padding: '10px',
+                      borderRadius: 8,
+                      background: 'hsl(var(--card) / 0.9)',
+                      border: '1px solid hsl(var(--border) / 0.8)',
+                      boxShadow: 'var(--neu-shadow-raised-sm)',
+                      marginBottom: 8,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'hsl(var(--foreground))' }}>
+                          Log Worked Period
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddWorkedRange(false)}
+                          className="icon-btn"
+                          style={{ width: 22, height: 22 }}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
+                        <div>
+                          <label style={{ fontSize: 9.5, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
+                          <NeumorphicDatePicker
+                            value={workedRangeFrom}
+                            onChange={setWorkedRangeFrom}
+                            placeholder="Start date..."
+                            align="left"
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 9.5, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
+                          <NeumorphicDatePicker
+                            value={workedRangeTo}
+                            onChange={setWorkedRangeTo}
+                            placeholder="End date..."
+                            align="right"
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          style={{ height: 26, fontSize: 11, padding: '2px 8px' }}
+                          onClick={() => setShowAddWorkedRange(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          style={{ height: 26, fontSize: 11, padding: '2px 10px' }}
+                          onClick={handleSaveWorkedRange}
+                        >
+                          <Check size={12} /> Save Days
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Status Notification Box */}
                   <div style={{
                     padding: '8px 10px',
                     borderRadius: 8,
@@ -2603,7 +2811,117 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                     <p style={{ margin: 0, fontSize: 10.5, color: 'hsl(var(--muted-foreground))' }}>
                       <strong>Automated tracking:</strong> Adding comments, files, or card updates automatically registers the day as worked. Unworked days are automatically treated as pauses in the Gantt schedule.
                     </p>
+
+                    {/* Quick helper if start date is set and earlier than today with unworked gap */}
+                    {card.actualStartDate && new Date(card.actualStartDate) < now && (
+                      <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px dashed hsl(var(--border) / 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))' }}>
+                          Started on {new Date(card.actualStartDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleFillFromStartToToday}
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: '#10b981',
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          Mark all days up to today as worked
+                        </button>
+                      </div>
+                    )}
                   </div>
+
+                  {/* 4. Logged Days View / Edit List */}
+                  {loggedDates.length > 0 && (
+                    <div style={{ marginTop: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowWorkedDaysList(v => !v)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          fontSize: 10.5,
+                          fontWeight: 600,
+                          color: 'hsl(var(--muted-foreground))',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                      >
+                        <span>{showWorkedDaysList ? 'Hide' : 'View'} logged work days ({loggedDates.length})</span>
+                        <span style={{ fontSize: 9 }}>{showWorkedDaysList ? '▲' : '▼'}</span>
+                      </button>
+
+                      {showWorkedDaysList && (
+                        <div style={{
+                          marginTop: 6,
+                          padding: '6px 8px',
+                          borderRadius: 8,
+                          backgroundColor: 'hsl(var(--card) / 0.5)',
+                          border: '1px solid hsl(var(--border) / 0.4)',
+                          maxHeight: 120,
+                          overflowY: 'auto',
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: 5,
+                        }}>
+                          {loggedDates.map(dStr => {
+                            const isExplicit = (card.workedDays || []).includes(dStr);
+                            const dObj = new Date(dStr);
+                            const label = dObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                            return (
+                              <span
+                                key={dStr}
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 500,
+                                  padding: '2px 6px',
+                                  borderRadius: 5,
+                                  backgroundColor: isExplicit ? 'rgba(16,185,129,0.12)' : 'hsl(var(--secondary) / 0.6)',
+                                  color: isExplicit ? '#10b981' : 'hsl(var(--foreground))',
+                                  border: `1px solid ${isExplicit ? 'rgba(16,185,129,0.3)' : 'hsl(var(--border) / 0.6)'}`,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                }}
+                                title={isExplicit ? 'Explicitly logged day. Click × to unmark.' : 'Auto-registered by card activity.'}
+                              >
+                                {label}
+                                {isExplicit && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveWorkedDay(dStr)}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      padding: 0,
+                                      cursor: 'pointer',
+                                      color: 'inherit',
+                                      opacity: 0.7,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                    }}
+                                    title={`Unmark ${label}`}
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                )}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })()}
