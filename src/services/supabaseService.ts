@@ -259,6 +259,12 @@ export const supabaseService = {
             desc = desc.replace(spMatch[0], '').trimEnd();
           }
 
+          // Strip any embedded board meta tag from card description
+          const bmMatch = desc.match(/<!--worklane_board_meta:[\s\S]*?-->/);
+          if (bmMatch) {
+            desc = desc.replace(bmMatch[0], '').trimEnd();
+          }
+
           return {
             id: card.id,
             title: card.title,
@@ -329,10 +335,40 @@ export const supabaseService = {
           }
         }
 
+        // Assemble Board Meta (type, description) from embedded backup or board columns
+        let bType: 'board' | 'roadmap' = (b.type === 'roadmap') ? 'roadmap' : 'board';
+        let bDescription: string = b.description || '';
+
+        for (const card of allCards) {
+          if (card.board_id === b.id && card.description) {
+            const mMatch = card.description.match(/<!--worklane_board_meta:([\s\S]*?)-->/);
+            if (mMatch) {
+              try {
+                const parsedMeta = JSON.parse(mMatch[1]);
+                if (parsedMeta.type) bType = parsedMeta.type;
+                if (parsedMeta.description) bDescription = parsedMeta.description;
+                break;
+              } catch {}
+            }
+          }
+        }
+
+        // Auto-detect existing roadmaps (e.g. Inky):
+        // If columns include 'Project Deliverables' or any card has label 'roadmap'
+        if (bType !== 'roadmap') {
+          const hasDeliverablesCol = bColumns.some(c => c.name === 'Project Deliverables');
+          const hasRoadmapCard = allCards.some(c => c.board_id === b.id && (allLabels.filter((l: any) => l.card_id === c.id).some((l: any) => l.label_id === 'roadmap')));
+          if (hasDeliverablesCol || hasRoadmapCard) {
+            bType = 'roadmap';
+          }
+        }
+
         return {
           id: b.id,
           name: b.name,
           color: b.color,
+          type: bType,
+          description: bDescription,
           createdBy: b.created_by,
           members: bMembers,
           columns: bColumns,
@@ -428,8 +464,12 @@ export const supabaseService = {
           );
 
           let encodedDescription = item.card.description || '';
-          // Strip any existing worklane_roadmap or worklane_board_sprints tag first
-          encodedDescription = encodedDescription.replace(/<!--worklane_roadmap:[\s\S]*?-->/g, '').replace(/<!--worklane_board_sprints:[\s\S]*?-->/g, '').trimEnd();
+          // Strip any existing worklane tags first
+          encodedDescription = encodedDescription
+            .replace(/<!--worklane_board_meta:[\s\S]*?-->/g, '')
+            .replace(/<!--worklane_roadmap:[\s\S]*?-->/g, '')
+            .replace(/<!--worklane_board_sprints:[\s\S]*?-->/g, '')
+            .trimEnd();
 
           if (hasRoadmapMeta) {
             const rMeta: Record<string, any> = {};
@@ -441,6 +481,12 @@ export const supabaseService = {
             if (item.card.progress !== undefined) rMeta.progress = item.card.progress;
             if (item.card.dependencies?.length) rMeta.dependencies = item.card.dependencies;
             encodedDescription = `${encodedDescription}\n<!--worklane_roadmap:${JSON.stringify(rMeta)}-->`.trim();
+          }
+
+          // If this is the first card, embed board metadata tag as bulletproof backup
+          if (index === 0) {
+            const boardMeta = { type: board.type || 'board', description: board.description || '' };
+            encodedDescription = `${encodedDescription}\n<!--worklane_board_meta:${JSON.stringify(boardMeta)}-->`.trim();
           }
 
           // If this is the first card and board has sprints, embed board sprints tag as bulletproof backup

@@ -443,8 +443,9 @@ export default function App() {
   const handleSelectBoard = useCallback((boardId: string, view?: 'board' | 'roadmap' | 'calendar') => {
     switchBoard(boardId);
     setShowBoardSelector(false);
-    const targetBoard = boards.find(b => b.id === boardId);
-    const isRoadmap = targetBoard?.type === 'roadmap';
+    const storeBoards = useWorkStore.getState().boards;
+    const targetBoard = storeBoards.find(b => b.id === boardId) || boards.find(b => b.id === boardId);
+    const isRoadmap = targetBoard ? targetBoard.type === 'roadmap' : view === 'roadmap';
     const targetPage = isRoadmap ? 'roadmap' : 'board';
     setPage(targetPage);
     let resolvedView = view;
@@ -818,6 +819,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           onClose={(createdRoadmapId?: string) => {
             setShowCreateRoadmap(false);
             if (createdRoadmapId) {
+              setPage('roadmap');
+              setViewMode('roadmap');
               handleSelectBoard(createdRoadmapId, 'roadmap');
             }
           }}

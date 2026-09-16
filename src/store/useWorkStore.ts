@@ -262,7 +262,7 @@ export const useWorkStore = create<WorkState>()(
                 };
               };
 
-              const finalBoards = cloudBoards.map(cb => {
+              const finalBoards: Board[] = cloudBoards.map(cb => {
                 const memBoard = s.boards.find(lb => lb.id === cb.id);
                 if (!memBoard) {
                   const cleanMembers = (cb.members || []).filter(
@@ -285,7 +285,8 @@ export const useWorkStore = create<WorkState>()(
                     }
                     return memberObj;
                   });
-                  return { ...cb, members: cleanMembers };
+                  const bType = cb.type || (cb.columns?.some(c => c.name === 'Project Deliverables') ? 'roadmap' : 'board');
+                  return { ...cb, type: bType, members: cleanMembers };
                 }
 
                 const hasPendingSync = syncTimers.has(cb.id);
@@ -326,9 +327,14 @@ export const useWorkStore = create<WorkState>()(
                   cb.createdBy
                 );
 
+                const bType = memBoard.type || cb.type || (cb.columns?.some(c => c.name === 'Project Deliverables') ? 'roadmap' : 'board');
+                const bDesc = memBoard.description || cb.description || '';
+
                 if (hasPendingSync || isActivelySyncing || isRecentLocalEdit) {
                   return {
                     ...cb,
+                    type: bType,
+                    description: bDesc,
                     name: memBoard.name,
                     color: memBoard.color,
                     columns: memBoard.columns?.map(col => ({ ...col, cards: (col.cards || []).map(sanitizeCardComments) })),
@@ -340,6 +346,8 @@ export const useWorkStore = create<WorkState>()(
 
                 return {
                   ...cb,
+                  type: bType,
+                  description: bDesc,
                   columns: (cb.columns || []).map(col => ({ ...col, cards: (col.cards || []).map(sanitizeCardComments) })),
                   inboxCards: (cb.inboxCards || []).map(sanitizeCardComments),
                   members: mergedMembers,
@@ -355,12 +363,23 @@ export const useWorkStore = create<WorkState>()(
                 }
               });
 
-              const targetBoardId = s.activeBoardId || getSavedActiveBoardId();
-              const activeBoardId = targetBoardId && finalBoards.some(b => b.id === targetBoardId)
-                ? targetBoardId
-                : (finalBoards[0]?.id ?? null);
+              // Ensure any roadmap board (including existing boards like Inky) has type: 'roadmap'
+              const normalizedBoards = finalBoards.map(b => {
+                if (b.type === 'roadmap') return b;
+                const isRoadmap = b.columns?.some(c => c.name === 'Project Deliverables') ||
+                  (b.columns || []).some(col => (col.cards || []).some(card => (card.labels || []).includes('roadmap')));
+                if (isRoadmap) {
+                  return { ...b, type: 'roadmap' as const };
+                }
+                return b;
+              });
 
-              return { boards: finalBoards, activeBoardId, isLoadingCloud: false, hasLoadedOnce: true };
+              const targetBoardId = s.activeBoardId || getSavedActiveBoardId();
+              const activeBoardId = targetBoardId && normalizedBoards.some(b => b.id === targetBoardId)
+                ? targetBoardId
+                : (normalizedBoards[0]?.id ?? null);
+
+              return { boards: normalizedBoards, activeBoardId, isLoadingCloud: false, hasLoadedOnce: true };
             });
           } catch (err) {
             console.warn('[useWorkStore] Cloud load error:', err);
@@ -568,7 +587,12 @@ export const useWorkStore = create<WorkState>()(
         const { boards } = get();
         if (!userEmail) return boards;
         const email = userEmail.toLowerCase().trim();
-        return boards.filter(b => {
+        return boards.map(b => {
+          if (!b.type && (b.columns?.some(c => c.name === 'Project Deliverables') || (b.columns || []).some(col => (col.cards || []).some(card => (card.labels || []).includes('roadmap'))))) {
+            return { ...b, type: 'roadmap' as const };
+          }
+          return b;
+        }).filter(b => {
           // Always visible to the board creator
           if (b.createdBy && b.createdBy.toLowerCase().trim() === email) return true;
           // Always visible to board members (covers standard boards and roadmaps alike)
