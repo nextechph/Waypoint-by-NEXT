@@ -686,10 +686,10 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       }
 
       // Status
-      if (statusFilter === 'active' && item.card.completed) return false;
-      if (statusFilter === 'completed' && !item.card.completed) return false;
+      if (statusFilter === 'active' && (item.card.completed || item.card.actualEndDate)) return false;
+      if (statusFilter === 'completed' && (!item.card.completed && !item.card.actualEndDate)) return false;
       if (statusFilter === 'overdue') {
-        if (item.card.completed || item.endDate >= today) return false;
+        if (item.card.completed || item.card.actualEndDate || item.varianceDays < 0 || item.targetEndDate >= today) return false;
       }
 
       return true;
@@ -866,8 +866,8 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
   // Overall Roadmap Metrics
   const totalCount = allTasks.length;
-  const completedCount = allTasks.filter(t => t.card.completed).length;
-  const overdueCount = allTasks.filter(t => !t.card.completed && t.endDate < today).length;
+  const completedCount = allTasks.filter(t => t.card.completed || !!t.card.actualEndDate).length;
+  const overdueCount = allTasks.filter(t => !t.card.completed && !t.card.actualEndDate && t.targetEndDate < today && t.varianceDays >= 0).length;
   const milestonesCount = allTasks.filter(t => t.card.isMilestone).length;
   const activeSprint = board.sprints?.find(s => s.status === 'active');
   const activeSprintTasks = activeSprint ? allTasks.filter(t => t.card.sprintId === activeSprint.id) : [];
@@ -1244,22 +1244,56 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
   // Plain-English status helper
   const getStatusPill = (t: TaskWithSchedule) => {
+    // 1. Completed tasks
     if (t.card.completed) {
+      if (t.varianceDays < 0) {
+        return { label: `Done (${Math.abs(t.varianceDays)}d early)`, color: '#10b981', bg: 'rgba(16,185,129,0.15)' };
+      }
+      if (t.varianceDays > 0) {
+        return { label: `Done (${t.varianceDays}d late)`, color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' };
+      }
       if (t.startVarianceDays < 0) {
         return { label: `Done (started ${Math.abs(t.startVarianceDays)}d early)`, color: '#10b981', bg: 'rgba(16,185,129,0.15)' };
       }
       return { label: 'Done', color: '#10b981', bg: 'rgba(16,185,129,0.12)' };
     }
-    if (!t.card.completed && t.endDate < today) return { label: `${t.varianceDays}d overdue`, color: '#ef4444', bg: 'rgba(239,68,68,0.12)' };
-    if (t.startVarianceDays < 0 && t.varianceDays <= 0) {
+
+    // 2. Tasks with an explicit actual end date specified (finished early/late)
+    if (t.card.actualEndDate) {
+      if (t.varianceDays < 0) {
+        return { label: `${Math.abs(t.varianceDays)}d early`, color: '#10b981', bg: 'rgba(16,185,129,0.15)' };
+      }
+      if (t.varianceDays > 0) {
+        return { label: `${t.varianceDays}d late`, color: '#ef4444', bg: 'rgba(239,68,68,0.12)' };
+      }
+      return { label: 'On target', color: '#10b981', bg: 'rgba(16,185,129,0.12)' };
+    }
+
+    // 3. In-progress tasks ahead of scheduled deadline
+    if (t.varianceDays < 0) {
+      return { label: `${Math.abs(t.varianceDays)}d ahead`, color: '#10b981', bg: 'rgba(16,185,129,0.12)' };
+    }
+
+    // 4. Overdue tasks (scheduled deadline passed without completion/actual end date)
+    if (t.targetEndDate < today) {
+      const daysOverdue = Math.max(1, t.varianceDays > 0 ? t.varianceDays : Math.round((today.getTime() - t.targetEndDate.getTime()) / 86400000));
+      return { label: `${daysOverdue}d overdue`, color: '#ef4444', bg: 'rgba(239,68,68,0.12)' };
+    }
+
+    // 5. Tasks projected behind schedule
+    if (t.varianceDays > 0) {
+      return { label: `${t.varianceDays}d behind`, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' };
+    }
+
+    // 6. Early start
+    if (t.startVarianceDays < 0) {
       return { label: `Started ${Math.abs(t.startVarianceDays)}d early`, color: '#10b981', bg: 'rgba(16,185,129,0.15)' };
     }
-    if (t.varianceDays > 0) return { label: `${t.varianceDays}d behind`, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' };
-    if (t.varianceDays < 0) return { label: `${Math.abs(t.varianceDays)}d ahead`, color: '#10b981', bg: 'rgba(16,185,129,0.12)' };
+
     return { label: 'On track', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' };
   };
 
-  const behindCount = allTasks.filter(t => !t.card.completed && t.varianceDays > 0).length;
+  const behindCount = allTasks.filter(t => !t.card.completed && !t.card.actualEndDate && t.varianceDays > 0).length;
 
   return (
     <div className={`roadmap-view-container roadmap-mobile-mode-${mobileTab}`}>
