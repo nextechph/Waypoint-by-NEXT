@@ -1300,14 +1300,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                 }}
                 title="Create a new project phase"
               >+ Phase</motion.button>
-
-              <motion.button whileTap={{ scale: 0.95 }} type="button"
-                className="btn btn-primary"
-                onClick={() => setShowQuickAddModal(true)}
-                title={board.type === 'roadmap' ? "Add a new phase or subtask" : "Quick add a new task"}
-              >
-                {board.type === 'roadmap' ? '+ Add Phase / Subtask' : '+ Add Task'}
-              </motion.button>
             </>
           )}
 
