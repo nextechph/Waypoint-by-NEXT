@@ -166,7 +166,7 @@ export default function BoardArea({
             <Layout size={26} />
           </div>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 6 }}>
-            Welcome to Worklane
+            Welcome to Waypoint
           </h2>
           <p style={{ fontSize: 13, color: 'hsl(var(--muted-foreground))', lineHeight: 1.5, marginBottom: 20 }}>
             Create your first board from the sidebar or click below to organize your workspace.

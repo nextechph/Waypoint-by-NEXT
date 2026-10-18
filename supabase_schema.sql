@@ -1,5 +1,5 @@
 -- ==============================================================================
--- WORKLANE - FRESH RESET & COMPLETE DATABASE SCHEMA
+-- WAYPOINT - FRESH RESET & COMPLETE DATABASE SCHEMA
 -- ==============================================================================
 
 -- 1. Enable required extensions

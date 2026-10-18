@@ -178,7 +178,7 @@ export function scheduleBoardSync(board: Board, delayMs = 60) {
 try {
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const key = localStorage.key(i);
-    if (key && (key.startsWith('worklane_boards_cache_') || key.startsWith('worklane_data_'))) {
+    if (key && (key.startsWith('waypoint_boards_cache_') || key.startsWith('waypoint_data_'))) {
       localStorage.removeItem(key);
     }
   }
@@ -192,7 +192,7 @@ export function getSavedActiveBoardId(): string | null {
     const params = new URLSearchParams(window.location.search);
     const urlBoard = params.get('board') || params.get('b');
     if (urlBoard) return urlBoard;
-    return localStorage.getItem('worklane_current_board_id_v1');
+    return localStorage.getItem('waypoint_current_board_id_v1');
   } catch {
     return null;
   }
@@ -739,7 +739,7 @@ export const useWorkStore = create<WorkState>()(
 
       switchBoard: (boardId) => {
         try {
-          localStorage.setItem('worklane_current_board_id_v1', boardId);
+          localStorage.setItem('waypoint_current_board_id_v1', boardId);
         } catch {}
         set({ activeBoardId: boardId });
       },
@@ -1261,7 +1261,7 @@ export const useWorkStore = create<WorkState>()(
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `Status Update: ${updatedTitle} is ${isNowComplete ? 'Completed' : 'Reopened'}`,
-                  body: `Hi ${member.name},\n\nThe task "${updatedTitle}" was marked as ${isNowComplete ? 'completed' : 'incomplete'} on board "${tb.name}".\n\nBest regards,\nWorklane Team`,
+                  body: `Hi ${member.name},\n\nThe task "${updatedTitle}" was marked as ${isNowComplete ? 'completed' : 'incomplete'} on board "${tb.name}".\n\nBest regards,\nWaypoint Team`,
                   eventType: 'status_changed',
                   metadata: {
                     cardTitle: updatedTitle,
@@ -1348,7 +1348,7 @@ export const useWorkStore = create<WorkState>()(
             useEmailStore.getState().sendEmailNotification({
               recipient: member,
               subject: `New Task Assigned: ${assignedCardTitle}`,
-              body: `Hi ${member.name},\n\nYou have been assigned to the card "${assignedCardTitle}" on board "${tb.name}".\n\nBest regards,\nWorklane Team`,
+              body: `Hi ${member.name},\n\nYou have been assigned to the card "${assignedCardTitle}" on board "${tb.name}".\n\nBest regards,\nWaypoint Team`,
               eventType: 'card_assigned',
               metadata: {
                 cardTitle: assignedCardTitle,
@@ -1514,7 +1514,7 @@ export const useWorkStore = create<WorkState>()(
               useEmailStore.getState().sendEmailNotification({
                 recipient: m,
                 subject: `[Mention] ${authorName} mentioned you on "${cardTitle}"`,
-                body: `Hi ${m.name},\n\n${authorName} mentioned you in a comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWorklane Team`,
+                body: `Hi ${m.name},\n\n${authorName} mentioned you in a comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWaypoint Team`,
                 eventType: 'mention',
                 metadata: {
                   cardTitle,
@@ -1546,7 +1546,7 @@ export const useWorkStore = create<WorkState>()(
                 useEmailStore.getState().sendEmailNotification({
                   recipient: repliedMember,
                   subject: `[Reply] ${authorName} replied to your comment on "${cardTitle}"`,
-                  body: `Hi ${repliedMember.name},\n\n${authorName} replied to your comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWorklane Team`,
+                  body: `Hi ${repliedMember.name},\n\n${authorName} replied to your comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWaypoint Team`,
                   eventType: 'comment_added',
                   metadata: {
                     cardTitle,
@@ -1575,7 +1575,7 @@ export const useWorkStore = create<WorkState>()(
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `New Comment on "${cardTitle}"`,
-                  body: `Hi ${member.name},\n\n${authorName} commented on task "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWorklane Team`,
+                  body: `Hi ${member.name},\n\n${authorName} commented on task "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWaypoint Team`,
                   eventType: 'comment_added',
                   metadata: {
                     cardTitle,

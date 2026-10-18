@@ -440,13 +440,13 @@ export default function Dashboard({ onSelectBoard, onCreateBoard, onCreateRoadma
                               borderRadius: 5,
                               border: isSelected ? 'none' : '1.5px solid hsl(var(--border) / 0.8)',
                               backgroundColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                              color: '#fff',
+                              color: 'hsl(var(--primary-foreground))',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
                               transition: 'all 0.15s ease',
-                              boxShadow: isSelected ? '0 0 8px hsl(var(--primary) / 0.4)' : 'var(--neu-shadow-input)',
+                              boxShadow: isSelected ? 'none' : 'var(--neu-shadow-input)',
                             }}
                           >
                             {isSelected && <Check size={12} strokeWidth={3} />}

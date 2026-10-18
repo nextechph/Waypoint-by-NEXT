@@ -179,7 +179,7 @@ export function getAvatarBorderStyle(borderStyle: string | undefined): React.CSS
   };
 }
 
-const CUSTOM_BORDERS_KEY = 'worklane_custom_borders';
+const CUSTOM_BORDERS_KEY = 'waypoint_custom_borders';
 
 export function getCustomBorders(): CustomBorderDef[] {
   try {

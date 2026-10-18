@@ -59,7 +59,7 @@ export default function InviteLandingPage({ boardId, role = 'member', onAcceptJo
             id: boardId,
             name: 'Collaborative Board',
             color: '#6366f1',
-            createdBy: 'Worklane Team',
+            createdBy: 'Waypoint Team',
             memberCount: 1,
           });
         }
@@ -257,7 +257,7 @@ export default function InviteLandingPage({ boardId, role = 'member', onAcceptJo
         {/* Top Branding */}
         <div style={{ padding: '26px 28px 18px 28px', textAlign: 'center', borderBottom: '1px solid hsl(var(--border) / 0.6)' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-            <img src={logoImg} alt="Worklane" style={{ width: 48, height: 48, objectFit: 'contain' }} />
+            <img src={logoImg} alt="Waypoint" style={{ width: 48, height: 48, objectFit: 'contain' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'hsl(var(--primary))', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             <Sparkles size={13} />
@@ -381,7 +381,7 @@ export default function InviteLandingPage({ boardId, role = 'member', onAcceptJo
                       height: 34,
                       borderRadius: '50%',
                       backgroundColor: 'hsl(var(--primary))',
-                      color: '#fff',
+                      color: 'hsl(var(--primary-foreground))',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -445,7 +445,7 @@ export default function InviteLandingPage({ boardId, role = 'member', onAcceptJo
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
-                Sign in with your Google or Worklane account to join this board.
+                Sign in with your Google or Waypoint account to join this board.
               </div>
 
               {/* Google Sign In */}

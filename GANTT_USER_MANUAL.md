@@ -1,6 +1,6 @@
-# 📘 Worklane Roadmap & Gantt Chart: Official User Manual
+# 📘 Waypoint Roadmap & Gantt Chart: Official User Manual
 
-Welcome to the **Worklane Roadmap & Gantt Timeline** user manual. This guide provides comprehensive, step-by-step instructions on how to create project roadmaps, import delivery schedules from external documents, plan phases and milestones, track dual-track execution, log work suspensions, monitor live schedule variance, and export reports for stakeholders.
+Welcome to the **Waypoint Roadmap & Gantt Timeline** user manual. This guide provides comprehensive, step-by-step instructions on how to create project roadmaps, import delivery schedules from external documents, plan phases and milestones, track dual-track execution, log work suspensions, monitor live schedule variance, and export reports for stakeholders.
 
 ---
 
@@ -22,7 +22,7 @@ Welcome to the **Worklane Roadmap & Gantt Timeline** user manual. This guide pro
 
 ## 🚀 1. Accessing & Creating Roadmaps
 
-Worklane supports both **Dedicated Project Roadmaps** (standalone strategic delivery plans) and **Board Roadmap Views** (timeline view of any Kanban board).
+Waypoint supports both **Dedicated Project Roadmaps** (standalone strategic delivery plans) and **Board Roadmap Views** (timeline view of any Kanban board).
 
 ### Accessing Roadmaps:
 - **Dedicated Project Roadmaps**: In the left sidebar, expand the **Roadmaps** section to view and switch between your standalone roadmaps.
@@ -42,7 +42,7 @@ Worklane supports both **Dedicated Project Roadmaps** (standalone strategic deli
 
 ## 📄 2. Document Import & AI Parsing
 
-Worklane includes built-in document parsing that converts project scope documents, meeting notes, specifications, or spreadsheets directly into phases and subtasks.
+Waypoint includes built-in document parsing that converts project scope documents, meeting notes, specifications, or spreadsheets directly into phases and subtasks.
 
 ### Supported File Formats:
 - **Markdown (`.md`)** & **Plain Text (`.txt`)**
@@ -52,7 +52,7 @@ Worklane includes built-in document parsing that converts project scope document
 
 ### How to Import:
 1. In the **Create Project Roadmap** modal, click **`Upload Project Document`** or drag and drop your file into the upload zone.
-2. Worklane automatically extracts headings as **Phases** and bullet items/indented lines as **Subtasks**.
+2. Waypoint automatically extracts headings as **Phases** and bullet items/indented lines as **Subtasks**.
 3. Review the parsed item hierarchy in the live preview list:
    - Toggle item types between **Phase** and **Subtask** using the dropdown selector.
    - Add additional phases or subtasks with the input field.
@@ -146,7 +146,7 @@ To maintain an accurate schedule baseline and track blockers:
 
 ## ⏱️ 6. Tracking Actual Progress & Accomplishments
 
-Worklane's **Dual-Track Engine** provides clear separation between agreed baselines and real-world execution.
+Waypoint's **Dual-Track Engine** provides clear separation between agreed baselines and real-world execution.
 
 ### The Dual Bars Explained:
 - **Top Track (Green Bar)**: **Planned Goal**. Represents the original baseline commitment and does not shift unless targets are renegotiated.
@@ -163,7 +163,7 @@ The orange accomplishment bar **advances only on confirmed working days**:
 
 ## ⏸️ 7. Automated & Manual Work Suspensions
 
-Worklane separates delays caused by inefficiency from legitimate project pauses (e.g., client review holds, vendor delays, weather halts, holiday shutdowns).
+Waypoint separates delays caused by inefficiency from legitimate project pauses (e.g., client review holds, vendor delays, weather halts, holiday shutdowns).
 
 ### 1. Automated Inactive Day Detection:
 - Days between task start and today with **no logged work and no activity** are treated as inactive pauses.
@@ -185,7 +185,7 @@ For formal, documented stoppages:
 
 ## 📊 8. Understanding Schedule Variance & Health Metrics
 
-Worklane automatically computes **Schedule Variance ($\text{SV}$)** in real time:
+Waypoint automatically computes **Schedule Variance ($\text{SV}$)** in real time:
 
 $$\text{Schedule Variance (Days)} = (\text{Actual / Projected End} - \text{Target Due Date}) - \text{Approved Suspended Days}$$
 
@@ -236,7 +236,7 @@ Filter timeline deliverables with quick-toggle buttons:
 Generate stakeholder-ready spreadsheet Gantt charts and offline reports with one click:
 
 1. Click the **`Export Gantt CSV`** button in the top-right toolbar.
-2. Worklane generates a `.csv` file with a **UTF-8 Byte Order Mark (`\uFEFF`)** ensuring symbols, accents, and dates render correctly in **Microsoft Excel**, **Google Sheets**, and **Apple Numbers**.
+2. Waypoint generates a `.csv` file with a **UTF-8 Byte Order Mark (`\uFEFF`)** ensuring symbols, accents, and dates render correctly in **Microsoft Excel**, **Google Sheets**, and **Apple Numbers**.
 
 ### Exported Data Columns:
 
@@ -280,7 +280,7 @@ Tasks across different functional boards can be linked directly to strategic Roa
 
 ## 📱 12. Mobile & Touch Device Experience
 
-Worklane is optimized for smartphones, tablets, and touch screens:
+Waypoint is optimized for smartphones, tablets, and touch screens:
 
 1. **Segmented Mobile Navigation Tabs**:
    - **Deliverables**: A clean tabular checklist for quick status audits.

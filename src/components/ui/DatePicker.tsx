@@ -31,7 +31,7 @@ export function parseDateValue(val?: string | null): Date | null {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-export default function NeumorphicDatePicker({
+export default function DatePicker({
   value,
   onChange,
   placeholder = 'Set date...',
@@ -403,7 +403,7 @@ export default function NeumorphicDatePicker({
         ) : null}
       </motion.button>
 
-      {/* Neumorphic Dropdown Popover */}
+      {/* Dropdown Popover */}
       <AnimatePresence>
         {isOpen && (
           <motion.div

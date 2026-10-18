@@ -17,8 +17,8 @@ import { useAuthStore } from '../store/useAuthStore';
 import { LABELS, type Attachment, type Comment, type Member, type WorkSuspension, type Card } from '../types';
 import { avatarInitials, formatBytes, formatTime, uid, truncateFileName, sortMembersWithOwnerFirst, getMemberTeamCategory, getTeamBadgeInfo } from '../utils';
 import { supabaseService } from '../services/supabaseService';
-import NeumorphicDatePicker from './ui/NeumorphicDatePicker';
-import { NeumorphicSelect } from './ui/NeumorphicSelect';
+import DatePicker from './ui/DatePicker';
+import { Select } from './ui/Select';
 import AvatarBorder from './ui/AvatarBorder';
 import { deriveCardProgress, getCardWorkStatus } from './RoadmapView';
 import CreateRoadmapModal from './modals/CreateRoadmapModal';
@@ -1034,7 +1034,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
             <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
               in column:
             </span>
-            <NeumorphicSelect
+            <Select
               size="sm"
               value={isInbox ? 'inbox' : (column?.id || '')}
               options={[
@@ -2301,7 +2301,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
                 <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
                   <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled Start</label>
-                  <NeumorphicDatePicker
+                  <DatePicker
                     value={card.startDate || null}
                     onChange={newStart => {
                       updateCard(cardId, { startDate: newStart });
@@ -2312,7 +2312,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                 </div>
                 <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
                   <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled End</label>
-                  <NeumorphicDatePicker
+                  <DatePicker
                     value={card.dueDate}
                     onChange={newDue => {
                       updateCard(cardId, { dueDate: newDue });
@@ -2346,7 +2346,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                         return null;
                       })()}
                     </div>
-                    <NeumorphicDatePicker
+                    <DatePicker
                       value={card.actualStartDate || null}
                       onChange={newActualStart => {
                         updateCard(cardId, { actualStartDate: newActualStart });
@@ -2408,7 +2408,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                         }
                       })()}
                     </div>
-                    <NeumorphicDatePicker
+                    <DatePicker
                       value={card.actualEndDate || (card.completed ? (card.completedAt || null) : null)}
                       onChange={newActual => {
                         updateCard(cardId, { actualEndDate: newActual });
@@ -2487,9 +2487,9 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                         onClose();
                         switchBoard(linkedRoadmap.id);
                         try {
-                          localStorage.setItem('worklane_current_page_v1', 'board');
-                          localStorage.setItem('worklane_current_board_id_v1', linkedRoadmap.id);
-                          localStorage.setItem('worklane_current_view_mode_v1', 'roadmap');
+                          localStorage.setItem('waypoint_current_page_v1', 'board');
+                          localStorage.setItem('waypoint_current_board_id_v1', linkedRoadmap.id);
+                          localStorage.setItem('waypoint_current_view_mode_v1', 'roadmap');
                           window.dispatchEvent(new Event('storage'));
                         } catch {}
                       }}
@@ -2500,7 +2500,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <NeumorphicSelect
+                    <Select
                       value={card.linkedRoadmapId || ''}
                       options={[
                         { value: '', label: 'None (Select a roadmap...)' },
@@ -2622,7 +2622,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
                           <div style={{ minWidth: 0 }}>
                             <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
-                            <NeumorphicDatePicker
+                            <DatePicker
                               value={s.from}
                               onChange={val => {
                                 const updated = [...(card.workSuspensions as WorkSuspension[])];
@@ -2638,7 +2638,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                           </div>
                           <div style={{ minWidth: 0 }}>
                             <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
-                            <NeumorphicDatePicker
+                            <DatePicker
                               value={s.to}
                               onChange={val => {
                                 const updated = [...(card.workSuspensions as WorkSuspension[])];
@@ -2872,7 +2872,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                       </span>
                     </div>
                     <div style={{ width: 140, flexShrink: 0 }}>
-                      <NeumorphicDatePicker
+                      <DatePicker
                         value={card.actualStartDate || null}
                         onChange={newActualStart => {
                           const patch: Partial<Card> = { actualStartDate: newActualStart };
@@ -2920,7 +2920,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
                         <div>
                           <label style={{ fontSize: 9.5, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
-                          <NeumorphicDatePicker
+                          <DatePicker
                             value={workedRangeFrom}
                             onChange={setWorkedRangeFrom}
                             placeholder="Start date..."
@@ -2929,7 +2929,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                         </div>
                         <div>
                           <label style={{ fontSize: 9.5, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
-                          <NeumorphicDatePicker
+                          <DatePicker
                             value={workedRangeTo}
                             onChange={setWorkedRangeTo}
                             placeholder="End date..."
@@ -3127,7 +3127,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                     <span>{card.isMilestone ? 'Milestone' : 'Set Milestone'}</span>
                   </motion.button>
                 </div>
-                <NeumorphicSelect
+                <Select
                   value={card.sprintId || ''}
                   options={[
                     { value: '', label: 'No Phase (General Timeline)' },
@@ -3793,7 +3793,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                   padding: '10px 14px',
                   borderRadius: 11,
                   backgroundColor: isSavedSuccess ? '#10b981' : isDirty ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                  color: isSavedSuccess ? '#fff' : isDirty ? '#fff' : 'hsl(var(--foreground))',
+                  color: isSavedSuccess ? '#fff' : isDirty ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
                   border: isDirty ? 'none' : '1px solid hsl(var(--border))',
                   cursor: isSaving ? 'wait' : 'pointer',
                   transition: 'background-color 0.2s, color 0.2s, border 0.2s'
@@ -4049,9 +4049,9 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
             onClose();
             switchBoard(createdRoadmapId);
             try {
-              localStorage.setItem('worklane_current_page_v1', 'board');
-              localStorage.setItem('worklane_current_board_id_v1', createdRoadmapId);
-              localStorage.setItem('worklane_current_view_mode_v1', 'roadmap');
+              localStorage.setItem('waypoint_current_page_v1', 'board');
+              localStorage.setItem('waypoint_current_board_id_v1', createdRoadmapId);
+              localStorage.setItem('waypoint_current_view_mode_v1', 'roadmap');
               window.dispatchEvent(new Event('storage'));
             } catch {}
           }

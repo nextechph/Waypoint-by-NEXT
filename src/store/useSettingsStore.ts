@@ -58,6 +58,6 @@ export const useSettingsStore = create<SettingsState>()(
         supabaseService.deleteCustomLabel(id);
       },
     }),
-    { name: 'worklane_settings_v1' }
+    { name: 'waypoint_settings_v1' }
   )
 );

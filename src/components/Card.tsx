@@ -376,9 +376,9 @@ export default function Card({
               onClick={(e) => {
                 e.stopPropagation();
                 useWorkStore.getState().switchBoard(linkedRoadmap.id);
-                localStorage.setItem('worklane_current_page_v1', 'board');
-                localStorage.setItem('worklane_current_board_id_v1', linkedRoadmap.id);
-                localStorage.setItem('worklane_current_view_mode_v1', 'roadmap');
+                localStorage.setItem('waypoint_current_page_v1', 'board');
+                localStorage.setItem('waypoint_current_board_id_v1', linkedRoadmap.id);
+                localStorage.setItem('waypoint_current_view_mode_v1', 'roadmap');
                 window.dispatchEvent(new Event('storage'));
               }}
             >

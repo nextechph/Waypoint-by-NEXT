@@ -1,6 +1,6 @@
 # 📊 Universal Gantt & Roadmap Specification
 
-A comprehensive standard for designing and implementing cross-industry Gantt charts and project roadmaps in **Worklane**. This document outlines the data model, visual elements, mathematical variance formulas, and UI specifications designed to serve software engineering, construction, creative marketing, manufacturing, and general corporate operations alike.
+A comprehensive standard for designing and implementing cross-industry Gantt charts and project roadmaps in **Waypoint**. This document outlines the data model, visual elements, mathematical variance formulas, and UI specifications designed to serve software engineering, construction, creative marketing, manufacturing, and general corporate operations alike.
 
 ---
 
@@ -19,7 +19,7 @@ A generalized Gantt chart must avoid rigid, single-industry jargon while preserv
 
 Use neutral, universal terminology across the UI and export files so all departments feel at home:
 
-| Universal Standard (Worklane) | Software Engineering (Agile/Scrum) | Construction & Civil Engineering | Creative Marketing & Media | Manufacturing & Supply Chain |
+| Universal Standard (Waypoint) | Software Engineering (Agile/Scrum) | Construction & Civil Engineering | Creative Marketing & Media | Manufacturing & Supply Chain |
 | :--- | :--- | :--- | :--- | :--- |
 | **Phase / Package** | Sprint / Epic / Milestone | Construction Phase / WBS Stage | Campaign / Production Phase | Production Batch / Stage Gate |
 | **Task / Activity** | User Story / Bug / Task | Work Package / Activity Item | Deliverable / Creative Asset | Work Order / Operation |
@@ -122,7 +122,7 @@ $$\text{Variance (Days)} = \text{Actual / Projected End Date} - \text{Target Due
 
 ## 🗄️ 6. TypeScript Data Models
 
-The universal schema implemented in Worklane:
+The universal schema implemented in Waypoint:
 
 ```typescript
 /** A contiguous period when work was paused */

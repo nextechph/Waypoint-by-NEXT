@@ -14,8 +14,8 @@ import { useToastStore } from '../store/useToastStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useConfirmStore } from '../store/useConfirmStore';
 import AvatarBorder from './ui/AvatarBorder';
-import NeumorphicDatePicker from './ui/NeumorphicDatePicker';
-import { NeumorphicSelect, SelectOption } from './ui/NeumorphicSelect';
+import DatePicker from './ui/DatePicker';
+import { Select, SelectOption } from './ui/Select';
 
 interface Props {
   board: Board;
@@ -329,7 +329,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   // Draggable tasks table pane width with persistence
   const [tasksPaneWidth, setTasksPaneWidth] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('worklane_roadmap_tasks_width');
+      const saved = localStorage.getItem('waypoint_roadmap_tasks_width');
       if (saved) {
         const parsed = parseInt(saved, 10);
         if (!isNaN(parsed) && parsed >= 340 && parsed <= 760) return parsed;
@@ -356,7 +356,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       const finalWidth = Math.max(340, Math.min(760, startWidth + delta));
       setTasksPaneWidth(finalWidth);
       try {
-        localStorage.setItem('worklane_roadmap_tasks_width', String(finalWidth));
+        localStorage.setItem('waypoint_roadmap_tasks_width', String(finalWidth));
       } catch {}
       setIsResizing(false);
       window.removeEventListener('mousemove', handleMouseMove);
@@ -1572,7 +1572,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
 
         {/* Status Filter */}
-        <NeumorphicSelect<StatusFilter>
+        <Select<StatusFilter>
           value={statusFilter}
           options={statusFilterOptions}
           onChange={setStatusFilter}
@@ -1934,7 +1934,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           onMouseDown={handleMouseDownResize}
           onDoubleClick={() => {
             setTasksPaneWidth(540);
-            try { localStorage.setItem('worklane_roadmap_tasks_width', '540'); } catch {}
+            try { localStorage.setItem('waypoint_roadmap_tasks_width', '540'); } catch {}
           }}
           title="Drag to resize columns · Double-click to reset"
         >
@@ -2356,7 +2356,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                       <div className="form-group">
                         <label className="field-label">Start Date</label>
-                        <NeumorphicDatePicker
+                        <DatePicker
                           value={sprintStartDate || null}
                           onChange={val => setSprintStartDate(val ? val.split('T')[0] : '')}
                           align="left"
@@ -2364,7 +2364,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                       </div>
                       <div className="form-group">
                         <label className="field-label">End Date</label>
-                        <NeumorphicDatePicker
+                        <DatePicker
                           value={sprintEndDate || null}
                           onChange={val => setSprintEndDate(val ? val.split('T')[0] : '')}
                           align="right"
@@ -2473,7 +2473,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                     <div className="form-group">
                       <label className="field-label">Project Phase</label>
-                      <NeumorphicSelect
+                      <Select
                         value={quickTaskColumnId}
                         options={(board.columns || []).map(c => ({
                           value: c.id,
@@ -2491,7 +2491,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                       <div className="form-group">
                         <label className="field-label">Scheduled Start</label>
-                        <NeumorphicDatePicker
+                        <DatePicker
                           value={quickTaskStartDate || null}
                           onChange={val => setQuickTaskStartDate(val ? val.split('T')[0] : '')}
                           align="left"
@@ -2499,7 +2499,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                       </div>
                       <div className="form-group">
                         <label className="field-label">Scheduled Date</label>
-                        <NeumorphicDatePicker
+                        <DatePicker
                           value={quickTaskDueDate || null}
                           onChange={val => setQuickTaskDueDate(val ? val.split('T')[0] : '')}
                           align="right"
@@ -2513,7 +2513,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                           <span>Actual Start</span>
                           <span style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))' }}>(optional)</span>
                         </label>
-                        <NeumorphicDatePicker
+                        <DatePicker
                           value={quickTaskActualStartDate || null}
                           onChange={val => setQuickTaskActualStartDate(val ? val.split('T')[0] : '')}
                           align="left"
@@ -2524,7 +2524,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                           <span>Actual End</span>
                           <span style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))' }}>(optional)</span>
                         </label>
-                        <NeumorphicDatePicker
+                        <DatePicker
                           value={quickTaskActualEndDate || null}
                           onChange={val => setQuickTaskActualEndDate(val ? val.split('T')[0] : '')}
                           align="right"
@@ -2535,7 +2535,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'end', position: 'relative', zIndex: 30 }}>
                       <div className="form-group" style={{ marginBottom: 0, position: 'relative', zIndex: 30 }}>
                         <label className="field-label">Assignee</label>
-                        <NeumorphicSelect
+                        <Select
                           value={quickTaskAssignee}
                           options={[
                             { value: '', label: 'Unassigned' },

@@ -15,9 +15,10 @@ import { useConfirmStore } from '../store/useConfirmStore';
 import { avatarInitials, sortMembersWithOwnerFirst, getTeamBadgeInfo, useIsMobile } from '../utils';
 import AvatarBorder from './ui/AvatarBorder';
 import BoardColorPicker from './ui/BoardColorPicker';
-import sidebarImg from '../assets/sidebar.png';
-import sidebarDarkImg from '../assets/sidebar-dark.png';
-import logoImg from '../assets/logo.png';
+import wordmarkLight from '../assets/wordmark-light.png';
+import wordmarkDark from '../assets/wordmark-dark.png';
+import markDark from '../assets/logo-mark-dark.png';
+import markLight from '../assets/logo-mark-light.png';
 
 interface Props {
   page: 'dashboard' | 'board' | 'roadmap';
@@ -169,11 +170,11 @@ export default function Sidebar({
       <aside className="sidebar collapsed">
         <div className="sidebar-header" style={{ justifyContent: 'center', height: 62, padding: '0 8px', flexDirection: 'column', gap: 4 }}>
           <img
-            src={logoImg}
-            alt="Worklane"
+            src={isDark ? markDark : markLight}
+            alt="Waypoint"
             style={{ width: 32, height: 32, borderRadius: 8, cursor: 'pointer', objectFit: 'contain' }}
             onClick={handleGoToDashboard}
-            title="Worklane"
+            title="Waypoint"
           />
         </div>
         <div className="sidebar-scrollable" style={{ alignItems: 'center' }}>
@@ -297,20 +298,20 @@ export default function Sidebar({
     );
   }
 
-  // ── Expanded Neumorphic Sidebar ──
+  // ── Expanded Sidebar ──
   return (
     <aside className={`sidebar${isMobileOpen ? ' mobile-open' : ''}`}>
       {/* Header */}
       <div className="sidebar-header" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 62, padding: '0 16px' }}>
         <div className="sidebar-logo" onClick={handleGoToDashboard} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <img
-            src={isDark ? sidebarDarkImg : sidebarImg}
-            alt="Worklane"
+            src={isDark ? wordmarkDark : wordmarkLight}
+            alt="Waypoint"
             style={{
-              height: 42,
+              height: 26,
               width: 'auto',
-              maxHeight: 44,
-              maxWidth: 165,
+              maxHeight: 28,
+              maxWidth: 150,
               objectFit: 'contain',
               display: 'block'
             }}

@@ -491,8 +491,8 @@ export const useAuthStore = create<AuthState>()(
             if (joinBoard) {
               const inviteObj = { boardId: joinBoard, role: inviteRole };
               try {
-                localStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
-                sessionStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
+                localStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
+                sessionStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
               } catch {}
               redirectTo = `${window.location.origin}/?joinBoard=${encodeURIComponent(joinBoard)}&role=${encodeURIComponent(inviteRole)}`;
             } else {
@@ -519,13 +519,13 @@ export const useAuthStore = create<AuthState>()(
         }
 
         // Local Fallback mode
-        const cleanEmail = (email || '').trim().toLowerCase() || 'demo.user@worklane.io';
+        const cleanEmail = (email || '').trim().toLowerCase() || 'demo.user@waypoint.io';
         const { accounts } = get();
         let account = accounts.find(a => a.email.toLowerCase() === cleanEmail);
         if (!account) {
           account = {
             id: `goog_${Date.now()}`,
-            name: cleanEmail === 'demo.user@worklane.io' ? 'Demo User' : cleanEmail.split('@')[0],
+            name: cleanEmail === 'demo.user@waypoint.io' ? 'Demo User' : cleanEmail.split('@')[0],
             email: cleanEmail,
             avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
             provider: 'google',
@@ -602,6 +602,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
     }),
-    { name: 'worklane_auth_store_v4' }
+    { name: 'waypoint_auth_store_v4' }
   )
 );

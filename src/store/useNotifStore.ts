@@ -73,7 +73,7 @@ export const useNotifStore = create<NotifState>()(
         // Trigger native browser notification if allowed
         if (Notification.permission === 'granted') {
           try {
-            new Notification(`Worklane: ${title}`, { body: sub });
+            new Notification(`Waypoint: ${title}`, { body: sub });
           } catch (e) {
             // ignore
           }
@@ -108,6 +108,6 @@ export const useNotifStore = create<NotifState>()(
         supabaseService.clearNotifications(email);
       },
     }),
-    { name: 'worklane_notifs_v3' }
+    { name: 'waypoint_notifs_v3' }
   )
 );

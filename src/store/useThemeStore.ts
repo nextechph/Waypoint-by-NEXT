@@ -20,7 +20,7 @@ const applyThemeToDOM = (isDark: boolean) => {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      isDark: false,
+      isDark: true,
       toggle: () =>
         set((s) => {
           const next = !s.isDark;
@@ -33,7 +33,7 @@ export const useThemeStore = create<ThemeState>()(
       },
     }),
     {
-      name: 'worklane-theme',
+      name: 'waypoint-theme',
       onRehydrateStorage: () => (state) => {
         if (state) {
           applyThemeToDOM(state.isDark);

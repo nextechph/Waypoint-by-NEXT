@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, X, Send, Trash2, ExternalLink, CheckCircle2, ShieldCheck, Loader2, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { NeumorphicSelect } from './ui/NeumorphicSelect';
+import { Select } from './ui/Select';
 import { useEmailStore } from '../store/useEmailStore';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -223,7 +223,7 @@ export default function EmailNotifModal({ onClose }: Props) {
           <div className="form-group" style={{ marginTop: 2 }}>
             <label className="field-label">Send Direct Update or Test</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <NeumorphicSelect
+              <Select
                 value={testEmail}
                 placeholder="Select a team member..."
                 options={[

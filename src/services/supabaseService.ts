@@ -478,7 +478,7 @@ export const supabaseService = {
           );
 
           let encodedDescription = item.card.description || '';
-          // Strip any existing worklane tags first
+          // Strip any existing metadata tags first (legacy "worklane_" prefix kept for stored data)
           encodedDescription = encodedDescription
             .replace(/<!--worklane_board_meta:[\s\S]*?-->/g, '')
             .replace(/<!--worklane_roadmap:[\s\S]*?-->/g, '')
@@ -772,7 +772,7 @@ export const supabaseService = {
         }
       }
 
-      const channel = supabase.channel('worklane-realtime-channel');
+      const channel = supabase.channel('waypoint-realtime-channel');
       await channel.send({
         type: 'broadcast',
         event,
@@ -1736,7 +1736,7 @@ export const supabaseService = {
     if (!isSupabaseConfigured()) return () => {};
 
     const cleanEmail = userEmail ? userEmail.toLowerCase().trim() : '';
-    const channelName = 'worklane-realtime-channel';
+    const channelName = 'waypoint-realtime-channel';
 
     // Clean up any stale channel with this name to avoid topic collisions
     const existing = supabase.getChannels().find(ch => ch.topic === `realtime:${channelName}`);

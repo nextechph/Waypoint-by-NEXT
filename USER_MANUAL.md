@@ -1,8 +1,8 @@
-# 📖 Worklane: Complete User Manual & Workspace Guide
+# 📖 Waypoint: Complete User Manual & Workspace Guide
 
-Welcome to the **Worklane Official User Manual**. Worklane is a next-generation neumorphic project management and collaborative workspace engineered for agile development squads, engineering teams, and high-velocity product creators.
+Welcome to the **Waypoint Official User Manual**. Waypoint is a modern, minimal project management and collaborative workspace engineered for agile development squads, engineering teams, and high-velocity product creators.
 
-This manual covers all core features, workflows, administrative controls, and productivity tools available in Worklane.
+This manual covers all core features, workflows, administrative controls, and productivity tools available in Waypoint.
 
 ---
 
@@ -31,7 +31,7 @@ This manual covers all core features, workflows, administrative controls, and pr
 
 ## 🌟 1. System Overview & Architecture
 
-Worklane combines a tactile neumorphic interface with high-reliability data persistence:
+Waypoint combines a clean, minimal interface with high-reliability data persistence:
 - **Zero-Latency Optimistic State**: Instant local feedback powered by Zustand and `localStorage` caching.
 - **Real-Time Cloud Synchronization**: PostgreSQL database storage and WebSocket subscriptions powered by **Supabase**.
 - **Interactive 3D WebGL Atmosphere**: Real-time reactive Three.js canvas reacting to cursor movement and viewport tilt.
@@ -165,7 +165,7 @@ Opening any card displays the comprehensive Card Modal:
 
 ## 🛡️ 8. Role-Based Access Control (RBAC) & Invitations
 
-Worklane enforces four distinct permission tiers:
+Waypoint enforces four distinct permission tiers:
 
 | Role | Governance & Capabilities |
 | :--- | :--- |
@@ -199,7 +199,7 @@ Choose an illuminated gradient ring and badge that displays around your avatar a
 
 ## 📧 10. Automated Email Alerts via Pipedream
 
-Worklane integrates directly with Pipedream HTTP Webhooks for zero-maintenance transactional email notifications through Gmail, Resend, SendGrid, or custom SMTP.
+Waypoint integrates directly with Pipedream HTTP Webhooks for zero-maintenance transactional email notifications through Gmail, Resend, SendGrid, or custom SMTP.
 
 ### Event Triggers:
 - **`card_assigned`**: Dispatched to assignees when added to a task.
@@ -220,7 +220,7 @@ Worklane integrates directly with Pipedream HTTP Webhooks for zero-maintenance t
 
 ## 🔍 11. Global Command Palette & Quick Search
 
-Access the global search engine anywhere in Worklane:
+Access the global search engine anywhere in Waypoint:
 - **Shortcut**: <kbd>Ctrl</kbd> + <kbd>K</kbd> (Windows/Linux) or <kbd>Cmd</kbd> + <kbd>K</kbd> (macOS).
 - **Fuzzy Search**: Instantly searches across:
   - Board and Roadmap titles
@@ -236,7 +236,7 @@ Access the global search engine anywhere in Worklane:
 Access settings via the gear icon in the sidebar:
 
 ### 1. Appearance & Theme Engine:
-- Toggle between **Neumorphic Dark Mode** (deep slate hues with neon accents) and **Neumorphic Light Mode** (soft cream and tactile shadows).
+- Toggle between **Dark Mode** (charcoal surfaces with white accents) and **Light Mode** (paper-white surfaces with charcoal accents).
 - Toggle 3D WebGL background atmosphere animation.
 
 ### 2. Custom Labels Manager:
@@ -251,9 +251,9 @@ Access settings via the gear icon in the sidebar:
 
 ## 📱 13. Mobile & Touch Device Experience
 
-Worklane features a touch-optimized mobile experience:
+Waypoint features a touch-optimized mobile experience:
 - **Mobile Bottom Navigation Bar**: One-touch access to Dashboard, Active Board, Calendar, and Inbox.
-- **Neumorphic Floating Action Button (FAB)**: Rapidly create new boards and cards on mobile.
+- **Floating Action Button (FAB)**: Rapidly create new boards and cards on mobile.
 - **Mobile Board Switcher**: Bottom drawer for switching boards and roadmaps.
 - **Roadmap Mobile Tabs**: Segmented tabs separating tabular deliverables from the interactive horizontal Gantt canvas.
 - **Sticky Column & Task Headers**: Fixed title headers ensure you never lose context when panning.

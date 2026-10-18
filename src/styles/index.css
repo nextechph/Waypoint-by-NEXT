@@ -1,49 +1,52 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════
-   WORKLANE NEUMORPHIC DESIGN SYSTEM (shadcn + Framer Motion)
+   WAYPOINT DESIGN SYSTEM — Modern · Minimal · Focused · Premium
+   Brand: White #FFFFFF · Charcoal #0F1115 · Gray #2A2F36 · Slate #6B7280
+   Flat surfaces, hairline borders and soft depth (no neumorphism).
    ══════════════════════════════════════════════════════════ */
 
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Neumorphic Light Color Base (#e6e9ef / soft slate) */
-  --background: 218 25% 92%;
-  --foreground: 222.2 47% 15%;
-  --card: 218 25% 92%;
-  --card-foreground: 222.2 47% 15%;
-  --popover: 218 25% 92%;
-  --popover-foreground: 222.2 47% 15%;
+  /* Light — paper white surfaces, charcoal ink */
+  --background: 220 14% 96.5%;
+  --foreground: 225 17% 7%;
+  --card: 0 0% 100%;
+  --card-foreground: 225 17% 7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 225 17% 7%;
 
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --primary-hover: 221.2 83.2% 46%;
+  --primary: 225 17% 7%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 214 12% 19%;
 
-  --secondary: 218 22% 89%;
-  --secondary-foreground: 222.2 47.4% 18%;
+  --secondary: 220 14% 94%;
+  --secondary-foreground: 225 17% 10%;
 
-  --muted: 218 20% 88%;
-  --muted-foreground: 218 16% 46%;
+  --muted: 220 14% 94.5%;
+  --muted-foreground: 220 9% 46%;
 
-  --accent: 218 24% 88%;
-  --accent-foreground: 222.2 47.4% 15%;
+  --accent: 220 14% 93%;
+  --accent-foreground: 225 17% 7%;
 
-  --destructive: 0 74% 56%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 218 20% 86%;
-  --input: 218 20% 86%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 12px;
+  --border: 222 13% 89.5%;
+  --input: 222 13% 87%;
+  --ring: 220 9% 46%;
+  --radius: 10px;
 
-  /* Neumorphic Dual Shadow Tokens - Light (Subtle, Clean & Crisp) */
-  --neu-shadow-raised: 3px 3px 8px rgba(166, 175, 195, 0.3), -3px -3px 8px rgba(255, 255, 255, 0.7);
-  --neu-shadow-raised-sm: 1.5px 1.5px 4px rgba(166, 175, 195, 0.25), -1.5px -1.5px 4px rgba(255, 255, 255, 0.65);
-  --neu-shadow-raised-hover: 4px 4px 10px rgba(166, 175, 195, 0.35), -4px -4px 10px rgba(255, 255, 255, 0.8);
-  --neu-shadow-pressed: inset 2px 2px 4px rgba(166, 175, 195, 0.35), inset -2px -2px 4px rgba(255, 255, 255, 0.6);
-  --neu-shadow-input: inset 1px 1px 3px rgba(166, 175, 195, 0.28), inset -1px -1px 3px rgba(255, 255, 255, 0.55);
-  --neu-shadow-floating: 0 10px 25px -4px rgba(100, 116, 139, 0.14), 0 4px 10px -2px rgba(100, 116, 139, 0.08);
+  /* Elevation tokens (legacy --neu-* names kept so every component picks them up).
+     Hairline ring + soft, low-contrast drop shadows. */
+  --neu-shadow-raised: 0 0 0 1px hsl(var(--border)), 0 1px 2px rgba(15, 17, 21, 0.04), 0 2px 8px -2px rgba(15, 17, 21, 0.05);
+  --neu-shadow-raised-sm: 0 0 0 1px hsl(var(--border)), 0 1px 2px rgba(15, 17, 21, 0.04);
+  --neu-shadow-raised-hover: 0 0 0 1px hsl(var(--input)), 0 6px 18px -6px rgba(15, 17, 21, 0.12);
+  --neu-shadow-pressed: inset 0 0 0 1px hsl(var(--input)), inset 0 1px 2px rgba(15, 17, 21, 0.05);
+  --neu-shadow-input: inset 0 0 0 1px hsl(var(--input));
+  --neu-shadow-floating: 0 0 0 1px hsl(var(--border)), 0 18px 44px -14px rgba(15, 17, 21, 0.20), 0 4px 12px -4px rgba(15, 17, 21, 0.06);
 
   /* Safe Area Inset Tokens (Apple iOS Notches, Dynamic Island & Home Bar)
      Defined in :root so they work in both light AND dark themes */
@@ -54,41 +57,40 @@
 }
 
 .dark {
-  /* Neumorphic Dark Color Base (#161619 / refined graphite dark gray) */
-  --background: 240 4% 10.5%;
-  --foreground: 0 0% 95%;
-  --card: 240 4% 10.5%;
-  --card-foreground: 0 0% 95%;
-  --popover: 240 4% 12%;
-  --popover-foreground: 0 0% 95%;
+  /* Dark — charcoal night, white light */
+  --background: 225 17% 7%;
+  --foreground: 220 14% 96%;
+  --card: 220 15% 9.5%;
+  --card-foreground: 220 14% 96%;
+  --popover: 218 15% 11%;
+  --popover-foreground: 220 14% 96%;
 
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 0 0% 100%;
-  --primary-hover: 217.2 91.2% 67%;
+  --primary: 220 14% 96%;
+  --primary-foreground: 225 17% 7%;
+  --primary-hover: 220 10% 84%;
 
-  --secondary: 240 4% 15%;
-  --secondary-foreground: 0 0% 95%;
+  --secondary: 216 14% 13%;
+  --secondary-foreground: 220 14% 96%;
 
-  --muted: 240 4% 14%;
-  --muted-foreground: 240 3% 60%;
+  --muted: 218 14% 12%;
+  --muted-foreground: 218 8% 60%;
 
-  --accent: 240 4% 16%;
-  --accent-foreground: 0 0% 95%;
+  --accent: 214 13% 15%;
+  --accent-foreground: 220 14% 96%;
 
-  --destructive: 0 68% 52%;
-  --destructive-foreground: 0 0% 98%;
+  --destructive: 0 68% 56%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 240 4% 17%;
-  --input: 240 4% 16%;
-  --ring: 217.2 91.2% 59.8%;
+  --border: 214 12% 16.5%;
+  --input: 214 12% 20%;
+  --ring: 218 8% 60%;
 
-  /* Neumorphic Dual Shadow Tokens - Dark Gray / Graphite (Subtle, Clean & Crisp) */
-  --neu-shadow-raised: 2.5px 2.5px 6px rgba(0, 0, 0, 0.55), -1.5px -1.5px 5px rgba(255, 255, 255, 0.055);
-  --neu-shadow-raised-sm: 1.5px 1.5px 4px rgba(0, 0, 0, 0.45), -1px -1px 3px rgba(255, 255, 255, 0.045);
-  --neu-shadow-raised-hover: 3.5px 3.5px 9px rgba(0, 0, 0, 0.65), -2px -2px 6px rgba(255, 255, 255, 0.075);
-  --neu-shadow-pressed: inset 1.5px 1.5px 3px rgba(0, 0, 0, 0.55), inset -1px -1px 3px rgba(255, 255, 255, 0.045);
-  --neu-shadow-input: inset 1px 1px 3px rgba(0, 0, 0, 0.5), inset -1px -1px 2px rgba(255, 255, 255, 0.04);
-  --neu-shadow-floating: 0 12px 28px -4px rgba(0, 0, 0, 0.45), 0 4px 10px -2px rgba(0, 0, 0, 0.28);
+  --neu-shadow-raised: 0 0 0 1px hsl(var(--border)), inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 2px 8px -2px rgba(0, 0, 0, 0.45);
+  --neu-shadow-raised-sm: 0 0 0 1px hsl(var(--border)), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  --neu-shadow-raised-hover: 0 0 0 1px hsl(var(--input)), inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 22px -8px rgba(0, 0, 0, 0.6);
+  --neu-shadow-pressed: inset 0 0 0 1px hsl(var(--input)), inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  --neu-shadow-input: inset 0 0 0 1px hsl(var(--input));
+  --neu-shadow-floating: 0 0 0 1px hsl(var(--border)), 0 24px 56px -16px rgba(0, 0, 0, 0.7), 0 4px 14px -4px rgba(0, 0, 0, 0.4);
 }
 
 /* ══ Reset & Base ══════════════════════════════════════════ */
@@ -110,6 +112,17 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
+}
+
+h1, h2, h3,
+.modal-title,
+.dashboard-title {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: hsl(var(--foreground) / 0.16);
 }
 
 /* Custom Scrollbar - Soft Inset */
@@ -160,7 +173,7 @@ html, body, #root {
   background-color: hsl(var(--background));
 }
 
-/* ══ Neumorphic Sidebar (Zero side markers) ═══════════════ */
+/* ══ Sidebar (Zero side markers) ═══════════════ */
 .sidebar {
   width: 240px;
   min-width: 240px;
@@ -289,7 +302,7 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-/* Nav & Board Items — Neumorphic Tactile Surfaces */
+/* Nav & Board Items — Tactile Surfaces */
 .sidebar-nav-item,
 .sidebar-board-item {
   display: flex;
@@ -317,7 +330,7 @@ html, body, #root {
   background-color: hsl(var(--card));
 }
 
-/* Active State: Neumorphic Inset / Pressed well */
+/* Active State: Inset / Pressed well */
 .sidebar-nav-item.active,
 .sidebar-board-item.active {
   background-color: hsl(var(--card));
@@ -410,7 +423,7 @@ html, body, #root {
   box-shadow: var(--neu-shadow-raised-sm);
 }
 
-/* ══ Neumorphic Topbar ═════════════════════════════════════ */
+/* ══ Topbar ═════════════════════════════════════ */
 .topbar {
   height: 54px;
   background-color: hsl(var(--card));
@@ -491,7 +504,7 @@ html, body, #root {
   overflow: visible;
 }
 
-/* ══ Neumorphic Tactile Buttons ════════════════════════════ */
+/* ══ Tactile Buttons ════════════════════════════ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -820,7 +833,7 @@ html, body, #root {
   box-shadow: var(--neu-shadow-pressed);
 }
 
-/* ══ Neumorphic Task Card ══════════════════════════════════ */
+/* ══ Task Card ══════════════════════════════════ */
 .card {
   background-color: hsl(var(--card));
   box-shadow: var(--neu-shadow-raised-sm);
@@ -1252,7 +1265,7 @@ html, body, #root {
   font-size: 12px;
 }
 
-/* ══ Neumorphic Modals & Overlays ══════════════════════════ */
+/* ══ Modals & Overlays ══════════════════════════ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1354,7 +1367,7 @@ html, body, #root {
   gap: 10px;
 }
 
-/* ══ Form Controls (Neumorphic Inset Wells) ════════════════ */
+/* ══ Form Controls (Inset Wells) ════════════════ */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1386,7 +1399,7 @@ html, body, #root {
 .text-input:focus,
 .select-input:focus,
 .textarea-input:focus {
-  box-shadow: var(--neu-shadow-pressed), 0 0 0 1.5px hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 0 1px hsl(var(--foreground) / 0.5), 0 0 0 4px hsl(var(--foreground) / 0.06);
 }
 
 select {

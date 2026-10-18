@@ -109,12 +109,12 @@ export default function App() {
       const inviteObj = { boardId: joinBoardId, role: inviteRole };
       setPendingInvite(inviteObj);
       try {
-        localStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
-        sessionStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
+        localStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
+        sessionStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
       } catch {}
     } else {
       try {
-        const saved = localStorage.getItem('worklane_pending_invite') || sessionStorage.getItem('worklane_pending_invite');
+        const saved = localStorage.getItem('waypoint_pending_invite') || sessionStorage.getItem('waypoint_pending_invite');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed?.boardId) {
@@ -237,15 +237,15 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       const urlPage = params.get('page');
       const urlBoard = params.get('board') || params.get('b');
-      const savedBoard = localStorage.getItem('worklane_current_board_id_v1');
+      const savedBoard = localStorage.getItem('waypoint_current_board_id_v1');
       const initialBoardId = urlBoard || savedBoard || null;
 
       const urlView = params.get('view') as 'board' | 'roadmap' | 'calendar' | null;
       const urlCard = params.get('card') || params.get('c');
 
-      const savedPage = localStorage.getItem('worklane_current_page_v1') as 'dashboard' | 'board' | 'roadmap' | null;
-      const savedView = localStorage.getItem('worklane_current_view_mode_v1') as 'board' | 'roadmap' | 'calendar' | null;
-      const savedCard = localStorage.getItem('worklane_current_card_v1');
+      const savedPage = localStorage.getItem('waypoint_current_page_v1') as 'dashboard' | 'board' | 'roadmap' | null;
+      const savedView = localStorage.getItem('waypoint_current_view_mode_v1') as 'board' | 'roadmap' | 'calendar' | null;
+      const savedCard = localStorage.getItem('waypoint_current_card_v1');
 
       let initialPage: 'dashboard' | 'board' | 'roadmap' = 'dashboard';
       if (urlPage === 'roadmap') {
@@ -338,15 +338,15 @@ export default function App() {
         return;
       }
 
-      localStorage.setItem('worklane_current_page_v1', page);
-      localStorage.setItem('worklane_current_view_mode_v1', viewMode);
+      localStorage.setItem('waypoint_current_page_v1', page);
+      localStorage.setItem('waypoint_current_view_mode_v1', viewMode);
       if (activeBoardId) {
-        localStorage.setItem('worklane_current_board_id_v1', activeBoardId);
+        localStorage.setItem('waypoint_current_board_id_v1', activeBoardId);
       }
       if (openCardId) {
-        localStorage.setItem('worklane_current_card_v1', openCardId);
+        localStorage.setItem('waypoint_current_card_v1', openCardId);
       } else {
-        localStorage.removeItem('worklane_current_card_v1');
+        localStorage.removeItem('waypoint_current_card_v1');
       }
 
       const params = new URLSearchParams(window.location.search);
@@ -404,9 +404,9 @@ export default function App() {
     if (!isAuthenticated) {
       setPage('dashboard');
       try {
-        localStorage.setItem('worklane_current_page_v1', 'dashboard');
-        localStorage.removeItem('worklane_current_board_id_v1');
-        localStorage.removeItem('worklane_current_card_v1');
+        localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+        localStorage.removeItem('waypoint_current_board_id_v1');
+        localStorage.removeItem('waypoint_current_card_v1');
         const params = new URLSearchParams(window.location.search);
         if (!params.has('joinBoard') && !params.has('invite') && !params.has('reset') && !params.has('error')) {
           window.history.replaceState({}, document.title, window.location.pathname);
@@ -425,8 +425,8 @@ export default function App() {
         if (hasLoadedOnce) {
           setPage('dashboard');
           try {
-            localStorage.setItem('worklane_current_page_v1', 'dashboard');
-            localStorage.removeItem('worklane_current_board_id_v1');
+            localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+            localStorage.removeItem('waypoint_current_board_id_v1');
           } catch {}
         }
         return;
@@ -435,8 +435,8 @@ export default function App() {
       if (!boardExists) {
         setPage('dashboard');
         try {
-          localStorage.setItem('worklane_current_page_v1', 'dashboard');
-          localStorage.removeItem('worklane_current_board_id_v1');
+          localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+          localStorage.removeItem('waypoint_current_board_id_v1');
         } catch {}
       }
     }
@@ -466,18 +466,18 @@ export default function App() {
     }
     setViewMode(resolvedView);
     try {
-      localStorage.setItem('worklane_current_page_v1', targetPage);
-      localStorage.setItem('worklane_current_board_id_v1', boardId);
-      localStorage.setItem('worklane_current_view_mode_v1', resolvedView);
+      localStorage.setItem('waypoint_current_page_v1', targetPage);
+      localStorage.setItem('waypoint_current_board_id_v1', boardId);
+      localStorage.setItem('waypoint_current_view_mode_v1', resolvedView);
     } catch {}
   }, [switchBoard, boards, viewMode]);
 
   const handleGoToDashboard = useCallback(() => {
     setPage('dashboard');
     try {
-      localStorage.setItem('worklane_current_page_v1', 'dashboard');
-      localStorage.removeItem('worklane_current_board_id_v1');
-      localStorage.removeItem('worklane_current_card_v1');
+      localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+      localStorage.removeItem('waypoint_current_board_id_v1');
+      localStorage.removeItem('waypoint_current_card_v1');
     } catch {}
   }, []);
 
@@ -500,8 +500,8 @@ export default function App() {
     }
   }, []);
 
-const ALERTED_SOON_KEY = 'worklane_alerted_soon_v1';
-const ALERTED_OVERDUE_KEY = 'worklane_alerted_overdue_v1';
+const ALERTED_SOON_KEY = 'waypoint_alerted_soon_v1';
+const ALERTED_OVERDUE_KEY = 'waypoint_alerted_overdue_v1';
 
 function getAlertedSet(key: string): Set<string> {
   try {
@@ -556,7 +556,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `Reminder: Task Due Soon - ${card.title}`,
-                  body: `Hi ${member.name},\n\nThe task "${card.title}" is due soon (${formatDueDate(card.dueDate)}) on board "${board.name}".\n\nWorklane Team`,
+                  body: `Hi ${member.name},\n\nThe task "${card.title}" is due soon (${formatDueDate(card.dueDate)}) on board "${board.name}".\n\nWaypoint Team`,
                   eventType: 'due_reminder',
                   metadata: {
                     cardTitle: card.title,
@@ -589,7 +589,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `Alert: Task is Overdue - ${card.title}`,
-                  body: `Hi ${member.name},\n\nThe task "${card.title}" was due on ${formatDueDate(card.dueDate)} and is now overdue on board "${board.name}".\n\nWorklane Team`,
+                  body: `Hi ${member.name},\n\nThe task "${card.title}" was due on ${formatDueDate(card.dueDate)} and is now overdue on board "${board.name}".\n\nWaypoint Team`,
                   eventType: 'due_reminder',
                   metadata: {
                     cardTitle: card.title,
@@ -631,8 +631,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           role={pendingInvite.role}
           onAcceptJoin={(boardId) => {
             try {
-              localStorage.removeItem('worklane_pending_invite');
-              sessionStorage.removeItem('worklane_pending_invite');
+              localStorage.removeItem('waypoint_pending_invite');
+              sessionStorage.removeItem('waypoint_pending_invite');
             } catch {}
             window.history.replaceState({}, document.title, window.location.pathname);
             setPendingInvite(null);
@@ -640,8 +640,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           }}
           onDecline={() => {
             try {
-              localStorage.removeItem('worklane_pending_invite');
-              sessionStorage.removeItem('worklane_pending_invite');
+              localStorage.removeItem('waypoint_pending_invite');
+              sessionStorage.removeItem('waypoint_pending_invite');
             } catch {}
             window.history.replaceState({}, document.title, window.location.pathname);
             setPendingInvite(null);

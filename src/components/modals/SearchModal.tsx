@@ -363,7 +363,7 @@ export default function SearchModal({
                     style={{
                       border: 'none',
                       background: currentScope === 'board' ? 'hsl(var(--primary))' : 'transparent',
-                      color: currentScope === 'board' ? '#fff' : 'hsl(var(--muted-foreground))',
+                      color: currentScope === 'board' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
                       fontSize: 11.5,
                       fontWeight: 600,
                       padding: '3px 10px',
@@ -383,7 +383,7 @@ export default function SearchModal({
                     style={{
                       border: 'none',
                       background: currentScope === 'global' ? 'hsl(var(--primary))' : 'transparent',
-                      color: currentScope === 'global' ? '#fff' : 'hsl(var(--muted-foreground))',
+                      color: currentScope === 'global' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
                       fontSize: 11.5,
                       fontWeight: 600,
                       padding: '3px 10px',

@@ -28,10 +28,10 @@ export default function PrivacyModal({ onClose }: Props) {
   const totalAttachments = boards.reduce((acc, b) => acc + (b.columns?.reduce((cAcc, c) => cAcc + (c.cards?.reduce((aAcc, a) => aAcc + (a.attachments?.length || 0), 0) || 0), 0) || 0), 0);
 
   const storageBytes = new Blob([
-    localStorage.getItem('worklane_data_v4') || '',
-    localStorage.getItem('worklane_notifs_v3') || '',
-    localStorage.getItem('worklane_auth_v2') || '',
-    localStorage.getItem('worklane_emails_v2') || '',
+    localStorage.getItem('waypoint_data_v4') || '',
+    localStorage.getItem('waypoint_notifs_v3') || '',
+    localStorage.getItem('waypoint_auth_v2') || '',
+    localStorage.getItem('waypoint_emails_v2') || '',
   ]).size;
 
   const storageKB = (storageBytes / 1024).toFixed(1);
@@ -48,7 +48,7 @@ export default function PrivacyModal({ onClose }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `worklane-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `waypoint-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showToast('Data exported successfully', 'success');

@@ -268,7 +268,7 @@ export default function MobileBoardSelector({
                               height: 26,
                               borderRadius: '50%',
                               backgroundColor: 'hsl(var(--primary))',
-                              color: '#fff',
+                              color: 'hsl(var(--primary-foreground))',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',

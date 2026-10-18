@@ -9,7 +9,8 @@ import { useThemeStore } from '../store/useThemeStore';
 import { avatarInitials, sortMembersWithOwnerFirst, useIsMobile } from '../utils';
 import AvatarBorder from './ui/AvatarBorder';
 import BoardColorPicker from './ui/BoardColorPicker';
-import logoImg from '../assets/logo.png';
+import markDark from '../assets/logo-mark-dark.png';
+import markLight from '../assets/logo-mark-light.png';
 import type { Member } from '../types';
 
 interface Props {
@@ -210,8 +211,8 @@ export default function Topbar({
             <span className="topbar-crumb-active" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
               {isMobile && (
                 <img
-                  src={logoImg}
-                  alt="Worklane"
+                  src={isDark ? markDark : markLight}
+                  alt="Waypoint"
                   style={{ width: 22, height: 22, borderRadius: 6, objectFit: 'contain' }}
                 />
               )}

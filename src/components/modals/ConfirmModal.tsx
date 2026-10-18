@@ -216,7 +216,7 @@ export default function ConfirmModal() {
                 padding: '7px 18px',
                 fontWeight: 600,
                 backgroundColor: isDanger ? '#ef4444' : isWarning ? '#f59e0b' : 'hsl(var(--primary))',
-                color: '#ffffff',
+                color: isDanger || isWarning ? '#ffffff' : 'hsl(var(--primary-foreground))',
                 border: 'none',
                 boxShadow: isDanger
                   ? '0 2px 8px rgba(239, 68, 68, 0.4)'

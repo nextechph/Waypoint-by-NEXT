@@ -24,7 +24,7 @@ interface Props<T extends string = string> {
   align?: 'left' | 'right';
 }
 
-export function NeumorphicSelect<T extends string = string>({
+export function Select<T extends string = string>({
   value,
   options,
   onChange,
@@ -179,7 +179,7 @@ export function NeumorphicSelect<T extends string = string>({
         </motion.div>
       </motion.button>
 
-      {/* Floating Neumorphic Menu */}
+      {/* Floating Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div

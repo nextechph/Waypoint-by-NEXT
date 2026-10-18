@@ -12,7 +12,7 @@ import { useNotifStore } from '../store/useNotifStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useEmailStore } from '../store/useEmailStore';
 import { avatarInitials, sortMembersWithOwnerFirst, uid, getMemberTeamCategory, getTeamBadgeInfo } from '../utils';
-import { NeumorphicSelect, SelectOption } from './ui/NeumorphicSelect';
+import { Select, SelectOption } from './ui/Select';
 import AvatarBorder from './ui/AvatarBorder';
 import ProfileBorderPicker from './ui/ProfileBorderPicker';
 import { Member, MemberRole, BORDER_PRESETS } from '../types';
@@ -201,8 +201,8 @@ export default function MembersModal({ onClose }: Props) {
         // Dispatched email log
         useEmailStore.getState().sendEmailNotification({
           recipient: { id: result || uid(), name: selectedUser.name, email: cleanEmail, color: '#6366f1' },
-          subject: `You've been added to board "${board.name}" on Worklane`,
-          body: `Hi ${selectedUser.name},\n\n${adderName} added you as ${role === 'observer' ? 'an Observer (study mode)' : role === 'admin' ? 'an Admin' : 'a Member'} to collaborate on board "${board.name}".\n\nWorklane Team`,
+          subject: `You've been added to board "${board.name}" on Waypoint`,
+          body: `Hi ${selectedUser.name},\n\n${adderName} added you as ${role === 'observer' ? 'an Observer (study mode)' : role === 'admin' ? 'an Admin' : 'a Member'} to collaborate on board "${board.name}".\n\nWaypoint Team`,
           eventType: 'member_added',
           metadata: {
             boardName: board.name,
@@ -310,7 +310,7 @@ export default function MembersModal({ onClose }: Props) {
                   height: 14,
                   borderRadius: '50%',
                   backgroundColor: 'hsl(var(--primary))',
-                  color: '#fff',
+                  color: 'hsl(var(--primary-foreground))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -411,7 +411,7 @@ export default function MembersModal({ onClose }: Props) {
                 <span>Owner</span>
               </div>
             ) : canManage ? (
-              <NeumorphicSelect
+              <Select
                 value={memberRole as AssignableRole}
                 options={isOwner ? OWNER_ROLE_OPTIONS : ADMIN_ROLE_OPTIONS}
                 onChange={(newRole) => {
@@ -943,7 +943,7 @@ export default function MembersModal({ onClose }: Props) {
                             <span>No registered user found for "{searchQuery}"</span>
                           </div>
                           <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.4 }}>
-                            Only users registered on Worklane appear here. You can generate an invite link below so they can sign in and automatically join.
+                            Only users registered on Waypoint appear here. You can generate an invite link below so they can sign in and automatically join.
                           </p>
                           <motion.button
                             whileTap={{ scale: 0.96 }}
@@ -990,7 +990,7 @@ export default function MembersModal({ onClose }: Props) {
                                       height: 28,
                                       borderRadius: '50%',
                                       backgroundColor: 'hsl(var(--primary))',
-                                      color: '#fff',
+                                      color: 'hsl(var(--primary-foreground))',
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'center',
@@ -1071,7 +1071,7 @@ export default function MembersModal({ onClose }: Props) {
                             height: 34,
                             borderRadius: '50%',
                             backgroundColor: 'hsl(var(--primary))',
-                            color: '#fff',
+                            color: 'hsl(var(--primary-foreground))',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1115,7 +1115,7 @@ export default function MembersModal({ onClose }: Props) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 10, alignItems: 'center' }}>
                       <div>
                         <label className="field-label" style={{ fontSize: 11, marginBottom: 4 }}>Board Permission</label>
-                        <NeumorphicSelect
+                        <Select
                           value={role}
                           options={isOwner ? OWNER_ROLE_OPTIONS : ADMIN_ROLE_OPTIONS}
                           onChange={setRole}
@@ -1214,14 +1214,14 @@ export default function MembersModal({ onClose }: Props) {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: 'hsl(var(--foreground))' }}>
                       <Sparkles size={14} color="hsl(var(--primary))" />
-                      <span>Invite to Worklane & Join Board</span>
+                      <span>Invite to Waypoint & Join Board</span>
                     </div>
                     <p style={{ margin: 0, fontSize: 11.5, color: 'hsl(var(--muted-foreground))', lineHeight: 1.45 }}>
                       Anyone with this link who registers or signs in with Google will automatically join this board.
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 8, alignItems: 'center', marginTop: 2, position: 'relative' }}>
-                      <NeumorphicSelect
+                      <Select
                         value={inviteRole}
                         options={isOwner ? OWNER_ROLE_OPTIONS : ADMIN_ROLE_OPTIONS}
                         onChange={setInviteRole}

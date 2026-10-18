@@ -56,7 +56,7 @@ export default function MobileBottomNav({
         <span>{isRoadmap ? "Roadmap" : "Board"}</span>
       </button>
 
-      {/* Prominent Neumorphic Center Circle Plus Button */}
+      {/* Prominent Center Circle Plus Button */}
       <div className="mobile-nav-fab-wrapper">
         <motion.button
           whileTap={{ scale: 0.9 }}
