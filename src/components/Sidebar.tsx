@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ChevronRight } from './ui/glyphs';
 import {
-  Home, CheckSquare, FolderClosed, CalendarRange, Mail, Users, Settings,
-  ChevronRight, ChevronsLeft, ChevronsRight, Plus, X, Sun, Moon, LogOut, User,
-  KanbanSquare, Milestone
-} from './ui/glyphs';
+  House, CheckSquareOffset, Folders, Path, CalendarBlank, Tray, GearSix, Users, SidebarSimple,
+  type Icon as PhosphorIcon,
+} from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -33,13 +33,14 @@ interface Props {
   onCloseMobile?: () => void;
 }
 
-const NAV: Array<{ page: AppPage; label: string; icon: React.ElementType }> = [
-  { page: 'dashboard', label: 'Today', icon: Home },
-  { page: 'mywork', label: 'My Work', icon: CheckSquare },
-  { page: 'projects', label: 'Projects', icon: FolderClosed },
-  { page: 'timeline', label: 'Timeline', icon: CalendarRange },
-  { page: 'calendar', label: 'Calendar', icon: CalendarRange },
-  { page: 'inbox', label: 'Inbox', icon: Mail },
+// Phosphor icons label every destination; the collapsed rail shows the icons alone.
+const NAV: Array<{ page: AppPage; label: string; icon: PhosphorIcon }> = [
+  { page: 'dashboard', label: 'Today', icon: House },
+  { page: 'mywork', label: 'My Work', icon: CheckSquareOffset },
+  { page: 'projects', label: 'Projects', icon: Folders },
+  { page: 'timeline', label: 'Timeline', icon: Path },
+  { page: 'calendar', label: 'Calendar', icon: CalendarBlank },
+  { page: 'inbox', label: 'Inbox', icon: Tray },
 ];
 
 export default function Sidebar({
@@ -101,17 +102,22 @@ export default function Sidebar({
     <aside className={`sidebar wp-sidebar${isCollapsed ? ' collapsed' : ''}${isMobileOpen ? ' mobile-open' : ''}`}>
       {/* Brand lockup */}
       <div className="wp-sidebar-brand">
-        <button type="button" className="wp-brand-btn" onClick={() => go('dashboard')} title="Waypoint — Today">
-          {isCollapsed ? (
-            <img src={isDark ? markDark : markLight} alt="Waypoint" className="wp-brand-mark" />
-          ) : (
+        {isCollapsed ? (
+          // The rail is too narrow for a logo and a separate toggle side by side, so the
+          // mark itself is the expand control: it swaps to a sidebar icon on hover.
+          <button type="button" className="wp-brand-btn wp-rail-toggle" onClick={onToggleCollapse} title="Expand sidebar" aria-label="Expand sidebar">
+            <img src={isDark ? markDark : markLight} alt="" className="wp-brand-mark" />
+            <SidebarSimple size={20} className="wp-rail-toggle-icon" />
+          </button>
+        ) : (
+          <button type="button" className="wp-brand-btn" onClick={() => go('dashboard')} title="Waypoint — Today">
             <span className="wp-brand-lockup">
               <img src={isDark ? wordmarkDark : wordmarkLight} alt="Waypoint" className="wp-brand-wordmark" />
               <span className="wp-brand-sub">By Next Technology</span>
             </span>
-          )}
-        </button>
-        {onCloseMobile && isMobileOpen ? (
+          </button>
+        )}
+        {isCollapsed ? null : onCloseMobile && isMobileOpen ? (
           <button type="button" className="wp-icon-ghost" onClick={close} aria-label="Close navigation">
             Close
           </button>
@@ -120,9 +126,9 @@ export default function Sidebar({
             type="button"
             className="wp-text-link wp-collapse-btn hide-on-mobile"
             onClick={onToggleCollapse}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title="Collapse sidebar"
           >
-            {collapsed ? '»' : '«'}
+            «
           </button>
         )}
       </div>
@@ -130,7 +136,7 @@ export default function Sidebar({
       <div className="wp-sidebar-scroll">
         {/* Primary navigation */}
         <nav className="wp-nav" aria-label="Primary">
-          {NAV.map(({ page: p, label }, i) => (
+          {NAV.map(({ page: p, label, icon: NavIcon }) => (
             <button
               key={p}
               type="button"
@@ -138,7 +144,7 @@ export default function Sidebar({
               onClick={() => go(p)}
               title={isCollapsed ? label : undefined}
             >
-              <span className="wp-nav-index">{String(i + 1).padStart(2, '0')}</span>
+              <NavIcon size={isCollapsed ? 21 : 19} weight={isNavActive(p) ? 'fill' : 'regular'} aria-hidden />
               {!isCollapsed && <span className="wp-nav-label">{label}</span>}
               {p === 'inbox' && inboxUnread && <span className="wp-nav-dot" aria-label="Unread" />}
             </button>
@@ -198,6 +204,7 @@ export default function Sidebar({
       <div className="wp-sidebar-foot">
         {activeBoard && (
           <button type="button" className="wp-foot-link" onClick={() => { onManageMembers(); close(); }} title="Team">
+            <Users size={isCollapsed ? 20 : 18} aria-hidden />
             {!isCollapsed && (
               <>
                 <span style={{ flex: 1, textAlign: 'left' }}>Team</span>
@@ -253,7 +260,8 @@ export default function Sidebar({
 
         <div className="wp-foot-row">
           <button type="button" className="wp-foot-link" onClick={() => { onOpenSettings(); close(); }} title="Settings">
-            <span style={{ flex: 1, textAlign: 'left' }}>{isCollapsed ? 'Set' : 'Settings'}</span>
+            <GearSix size={isCollapsed ? 20 : 18} aria-hidden />
+            {!isCollapsed && <span style={{ flex: 1, textAlign: 'left' }}>Settings</span>}
           </button>
           {!isCollapsed && (
             <button
