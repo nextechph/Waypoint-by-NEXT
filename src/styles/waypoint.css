@@ -1384,3 +1384,16 @@ li.current .wp-ms-status { color: var(--wp-ink); }
   textarea.wp-sheet-desc { font-size: 16px !important; }
   .wp-composer-row textarea { font-size: 16px !important; }
 }
+
+/* ══ Social sign-in ════════════════════════════════════════ */
+.wp-oauth { display: flex; flex-direction: column; gap: 10px; }
+.wp-oauth-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; height: 44px; border-radius: 10px;
+  border: 1px solid hsl(var(--input)); background: hsl(var(--card));
+  font-family: inherit; font-size: 13.5px; font-weight: 600; color: hsl(var(--foreground));
+  cursor: pointer; transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.wp-oauth-btn:hover:not(:disabled) { border-color: hsl(var(--foreground) / 0.45); background: hsl(var(--accent)); }
+.wp-oauth-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.wp-oauth-btn svg { flex-shrink: 0; }

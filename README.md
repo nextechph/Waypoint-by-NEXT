@@ -122,7 +122,7 @@ Waypoint operates with zero-latency optimistic local state persisted in `localSt
 - **Member Invitations**:
   - Direct user search to add registered accounts by email.
   - Shareable role-specific invitation links (`?joinBoard=<id>&role=admin|member|observer`).
-  - Dedicated `InviteLandingPage` with inline Google OAuth or email sign-up.
+  - Dedicated `InviteLandingPage` with Google, Apple or Microsoft sign-in, or email sign-up.
 - **Discussions & Mention System**:
   - Comment threads with nested replies.
   - Proof and screenshot attachments directly within comment replies.
@@ -187,7 +187,7 @@ graph TD
 
     subgraph Backend_Services ["☁️ Backend & Integration Services"]
         DB_Postgres[(Supabase PostgreSQL)]
-        DB_Auth[Supabase Auth - Google OAuth & Email OTP]
+        DB_Auth[Supabase Auth - Google/Apple/Microsoft OAuth & Email OTP]
         DB_Storage[Supabase Storage - Attachments & Avatars]
         DB_Realtime[Supabase Realtime WebSocket Subscriptions]
         EXT_Pipedream[Pipedream HTTP Webhook Pipeline]
@@ -239,7 +239,7 @@ graph TD
     User([👤 User])
 
     subgraph P1 ["1.0 Authentication & Session Management"]
-        P1_1[Google OAuth / Email OTP / Password Reset]
+        P1_1[Google / Apple / Microsoft OAuth, Email OTP, Password Reset]
         P1_2[Profile Sync & Role Border Picker]
     end
 
@@ -479,6 +479,16 @@ VITE_PIPEDREAM_WEBHOOK_URL=https://eoxxxxxxxxx.m.pipedream.net
 2. Open the **SQL Editor**.
 3. Copy and run the entire content of [`supabase_schema.sql`](supabase_schema.sql).
 4. *(Optional)* In **Authentication &rarr; URL Configuration**, add your local URL (`http://localhost:5173`) and production domain to the **Redirect URLs**.
+
+### 4b. Enable Social Sign-In (Google, Apple, Microsoft)
+The login and invite pages show separate **Continue with Google**, **Continue with Apple** and **Continue with Microsoft** buttons. Each uses Supabase OAuth, so turn the providers on in your Supabase project:
+
+1. **Supabase → Authentication → Providers**: enable **Google**, **Apple** and **Azure** (Supabase's provider for Microsoft accounts) and paste each provider's client ID and secret.
+2. **Callback URL**: register `https://<your-project>.supabase.co/auth/v1/callback` with each provider (Google Cloud Console, Apple Developer "Sign in with Apple" Services ID, and the Microsoft Entra app registration).
+3. **Microsoft**: in the Entra app registration choose the account types you want (work/school and/or personal) and grant the `email` permission. Waypoint requests the `email` scope so the account's address is returned.
+4. **Authentication → URL Configuration**: add your app's origin (e.g. `http://localhost:5173` and your production URL) to the redirect allow-list.
+
+Without Supabase configured, the buttons sign you into a local demo account.
 
 ### 5. Launch Development Server
 ```bash
