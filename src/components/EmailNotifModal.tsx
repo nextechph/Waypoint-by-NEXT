@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Mail, X, Send, Trash2, ExternalLink, CheckCircle2, ShieldCheck, Loader2, Users } from 'lucide-react';
+import { Mail, X, Send, Trash2, ExternalLink, CheckCircle2, ShieldCheck, Loader2, Users } from './ui/glyphs';
 import { motion } from 'framer-motion';
-import { NeumorphicSelect } from './ui/NeumorphicSelect';
+import { Select } from './ui/Select';
 import { useEmailStore } from '../store/useEmailStore';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
 import { formatTime } from '../utils';
+import { useEscape } from '../lib/useEscape';
 
 interface Props {
   onClose: () => void;
 }
 
 export default function EmailNotifModal({ onClose }: Props) {
+  useEscape(() => onClose());
   const board = useWorkStore(s => s.getActiveBoard());
   const settings = useEmailStore(s => s.settings);
   const logs = useEmailStore(s => s.logs).filter(l => l.status === 'sent' || l.status === 'failed');
@@ -223,7 +225,7 @@ export default function EmailNotifModal({ onClose }: Props) {
           <div className="form-group" style={{ marginTop: 2 }}>
             <label className="field-label">Send Direct Update or Test</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <NeumorphicSelect
+              <Select
                 value={testEmail}
                 placeholder="Select a team member..."
                 options={[

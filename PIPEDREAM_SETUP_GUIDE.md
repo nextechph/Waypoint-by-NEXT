@@ -1,15 +1,15 @@
-# 🚀 Worklane + Pipedream Email Notification Setup Guide
+# 🚀 Waypoint + Pipedream Email Notification Setup Guide
 
-This guide provides step-by-step instructions for configuring automated email notifications in **Worklane Kanban** using **Pipedream HTTP Webhooks**.
+This guide provides step-by-step instructions for configuring automated email notifications in **Waypoint Kanban** using **Pipedream HTTP Webhooks**.
 
 ---
 
 ## 📌 Architecture Overview
 
-Worklane uses a zero-configuration, webhook-driven architecture for outgoing notifications:
+Waypoint uses a zero-configuration, webhook-driven architecture for outgoing notifications:
 
 ```
-[ Worklane Kanban Board Event ]
+[ Waypoint Kanban Board Event ]
            │
            ▼
 [ HTTP POST with Pre-Rendered HTML Template ]
@@ -25,7 +25,7 @@ Worklane uses a zero-configuration, webhook-driven architecture for outgoing not
 ```
 
 1. **Board Events**: Actions such as card assignments, due date alerts, status movements, and @mentions trigger an event.
-2. **Pre-Rendered HTML**: Worklane generates a responsive, branded HTML email card and dispatches it via an HTTP POST request to the webhook endpoint configured in your deployment environment.
+2. **Pre-Rendered HTML**: Waypoint generates a responsive, branded HTML email card and dispatches it via an HTTP POST request to the webhook endpoint configured in your deployment environment.
 3. **Pipedream Delivery**: Pipedream receives the webhook payload and routes the email through your connected provider (Gmail, Resend, SendGrid, or custom SMTP).
 4. **Zero End-User Friction**: End-users do not need to configure URLs or technical settings. Once deployed with the environment variable, the system works automatically out of the box.
 
@@ -50,7 +50,7 @@ Worklane uses a zero-configuration, webhook-driven architecture for outgoing not
 ---
 
 ### Step 3: Add the Webhook URL to Your Environment
-1. Open your `.env` file in the Worklane project root (or configure it in your deployment platform, such as Vercel, Netlify, or Railway):
+1. Open your `.env` file in the Waypoint project root (or configure it in your deployment platform, such as Vercel, Netlify, or Railway):
    ```env
    VITE_PIPEDREAM_WEBHOOK_URL=https://eoxxxxxxxxxx.m.pipedream.net
    ```
@@ -58,8 +58,8 @@ Worklane uses a zero-configuration, webhook-driven architecture for outgoing not
 
 ---
 
-### Step 4: Dispatch a Test Event from Worklane
-1. Open your Worklane application.
+### Step 4: Dispatch a Test Event from Waypoint
+1. Open your Waypoint application.
 2. Click the **Mail (Email)** icon in the top navigation bar or go to **Settings &rarr; Email Updates**.
 3. Under **"Send Direct Update or Test"**, enter your email address.
 4. Click **"Send Notification"** / **"Send Test"**.
@@ -101,7 +101,7 @@ Worklane uses a zero-configuration, webhook-driven architecture for outgoing not
 
 ## 📦 Webhook Payload Specification
 
-Each event dispatched by Worklane sends the following JSON structure:
+Each event dispatched by Waypoint sends the following JSON structure:
 
 ```json
 {
@@ -111,17 +111,17 @@ Each event dispatched by Worklane sends the following JSON structure:
     "name": "Maria Santos",
     "email": "maria@company.com"
   },
-  "sender": "notifications@worklane.app",
+  "sender": "notifications@waypoint.app",
   "subject": "Task Assigned: Design system tokens",
   "body": "Hi Maria! You have been assigned to 'Design system tokens' on board 'Frontend Sprint'.",
-  "html": "<!DOCTYPE html><html>...<!-- Responsive Worklane HTML Template -->...</html>",
+  "html": "<!DOCTYPE html><html>...<!-- Responsive Waypoint HTML Template -->...</html>",
   "metadata": {
     "cardTitle": "Design system tokens",
     "boardName": "Frontend Sprint",
     "actorName": "Alex Chen",
     "dueDate": "Sep 12, 2026"
   },
-  "source": "Worklane Kanban"
+  "source": "Waypoint Kanban"
 }
 ```
 
@@ -136,16 +136,16 @@ Each event dispatched by Worklane sends the following JSON structure:
 
 ## 🎨 Built-in Email Design & Aesthetic
 
-Worklane pre-renders an email template with inline styles optimized for all major email clients (Gmail, Apple Mail, Outlook, mobile):
+Waypoint pre-renders an email template with inline styles optimized for all major email clients (Gmail, Apple Mail, Outlook, mobile):
 
-- **Brand Styling**: Worklane indigo gradient (`#4f46e5` to `#6366f1`) with signature "W" emblem.
+- **Brand Styling**: Waypoint indigo gradient (`#4f46e5` to `#6366f1`) with signature "W" emblem.
 - **Dynamic Event Badges**:
   - 🔵 `TASK ASSIGNED`
   - 🟠 `DUE DATE REMINDER`
   - 🟢 `STATUS MOVEMENT`
   - 🟣 `MENTIONED YOU`
 - **Context Details Card**: Displays task card title, board name, due date (highlighted if approaching), and author.
-- **Call-to-Action (CTA)**: Prominent button linking directly to the board workspace (`Open in Worklane ->`).
+- **Call-to-Action (CTA)**: Prominent button linking directly to the board workspace (`Open in Waypoint ->`).
 - **Standard Footer**: Clarifies why the recipient received the notification with instructions for managing alert preferences.
 
 ---
@@ -156,7 +156,7 @@ Worklane pre-renders an email template with inline styles optimized for all majo
 **No.** The Webhook URL is strictly an environment variable (`VITE_PIPEDREAM_WEBHOOK_URL`). Once set in your hosting platform (Vercel, Netlify, Docker, etc.), it applies across the workspace automatically.
 
 #### What happens if `VITE_PIPEDREAM_WEBHOOK_URL` is omitted?
-Worklane safely bypasses outgoing email network calls without generating fake or simulated logs in the history feed.
+Waypoint safely bypasses outgoing email network calls without generating fake or simulated logs in the history feed.
 
 #### Can I use services other than Pipedream?
 Yes. Any webhook receiver (such as Make.com, n8n, Zapier, or a custom Express/Next.js API route) that accepts an HTTP POST with a JSON payload can be used as your endpoint.

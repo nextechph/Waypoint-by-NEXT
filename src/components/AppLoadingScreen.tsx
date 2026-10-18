@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import sidebarDark from "../assets/sidebar-dark.png";
-import sidebarLight from "../assets/sidebar.png";
-import ThreeDBackground from "./ThreeDBackground";
+import wordmarkDark from "../assets/wordmark-dark.png";
+import wordmarkLight from "../assets/wordmark-light.png";
 
 interface AppLoadingScreenProps {
   isDark?: boolean;
@@ -24,89 +23,71 @@ export default function AppLoadingScreen({ isDark = true }: AppLoadingScreenProp
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const accent = "#6366f1";
-  const sub = isDark ? "#94a3b8" : "#475569";
-  const logoSrc = isDark ? sidebarDark : sidebarLight;
+  const ink = isDark ? "#FFFFFF" : "#0F1115";
+  const sub = "#6B7280";
+  const logoSrc = isDark ? wordmarkDark : wordmarkLight;
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background: isDark ? "#070b16" : "#f1f5f9",
+        background: isDark
+          ? "radial-gradient(ellipse 70% 55% at 50% 38%, #1d2229 0%, #0F1115 70%)"
+          : "radial-gradient(ellipse 70% 55% at 50% 38%, #FFFFFF 0%, #F5F6F8 70%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         zIndex: 9999,
-        fontFamily: "'Inter', 'Outfit', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         overflow: "hidden",
       }}
     >
-      {/* Animated 3D ribbon background */}
-      <ThreeDBackground isDark={isDark ?? true} />
-
-      {/* Overlay to tone down background so content pops */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: isDark
-            ? "rgba(7, 11, 22, 0.45)"
-            : "rgba(241, 245, 249, 0.45)",
-          zIndex: 2,
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Loading content — sits above background */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         style={{
           position: "relative",
-          zIndex: 3,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 28,
+          gap: 14,
         }}
       >
-        {/* Logo image — enlarged */}
         <motion.img
           src={logoSrc}
-          alt="Worklane"
-          animate={{ scale: [1, 1.04, 1] }}
+          alt="Waypoint"
+          animate={{ opacity: [0.85, 1, 0.85] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            width: 200,
-            height: 200,
+            width: 260,
+            height: "auto",
             objectFit: "contain",
-            borderRadius: 28,
-            filter: `drop-shadow(0 0 32px ${accent}70)`,
+            filter: isDark ? "drop-shadow(0 0 28px rgba(255,255,255,0.12))" : "none",
           }}
         />
 
-        {/* Subtitle */}
         <div
           style={{
-            fontSize: 15,
+            fontSize: 10.5,
             color: sub,
-            letterSpacing: "0.04em",
+            letterSpacing: "0.42em",
             fontWeight: 500,
+            textTransform: "uppercase",
+            marginBottom: 26,
           }}
         >
-          Syncing your workspace...
+          By Next Technology
         </div>
 
-        {/* Progress bar */}
         <div
           style={{
-            width: 240,
-            height: 4,
+            width: 200,
+            height: 2,
             borderRadius: 99,
-            background: "rgba(255,255,255,0.12)",
+            background: isDark ? "rgba(255,255,255,0.08)" : "rgba(15,17,21,0.08)",
             overflow: "hidden",
           }}
         >
@@ -116,22 +97,13 @@ export default function AppLoadingScreen({ isDark = true }: AppLoadingScreenProp
             style={{
               height: "100%",
               borderRadius: 99,
-              background: `linear-gradient(90deg, ${accent}, #8b5cf6)`,
-              boxShadow: `0 0 12px ${accent}80`,
+              background: `linear-gradient(90deg, ${sub}, ${ink})`,
             }}
           />
         </div>
 
-        {/* Pulsing dots */}
-        <div style={{ display: "flex", gap: 7 }}>
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
-              style={{ width: 7, height: 7, borderRadius: "50%", background: accent }}
-            />
-          ))}
+        <div style={{ fontSize: 12.5, color: sub, fontWeight: 500, letterSpacing: "0.02em" }}>
+          Syncing your workspace…
         </div>
       </motion.div>
     </div>

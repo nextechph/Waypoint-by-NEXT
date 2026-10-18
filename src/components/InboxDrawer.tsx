@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Inbox, Plus, X, Search, ChevronLeft,
   MessageSquare, Paperclip, Calendar, Trash2
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card as CardType, Board, LABELS } from '../types';
 import { useWorkStore } from '../store/useWorkStore';
@@ -617,7 +617,7 @@ export function InboxDrawer({
                 disabled={!newTitle.trim()}
                 style={{
                   background: newTitle.trim() ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                  color: newTitle.trim() ? '#fff' : 'hsl(var(--muted-foreground))',
+                  color: newTitle.trim() ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
                   border: 'none',
                   borderRadius: 6,
                   width: 24,

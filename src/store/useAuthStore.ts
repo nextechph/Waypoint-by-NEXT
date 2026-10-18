@@ -3,13 +3,22 @@ import { persist } from 'zustand/middleware';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { supabaseService } from '../services/supabaseService';
 
-export interface AuthUser {
+/** OAuth providers enabled in Supabase Auth. 'azure' is Supabase's provider id for Microsoft accounts. */
+export type OAuthProvider = 'google' | 'apple' | 'azure';
+
+export const OAUTH_PROVIDER_LABEL: Record<OAuthProvider, string> = {
+  google: 'Google',
+  apple: 'Apple',
+  azure: 'Microsoft',
+};
+
+interface AuthUser {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string;
   borderStyle?: string;
-  provider: 'google' | 'email';
+  provider: OAuthProvider | 'email';
 }
 
 export interface RegisteredAccount {
@@ -18,7 +27,7 @@ export interface RegisteredAccount {
   email: string;
   password?: string;
   avatarUrl?: string;
-  provider: 'google' | 'email';
+  provider: OAuthProvider | 'email';
   createdAt: string;
 }
 
@@ -39,13 +48,15 @@ interface AuthState {
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
   signUpWithGoogle: (name: string, email: string) => Promise<{ success: boolean; error?: string }>;
   signInWithGoogle: (email?: string) => Promise<{ success: boolean; error?: string }>;
+  /** Sign in with an OAuth provider (Google, Apple or Microsoft). */
+  signInWithOAuth: (provider: OAuthProvider, email?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   deleteAccount: () => Promise<{ success: boolean; error?: string }>;
 }
 
 function hashPassword(pass: string): string {
   let hash = 0x811c9dc5;
-  const salt = 'worklane_auth_salt_v2';
+  const salt = 'waypoint_auth_salt_v2';
   const str = salt + pass;
   for (let i = 0; i < str.length; i++) {
     hash ^= str.charCodeAt(i);
@@ -479,7 +490,9 @@ export const useAuthStore = create<AuthState>()(
         return { success: true };
       },
 
-      signInWithGoogle: async (email?: string) => {
+      signInWithGoogle: (email?: string) => get().signInWithOAuth('google', email),
+
+      signInWithOAuth: async (provider, email) => {
         if (isSupabaseConfigured()) {
           try {
             // Check if there is an active invite link so we don't lose it!
@@ -491,8 +504,8 @@ export const useAuthStore = create<AuthState>()(
             if (joinBoard) {
               const inviteObj = { boardId: joinBoard, role: inviteRole };
               try {
-                localStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
-                sessionStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
+                localStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
+                sessionStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
               } catch {}
               redirectTo = `${window.location.origin}/?joinBoard=${encodeURIComponent(joinBoard)}&role=${encodeURIComponent(inviteRole)}`;
             } else {
@@ -501,34 +514,32 @@ export const useAuthStore = create<AuthState>()(
               }
             }
 
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'google',
-              options: {
-                redirectTo,
-                queryParams: {
-                  access_type: 'offline',
-                  prompt: 'select_account',
-                },
-              },
-            });
+            const options: { redirectTo: string; scopes?: string; queryParams?: Record<string, string> } =
+              provider === 'google'
+                ? { redirectTo, queryParams: { access_type: 'offline', prompt: 'select_account' } }
+                : provider === 'azure'
+                  // Microsoft only returns the user's email when the `email` scope is requested.
+                  ? { redirectTo, scopes: 'email', queryParams: { prompt: 'select_account' } }
+                  : { redirectTo };
+            const { error } = await supabase.auth.signInWithOAuth({ provider, options });
             if (error) return { success: false, error: error.message };
             return { success: true };
           } catch (err: any) {
-            return { success: false, error: err.message || 'Google OAuth failed' };
+            return { success: false, error: err.message || `${OAUTH_PROVIDER_LABEL[provider]} sign-in failed` };
           }
         }
 
         // Local Fallback mode
-        const cleanEmail = (email || '').trim().toLowerCase() || 'demo.user@worklane.io';
+        const cleanEmail = (email || '').trim().toLowerCase() || 'demo.user@waypoint.io';
         const { accounts } = get();
         let account = accounts.find(a => a.email.toLowerCase() === cleanEmail);
         if (!account) {
           account = {
-            id: `goog_${Date.now()}`,
-            name: cleanEmail === 'demo.user@worklane.io' ? 'Demo User' : cleanEmail.split('@')[0],
+            id: `${provider}_${Date.now()}`,
+            name: cleanEmail === 'demo.user@waypoint.io' ? 'Demo User' : cleanEmail.split('@')[0],
             email: cleanEmail,
             avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-            provider: 'google',
+            provider,
             createdAt: new Date().toISOString(),
           };
           set({ accounts: [...accounts, account] });
@@ -539,7 +550,7 @@ export const useAuthStore = create<AuthState>()(
           name: account.name,
           email: account.email,
           avatarUrl: account.avatarUrl,
-          provider: 'google',
+          provider,
         };
 
         set({ user: authUser, isAuthenticated: true });
@@ -602,6 +613,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
     }),
-    { name: 'worklane_auth_store_v4' }
+    { name: 'waypoint_auth_store_v4' }
   )
 );

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import {
-  ArrowRight, Eye, EyeOff, Sun, Moon, Loader2, Zap, Shield, Mail, KeyRound, CheckCircle2, RotateCcw, ArrowLeft
-} from 'lucide-react';
+  ArrowRight, Eye, EyeOff, Sun, Moon, Loader2, Mail, KeyRound, CheckCircle2, RotateCcw, ArrowLeft
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
-import ThreeDBackground from './ThreeDBackground';
-import logoImg from '../assets/logo.png';
+import heroImg from '../assets/login-hero.jpg';
+import wordmarkDark from '../assets/wordmark-dark.png';
+import wordmarkLight from '../assets/wordmark-light.png';
+import OAuthButtons from './ui/OAuthButtons';
 
 export default function LoginPage() {
   const signInWithEmail = useAuthStore(s => s.signInWithEmail);
@@ -17,7 +19,6 @@ export default function LoginPage() {
   const sendPasswordReset = useAuthStore(s => s.sendPasswordReset);
   const verifyRecoveryOtp = useAuthStore(s => s.verifyRecoveryOtp);
   const updatePassword = useAuthStore(s => s.updatePassword);
-  const signInWithGoogle = useAuthStore(s => s.signInWithGoogle);
   const showToast = useToastStore(s => s.showToast);
   const isDark = useThemeStore(s => s.isDark);
   const toggleTheme = useThemeStore(s => s.toggle);
@@ -54,7 +55,7 @@ export default function LoginPage() {
           setIsLoading(false);
           return;
         }
-        showToast('Welcome back to Worklane!', 'success');
+        showToast('Welcome back to Waypoint!', 'success');
       } else {
         const res = await signUpWithEmail(name.trim(), email.trim(), password);
         if (!res.success) {
@@ -92,7 +93,7 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
       }
-      showToast('Email verified successfully! Welcome to Worklane.', 'success');
+      showToast('Email verified successfully! Welcome to Waypoint.', 'success');
     } catch (err: any) {
       showToast(err.message || 'Verification error', 'error');
     } finally {
@@ -184,39 +185,21 @@ export default function LoginPage() {
     }
   };
 
-  // 6. Handle Google OAuth
-  const handleGoogleClick = async () => {
-    setIsLoading(true);
-    try {
-      const res = await signInWithGoogle();
-      if (!res.success) {
-        showToast(res.error || 'Google Sign In failed', 'error');
-        setIsLoading(false);
-      }
-    } catch (err: any) {
-      showToast(err.message || 'Google Auth error', 'error');
-      setIsLoading(false);
-    }
-  };
 
-  // Neumorphic Input Style Helpers
+  // Input Style Helpers
   const getInputStyle = (fieldName: string) => ({
     width: '100%',
     height: 44,
     padding: fieldName === 'password' || fieldName === 'newPassword' ? '0 40px 0 14px' : '0 14px',
-    borderRadius: 12,
+    borderRadius: 10,
     fontSize: 13.5,
     outline: 'none',
-    backgroundColor: 'hsl(var(--background))',
+    backgroundColor: 'hsl(var(--card))',
     color: 'hsl(var(--foreground))',
-    boxShadow: focusedField === fieldName
-      ? 'var(--neu-shadow-input), 0 0 0 2px hsl(var(--primary) / 0.35)'
-      : 'var(--neu-shadow-input)',
+    boxShadow: focusedField === fieldName ? '0 0 0 3px hsl(var(--foreground) / 0.08)' : 'none',
     border: focusedField === fieldName
-      ? '1px solid hsl(var(--primary) / 0.6)'
-      : isDark
-      ? '1px solid rgba(45, 52, 72, 0.25)'
-      : '1px solid rgba(255, 255, 255, 0.8)',
+      ? '1px solid hsl(var(--foreground) / 0.55)'
+      : '1px solid hsl(var(--input))',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   });
 
@@ -263,144 +246,97 @@ export default function LoginPage() {
         transition: 'background-color 0.4s ease',
       }}
     >
-      {/* ── Left Side / Full View 3D Background Canvas ── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      >
-        <ThreeDBackground isDark={isDark} />
-        {/* Soft Ambient Vignette */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: isDark
-              ? 'radial-gradient(circle at 30% 50%, transparent 35%, rgba(10, 12, 18, 0.65) 100%)'
-              : 'radial-gradient(circle at 30% 50%, transparent 40%, rgba(166, 175, 195, 0.35) 100%)',
-            pointerEvents: 'none',
-            zIndex: 2,
-          }}
-        />
-      </div>
-
-      {/* ── Left Side Showcase Branding (Visible on Desktop/Tablet) ── */}
+      {/* ── Left Side Brand Showcase (Visible on Desktop/Tablet) ── */}
       <div
         className="hide-on-mobile"
         style={{
           flex: 1,
           position: 'relative',
-          zIndex: 10,
+          overflow: 'hidden',
+          backgroundColor: '#0F1115',
           padding: '48px 56px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          pointerEvents: 'none',
+          color: '#FFFFFF',
         }}
       >
+        <motion.img
+          src={heroImg}
+          alt=""
+          aria-hidden
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: '62% 70%',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(15,17,21,0.92) 0%, rgba(15,17,21,0.35) 38%, rgba(15,17,21,0.15) 62%, rgba(15,17,21,0.85) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
         {/* Top Left Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src={logoImg} alt="Worklane" style={{ width: 34, height: 34, objectFit: 'contain' }} />
-          <span
-            style={{
-              fontSize: 20,
-              fontWeight: 800,
-              color: 'hsl(var(--foreground))',
-              letterSpacing: '-0.03em',
-            }}
-          >
-            Worklane
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <img src={wordmarkDark} alt="Waypoint" style={{ height: 30, width: 'auto', objectFit: 'contain' }} />
+          <span style={{ fontSize: 10.5, letterSpacing: '0.38em', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 500 }}>
+            By Next Technology
           </span>
         </div>
 
         {/* Hero Narrative Copy */}
-        <div style={{ maxWidth: 480 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          style={{ position: 'relative', maxWidth: 520 }}
+        >
+          <h2
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: 44,
+              fontWeight: 500,
+              lineHeight: 1.12,
+              letterSpacing: '-0.025em',
+              marginBottom: 16,
+              color: '#FFFFFF',
+            }}
           >
-            <h2
+            Your work.<br />
+            <span
               style={{
-                fontSize: 34,
-                fontWeight: 800,
-                lineHeight: 1.2,
-                color: 'hsl(var(--foreground))',
-                letterSpacing: '-0.03em',
-                marginBottom: 12,
+                background: 'linear-gradient(90deg, #FFFFFF 0%, #9CA3AF 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
               }}
             >
-              Organize projects. <br />
-              <span
-                style={{
-                  background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                Sync with your team.
-              </span>
-            </h2>
-            <p
-              style={{
-                fontSize: 15,
-                color: 'hsl(var(--muted-foreground))',
-                lineHeight: 1.6,
-                marginBottom: 24,
-              }}
-            >
-              A fast, flexible workspace designed to help teams organize projects, track progress, and collaborate seamlessly.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'hsl(var(--foreground))' }}>
-                <div
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 8,
-                    backgroundColor: 'hsl(var(--card))',
-                    boxShadow: 'var(--neu-shadow-raised-sm)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Zap size={14} color="hsl(var(--primary))" />
-                </div>
-                <span>Real-time team collaboration</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: 'hsl(var(--foreground))' }}>
-                <div
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 8,
-                    backgroundColor: 'hsl(var(--card))',
-                    boxShadow: 'var(--neu-shadow-raised-sm)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Shield size={14} color="#10b981" />
-                </div>
-                <span>Agile boards & customizable workflows</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+              Your direction.
+            </span>
+          </h2>
+          <p style={{ fontSize: 15.5, color: 'rgba(255,255,255,0.68)', lineHeight: 1.65 }}>
+            Plan. Build. Deliver.<br />Everything you need to move your work forward.
+          </p>
+        </motion.div>
 
         {/* Footer Note */}
-        <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>
-          © {new Date().getFullYear()} Worklane. All rights reserved.
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+          <span>© {new Date().getFullYear()} Waypoint by Next Technology</span>
+          <span style={{ letterSpacing: '0.04em' }}>Journey-based project planning</span>
         </div>
       </div>
 
-      {/* ── Right Side Full-Height Neumorphic Login Panel ── */}
+      {/* ── Right Side Full-Height Login Panel ── */}
       <motion.div
         className="login-right-panel"
         initial={{ opacity: 0, x: 30 }}
@@ -410,13 +346,8 @@ export default function LoginPage() {
           width: '100%',
           maxWidth: 480,
           minHeight: '100dvh',
-          backgroundColor: isDark ? 'hsl(228 21% 14% / 0.94)' : 'hsl(218 25% 92% / 0.95)',
-          backdropFilter: 'blur(28px)',
-          WebkitBackdropFilter: 'blur(28px)',
-          borderLeft: isDark ? '1px solid rgba(45, 52, 72, 0.3)' : '1px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: isDark
-            ? '-12px 0 35px rgba(10, 12, 18, 0.65)'
-            : '-12px 0 35px rgba(166, 175, 195, 0.35)',
+          backgroundColor: 'hsl(var(--background))',
+          borderLeft: '1px solid hsl(var(--border))',
           position: 'relative',
           zIndex: 20,
           display: 'flex',
@@ -427,7 +358,7 @@ export default function LoginPage() {
           perspective: 1200,
         }}
       >
-        {/* Panel Top Header: Centered Neumorphic Theme Switcher */}
+        {/* Panel Top Header: Centered Theme Switcher */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
           <motion.div
             whileTap={{ scale: 0.96 }}
@@ -441,9 +372,8 @@ export default function LoginPage() {
               alignItems: 'center',
               padding: 4,
               borderRadius: 9999,
-              backgroundColor: 'hsl(var(--background))',
-              boxShadow: 'var(--neu-shadow-pressed)',
-              border: isDark ? '1px solid rgba(45, 52, 72, 0.25)' : '1px solid rgba(255, 255, 255, 0.8)',
+              backgroundColor: 'hsl(var(--muted))',
+              border: '1px solid hsl(var(--border))',
               userSelect: 'none',
               transition: 'background-color 0.25s ease',
             }}
@@ -457,7 +387,7 @@ export default function LoginPage() {
                 borderRadius: 9999,
                 fontSize: 11.5,
                 fontWeight: 600,
-                color: !isDark ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                color: !isDark ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                 backgroundColor: !isDark ? 'hsl(var(--card))' : 'transparent',
                 boxShadow: !isDark ? 'var(--neu-shadow-raised-sm)' : 'none',
                 transition: 'all 0.2s ease',
@@ -476,13 +406,13 @@ export default function LoginPage() {
                 borderRadius: 9999,
                 fontSize: 11.5,
                 fontWeight: 600,
-                color: isDark ? '#ffffff' : 'hsl(var(--muted-foreground))',
+                color: isDark ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
                 backgroundColor: isDark ? 'hsl(var(--primary))' : 'transparent',
-                boxShadow: isDark ? '0 2px 8px hsl(var(--primary) / 0.5)' : 'none',
+                boxShadow: 'none',
                 transition: 'all 0.2s ease',
               }}
             >
-              <Moon size={12} color={isDark ? '#ffffff' : 'currentColor'} />
+              <Moon size={12} color={isDark ? 'hsl(var(--primary-foreground))' : 'currentColor'} />
               <span>Dark</span>
             </div>
           </motion.div>
@@ -504,6 +434,12 @@ export default function LoginPage() {
               >
                 {/* Header Typography with smooth text change */}
                 <div>
+                  <img
+                    className="show-on-mobile"
+                    src={isDark ? wordmarkDark : wordmarkLight}
+                    alt="Waypoint"
+                    style={{ height: 26, width: 'auto', marginBottom: 22 }}
+                  />
                   <motion.h1
                     key={mode === 'signin' ? 'title-signin' : 'title-signup'}
                     initial={{ opacity: 0, y: -6 }}
@@ -517,7 +453,7 @@ export default function LoginPage() {
                       margin: 0,
                     }}
                   >
-                    {mode === 'signin' ? 'Welcome to Worklane' : 'Create your account'}
+                    {mode === 'signin' ? 'Welcome back' : 'Create your account'}
                   </motion.h1>
                   <p
                     style={{
@@ -529,20 +465,20 @@ export default function LoginPage() {
                     }}
                   >
                     {mode === 'signin'
-                      ? 'Sign in to access your agile boards, tasks & team workspace'
+                      ? 'Sign in to continue to your workspace.'
                       : 'Sign up to start organizing projects and sprints'}
                   </p>
                 </div>
 
-                {/* Neumorphic Inset Segmented Mode Tabs with Sliding Pill */}
+                {/* Inset Segmented Mode Tabs with Sliding Pill */}
                 <div
                   style={{
                     display: 'flex',
                     padding: 4,
                     borderRadius: 12,
-                    backgroundColor: 'hsl(var(--background))',
-                    boxShadow: 'var(--neu-shadow-pressed)',
-                    border: isDark ? '1px solid rgba(45, 52, 72, 0.25)' : '1px solid rgba(255, 255, 255, 0.8)',
+                    backgroundColor: 'hsl(var(--muted))',
+                    boxShadow: 'none',
+                    border: '1px solid hsl(var(--border))',
                     position: 'relative',
                   }}
                 >
@@ -616,51 +552,8 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                {/* Neumorphic Raised Google Auth Button */}
-                <motion.button
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.98, y: 1 }}
-                  type="button"
-                  onClick={handleGoogleClick}
-                  disabled={isLoading}
-                  style={{
-                    width: '100%',
-                    height: 44,
-                    borderRadius: 12,
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 10,
-                    cursor: 'pointer',
-                    backgroundColor: 'hsl(var(--card))',
-                    color: 'hsl(var(--foreground))',
-                    boxShadow: 'var(--neu-shadow-raised-sm)',
-                    border: isDark ? '1px solid rgba(45, 52, 72, 0.3)' : '1px solid rgba(255, 255, 255, 0.9)',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  <span>{mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}</span>
-                </motion.button>
+                {/* Social sign-in: one button per provider */}
+                <OAuthButtons disabled={isLoading} onBusyChange={setIsLoading} />
 
                 {/* Minimalist Hairline Divider */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -793,10 +686,8 @@ export default function LoginPage() {
                       cursor: 'pointer',
                       background: 'hsl(var(--primary))',
                       color: 'hsl(var(--primary-foreground))',
-                      boxShadow: isDark
-                        ? '0 4px 14px hsl(var(--primary) / 0.45), var(--neu-shadow-raised-sm)'
-                        : '0 4px 14px hsl(var(--primary) / 0.35), var(--neu-shadow-raised-sm)',
-                      border: '1px solid hsl(var(--primary) / 0.4)',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
+                      border: '1px solid hsl(var(--primary))',
                       transition: 'all 0.15s ease',
                     }}
                   >
@@ -894,7 +785,7 @@ export default function LoginPage() {
                         outline: 'none',
                         backgroundColor: 'hsl(var(--background))',
                         color: 'hsl(var(--foreground))',
-                        boxShadow: 'var(--neu-shadow-input), 0 0 0 2px hsl(var(--primary) / 0.35)',
+                        boxShadow: '0 0 0 3px hsl(var(--foreground) / 0.08)',
                         border: '1px solid hsl(var(--primary) / 0.6)',
                       }}
                     />
@@ -919,7 +810,7 @@ export default function LoginPage() {
                       cursor: 'pointer',
                       background: 'hsl(var(--primary))',
                       color: 'hsl(var(--primary-foreground))',
-                      boxShadow: '0 4px 14px hsl(var(--primary) / 0.4), var(--neu-shadow-raised-sm)',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
                       border: 'none',
                     }}
                   >
@@ -1071,7 +962,7 @@ export default function LoginPage() {
                       cursor: 'pointer',
                       background: 'hsl(var(--primary))',
                       color: 'hsl(var(--primary-foreground))',
-                      boxShadow: '0 4px 14px hsl(var(--primary) / 0.4), var(--neu-shadow-raised-sm)',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
                       border: 'none',
                     }}
                   >
@@ -1200,7 +1091,7 @@ export default function LoginPage() {
                       cursor: 'pointer',
                       background: 'hsl(var(--primary))',
                       color: 'hsl(var(--primary-foreground))',
-                      boxShadow: '0 4px 14px hsl(var(--primary) / 0.4), var(--neu-shadow-raised-sm)',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
                       border: 'none',
                     }}
                   >

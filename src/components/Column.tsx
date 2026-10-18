@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Plus, Edit3, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Plus, Edit3, Trash2 } from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -151,8 +151,8 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 15, rotateY: -8, translateZ: -20 }}
-      animate={{ opacity: 1, y: 0, rotateY: 0, translateZ: 0 }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{
         layout: { type: 'spring', damping: 26, stiffness: 220, mass: 0.8 },
         duration: 0.3,
@@ -161,7 +161,7 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
       }}
       className="column"
       data-col-id={col.id}
-      style={{ transformStyle: 'preserve-3d' }}
+      style={{ ['--col-color' as string]: dotColor } as React.CSSProperties}
       onWheel={e => {
         if (cardsRef.current && !cardsRef.current.contains(e.target as Node)) {
           cardsRef.current.scrollTop += e.deltaY;

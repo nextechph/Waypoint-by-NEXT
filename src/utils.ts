@@ -179,7 +179,7 @@ export function getAvatarBorderStyle(borderStyle: string | undefined): React.CSS
   };
 }
 
-const CUSTOM_BORDERS_KEY = 'worklane_custom_borders';
+const CUSTOM_BORDERS_KEY = 'waypoint_custom_borders';
 
 export function getCustomBorders(): CustomBorderDef[] {
   try {
@@ -327,13 +327,13 @@ export function useIsMobile(breakpoint = 860): boolean {
 }
 
 export function getColDotColor(name: string): string {
+  // Monochrome workflow scale: darker = more pressing, lighter = settled.
   const n = (name || '').toLowerCase();
-  if (n.includes('done') || n.includes('complete'))             return '#10b981';
-  if (n.includes('urgent') || n.includes('critical'))           return '#ef4444';
-  if (n.includes('progress') || n.includes('active') || n.includes('doing')) return '#3b82f6';
-  if (n.includes('review') || n.includes('qa') || n.includes('testing'))     return '#f59e0b';
-  if (n.includes('todo') || n.includes('to do') || n.includes('backlog'))    return '#8b5cf6';
-  return '#64748b';
+  if (n.includes('urgent') || n.includes('critical'))           return 'hsl(var(--foreground))';
+  if (n.includes('progress') || n.includes('active') || n.includes('doing')) return 'hsl(var(--foreground) / 0.72)';
+  if (n.includes('review') || n.includes('qa') || n.includes('testing'))     return 'hsl(var(--foreground) / 0.55)';
+  if (n.includes('done') || n.includes('complete'))             return 'hsl(var(--foreground) / 0.25)';
+  return 'hsl(var(--foreground) / 0.4)';
 }
 
 export function deriveCardProgress(card: CardType, columnName?: string): number {

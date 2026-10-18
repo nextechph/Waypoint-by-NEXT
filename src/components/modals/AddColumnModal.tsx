@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X } from '../ui/glyphs';
 import { motion } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
+import { useEscape } from '../../lib/useEscape';
 
 interface Props {
   onClose: () => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function AddColumnModal({ onClose, mode = 'column' }: Props) {
+  useEscape(() => onClose());
   const addColumn = useWorkStore(s => s.addColumn);
   const [name, setName] = useState('');
 

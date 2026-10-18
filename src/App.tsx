@@ -4,16 +4,26 @@ import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import BoardArea from './components/BoardArea';
 import CardModal from './components/CardModal';
+import TaskSheet from './components/TaskSheet';
 import MembersModal from './components/MembersModal';
 import EmailNotifModal from './components/EmailNotifModal';
 import LoginPage from './components/LoginPage';
 import NotifPanel from './components/NotifPanel';
 import Toast from './components/Toast';
-import Dashboard from './components/Dashboard';
+import TodayPage from './components/pages/TodayPage';
+import MyWorkPage from './components/pages/MyWorkPage';
+import ProjectsPage from './components/pages/ProjectsPage';
+import TimelinePage from './components/pages/TimelinePage';
+import InboxPage from './components/pages/InboxPage';
+import CalendarPage from './components/pages/CalendarPage';
+import ProjectHeader from './components/ProjectHeader';
+import { OverviewTab, MilestonesTab, FilesTab, ActivityTab, type ProjectTab } from './components/ProjectViews';
+import QuickTaskModal from './components/modals/QuickTaskModal';
 import CreateBoardModal from './components/modals/CreateBoardModal';
 import CreateRoadmapModal from './components/modals/CreateRoadmapModal';
 import AddColumnModal from './components/modals/AddColumnModal';
-import SearchModal from './components/modals/SearchModal';
+import CommandPalette from './components/CommandPalette';
+import { pushRecent } from './lib/recent';
 import PrivacyModal from './components/modals/PrivacyModal';
 import SettingsModal from './components/modals/SettingsModal';
 import ConfirmModal from './components/modals/ConfirmModal';
@@ -31,13 +41,14 @@ import { useSettingsStore } from './store/useSettingsStore';
 import { supabaseService } from './services/supabaseService';
 import { formatDueDate, uid, useIsMobile } from './utils';
 import type { MemberRole } from './types';
+import { SHELL_PAGES, canEditBoard, getInboxSeen, markInboxSeen, useMyNotifications, type AppPage } from './lib/workspace';
 
 const CHECK_INTERVAL_MS = 10_000;
 
-const page3DVariants: Variants = {
-  initial: { opacity: 0, scale: 0.96, rotateY: -8, translateZ: -40 },
-  animate: { opacity: 1, scale: 1, rotateY: 0, translateZ: 0, transition: { duration: 0.28, ease: 'easeOut' } },
-  exit: { opacity: 0, scale: 0.96, rotateY: 8, translateZ: -40, transition: { duration: 0.18 } }
+const pageVariants: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.25, 1, 0.5, 1] } },
+  exit: { opacity: 0, transition: { duration: 0.12 } }
 };
 
 const pageMobileVariants: Variants = {
@@ -112,12 +123,12 @@ export default function App() {
       const inviteObj = { boardId: joinBoardId, role: inviteRole };
       setPendingInvite(inviteObj);
       try {
-        localStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
-        sessionStorage.setItem('worklane_pending_invite', JSON.stringify(inviteObj));
+        localStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
+        sessionStorage.setItem('waypoint_pending_invite', JSON.stringify(inviteObj));
       } catch {}
     } else {
       try {
-        const saved = localStorage.getItem('worklane_pending_invite') || sessionStorage.getItem('worklane_pending_invite');
+        const saved = localStorage.getItem('waypoint_pending_invite') || sessionStorage.getItem('waypoint_pending_invite');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed?.boardId) {
@@ -241,18 +252,22 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       const urlPage = params.get('page');
       const urlBoard = params.get('board') || params.get('b');
-      const savedBoard = localStorage.getItem('worklane_current_board_id_v1');
+      const savedBoard = localStorage.getItem('waypoint_current_board_id_v1');
       const initialBoardId = urlBoard || savedBoard || null;
 
       const urlView = params.get('view') as 'board' | 'roadmap' | 'calendar' | null;
       const urlCard = params.get('card') || params.get('c');
 
-      const savedPage = localStorage.getItem('worklane_current_page_v1') as 'dashboard' | 'board' | 'roadmap' | null;
-      const savedView = localStorage.getItem('worklane_current_view_mode_v1') as 'board' | 'roadmap' | 'calendar' | null;
-      const savedCard = localStorage.getItem('worklane_current_card_v1');
+      const savedPage = localStorage.getItem('waypoint_current_page_v1') as AppPage | null;
+      const savedView = localStorage.getItem('waypoint_current_view_mode_v1') as 'board' | 'roadmap' | 'calendar' | null;
+      const savedCard = localStorage.getItem('waypoint_current_card_v1');
 
-      let initialPage: 'dashboard' | 'board' | 'roadmap' = 'dashboard';
-      if (urlPage === 'roadmap') {
+      let initialPage: AppPage = 'dashboard';
+      if (SHELL_PAGES.includes(urlPage as AppPage)) {
+        initialPage = urlPage as AppPage;
+      } else if (!urlPage && !urlBoard && SHELL_PAGES.includes(savedPage as AppPage)) {
+        initialPage = savedPage as AppPage;
+      } else if (urlPage === 'roadmap') {
         initialPage = 'roadmap';
       } else if (urlPage === 'board') {
         initialPage = 'board';
@@ -281,7 +296,7 @@ export default function App() {
       };
     } catch {
       return {
-        page: 'dashboard' as const,
+        page: 'dashboard' as AppPage,
         boardId: null,
         viewMode: 'board' as const,
         cardId: null,
@@ -293,7 +308,16 @@ export default function App() {
 
   // Page routing: dashboard (home), board (active board view), or roadmap (dedicated roadmap view)
   const isMobile = useIsMobile(860);
-  const [page, setPage] = useState<'dashboard' | 'board' | 'roadmap'>(initialRouting.page);
+  const [page, setPage] = useState<AppPage>(initialRouting.page);
+  const [quickTask, setQuickTask] = useState<{ boardId?: string | null } | null>(null);
+  const [scheduleEditorOpen, setScheduleEditorOpen] = useState(false);
+  const [projectTab, setProjectTab] = useState<ProjectTab>(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return v === 'calendar' ? 'calendar' : v ? 'tasks' : 'overview';
+  });
+  const myNotifications = useMyNotifications();
+  const [inboxSeen, setInboxSeen] = useState(() => getInboxSeen());
+  const inboxUnread = page !== 'inbox' && myNotifications.some(n => new Date(n.time).getTime() > inboxSeen);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -342,23 +366,24 @@ export default function App() {
         return;
       }
 
-      localStorage.setItem('worklane_current_page_v1', page);
-      localStorage.setItem('worklane_current_view_mode_v1', viewMode);
+      localStorage.setItem('waypoint_current_page_v1', page);
+      localStorage.setItem('waypoint_current_view_mode_v1', viewMode);
       if (activeBoardId) {
-        localStorage.setItem('worklane_current_board_id_v1', activeBoardId);
+        localStorage.setItem('waypoint_current_board_id_v1', activeBoardId);
       }
       if (openCardId) {
-        localStorage.setItem('worklane_current_card_v1', openCardId);
+        localStorage.setItem('waypoint_current_card_v1', openCardId);
       } else {
-        localStorage.removeItem('worklane_current_card_v1');
+        localStorage.removeItem('waypoint_current_card_v1');
       }
 
       const params = new URLSearchParams(window.location.search);
       // Preserve invite and password reset flows if active
       if (!params.has('joinBoard') && !params.has('invite') && !params.has('reset')) {
-        if (page === 'dashboard') {
+        if (SHELL_PAGES.includes(page)) {
           // Dashboard is the default root view - keep URL clean without ugly ?page=dashboard
-          params.delete('page');
+          if (page === 'dashboard') params.delete('page');
+          else params.set('page', page);
           params.delete('board');
           params.delete('b');
           params.delete('card');
@@ -392,7 +417,7 @@ export default function App() {
 
   // Synchronize page type if active board changes or loads
   useEffect(() => {
-    if (activeBoardId && page !== 'dashboard') {
+    if (activeBoardId && (page === 'board' || page === 'roadmap')) {
       const active = visibleBoards.find(b => b.id === activeBoardId);
       if (active) {
         const expectedPage = active.type === 'roadmap' ? 'roadmap' : 'board';
@@ -408,9 +433,9 @@ export default function App() {
     if (!isAuthenticated) {
       setPage('dashboard');
       try {
-        localStorage.setItem('worklane_current_page_v1', 'dashboard');
-        localStorage.removeItem('worklane_current_board_id_v1');
-        localStorage.removeItem('worklane_current_card_v1');
+        localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+        localStorage.removeItem('waypoint_current_board_id_v1');
+        localStorage.removeItem('waypoint_current_card_v1');
         const params = new URLSearchParams(window.location.search);
         if (!params.has('joinBoard') && !params.has('invite') && !params.has('reset') && !params.has('error')) {
           window.history.replaceState({}, document.title, window.location.pathname);
@@ -429,8 +454,8 @@ export default function App() {
         if (hasLoadedOnce) {
           setPage('dashboard');
           try {
-            localStorage.setItem('worklane_current_page_v1', 'dashboard');
-            localStorage.removeItem('worklane_current_board_id_v1');
+            localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+            localStorage.removeItem('waypoint_current_board_id_v1');
           } catch {}
         }
         return;
@@ -439,8 +464,8 @@ export default function App() {
       if (!boardExists) {
         setPage('dashboard');
         try {
-          localStorage.setItem('worklane_current_page_v1', 'dashboard');
-          localStorage.removeItem('worklane_current_board_id_v1');
+          localStorage.setItem('waypoint_current_page_v1', 'dashboard');
+          localStorage.removeItem('waypoint_current_board_id_v1');
         } catch {}
       }
     }
@@ -448,6 +473,8 @@ export default function App() {
 
   const handleSelectBoard = useCallback((boardId: string, view?: 'board' | 'roadmap' | 'calendar') => {
     switchBoard(boardId);
+    pushRecent({ type: 'project', id: boardId, boardId });
+    setProjectTab(view === 'calendar' ? 'calendar' : view ? 'tasks' : 'overview');
     setShowBoardSelector(false);
     const storeBoards = useWorkStore.getState().boards;
     const targetBoard = visibleBoards.find(b => b.id === boardId) || storeBoards.find(b => b.id === boardId);
@@ -470,20 +497,26 @@ export default function App() {
     }
     setViewMode(resolvedView);
     try {
-      localStorage.setItem('worklane_current_page_v1', targetPage);
-      localStorage.setItem('worklane_current_board_id_v1', boardId);
-      localStorage.setItem('worklane_current_view_mode_v1', resolvedView);
+      localStorage.setItem('waypoint_current_page_v1', targetPage);
+      localStorage.setItem('waypoint_current_board_id_v1', boardId);
+      localStorage.setItem('waypoint_current_view_mode_v1', resolvedView);
     } catch {}
   }, [switchBoard, boards, viewMode]);
 
-  const handleGoToDashboard = useCallback(() => {
-    setPage('dashboard');
+  const handleNavigate = useCallback((next: AppPage) => {
+    setPage(next);
+    setFilterMemberId(null);
+    if (next === 'inbox' || page === 'inbox') {
+      markInboxSeen();
+      setInboxSeen(Date.now());
+    }
     try {
-      localStorage.setItem('worklane_current_page_v1', 'dashboard');
-      localStorage.removeItem('worklane_current_board_id_v1');
-      localStorage.removeItem('worklane_current_card_v1');
+      localStorage.setItem('waypoint_current_page_v1', next);
+      if (SHELL_PAGES.includes(next)) localStorage.removeItem('waypoint_current_card_v1');
     } catch {}
-  }, []);
+  }, [page]);
+
+  const handleGoToDashboard = useCallback(() => handleNavigate('dashboard'), [handleNavigate]);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for search
   useEffect(() => {
@@ -504,8 +537,8 @@ export default function App() {
     }
   }, []);
 
-const ALERTED_SOON_KEY = 'worklane_alerted_soon_v1';
-const ALERTED_OVERDUE_KEY = 'worklane_alerted_overdue_v1';
+const ALERTED_SOON_KEY = 'waypoint_alerted_soon_v1';
+const ALERTED_OVERDUE_KEY = 'waypoint_alerted_overdue_v1';
 
 function getAlertedSet(key: string): Set<string> {
   try {
@@ -560,7 +593,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `Reminder: Task Due Soon - ${card.title}`,
-                  body: `Hi ${member.name},\n\nThe task "${card.title}" is due soon (${formatDueDate(card.dueDate)}) on board "${board.name}".\n\nWorklane Team`,
+                  body: `Hi ${member.name},\n\nThe task "${card.title}" is due soon (${formatDueDate(card.dueDate)}) on board "${board.name}".\n\nWaypoint Team`,
                   eventType: 'due_reminder',
                   metadata: {
                     cardTitle: card.title,
@@ -593,7 +626,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `Alert: Task is Overdue - ${card.title}`,
-                  body: `Hi ${member.name},\n\nThe task "${card.title}" was due on ${formatDueDate(card.dueDate)} and is now overdue on board "${board.name}".\n\nWorklane Team`,
+                  body: `Hi ${member.name},\n\nThe task "${card.title}" was due on ${formatDueDate(card.dueDate)} and is now overdue on board "${board.name}".\n\nWaypoint Team`,
                   eventType: 'due_reminder',
                   metadata: {
                     cardTitle: card.title,
@@ -624,6 +657,9 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
   const handleOpenCard = (cardId: string, boardId?: string) => {
     setOpenCardId(cardId);
     setOpenCardBoardId(boardId || activeBoardId);
+    setScheduleEditorOpen(false);
+    const owningBoard = boardId || useWorkStore.getState().findCard(cardId)?.board.id;
+    if (owningBoard) pushRecent({ type: 'task', id: cardId, boardId: owningBoard });
   };
 
   // ── Dedicated Board Invite Landing Page ──
@@ -635,8 +671,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           role={pendingInvite.role}
           onAcceptJoin={(boardId) => {
             try {
-              localStorage.removeItem('worklane_pending_invite');
-              sessionStorage.removeItem('worklane_pending_invite');
+              localStorage.removeItem('waypoint_pending_invite');
+              sessionStorage.removeItem('waypoint_pending_invite');
             } catch {}
             window.history.replaceState({}, document.title, window.location.pathname);
             setPendingInvite(null);
@@ -644,8 +680,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           }}
           onDecline={() => {
             try {
-              localStorage.removeItem('worklane_pending_invite');
-              sessionStorage.removeItem('worklane_pending_invite');
+              localStorage.removeItem('waypoint_pending_invite');
+              sessionStorage.removeItem('waypoint_pending_invite');
             } catch {}
             window.history.replaceState({}, document.title, window.location.pathname);
             setPendingInvite(null);
@@ -678,8 +714,102 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
     );
   }
 
+  const inProject = page === 'board' || page === 'roadmap';
+
+  const renderPage = () => {
+    switch (page) {
+      case 'dashboard':
+        return (
+          <TodayPage
+            onOpenCard={handleOpenCard}
+            onSelectBoard={id => handleSelectBoard(id)}
+            onNewTask={() => setQuickTask({})}
+            onCreateBoard={() => setShowCreateBoard(true)}
+            onNavigate={handleNavigate}
+          />
+        );
+      case 'mywork':
+        return <MyWorkPage onOpenCard={handleOpenCard} onNewTask={() => setQuickTask({})} />;
+      case 'projects':
+        return (
+          <ProjectsPage
+            onSelectBoard={id => handleSelectBoard(id)}
+            onCreateBoard={() => setShowCreateBoard(true)}
+            onCreateRoadmap={() => setShowCreateRoadmap(true)}
+          />
+        );
+      case 'timeline':
+        return <TimelinePage onOpenCard={handleOpenCard} onSelectBoard={id => handleSelectBoard(id)} />;
+      case 'calendar':
+        return <CalendarPage onOpenCard={handleOpenCard} />;
+      case 'inbox':
+        return <InboxPage onOpenCard={handleOpenCard} />;
+      default: {
+        const activeProject = visibleBoards.find(b => b.id === activeBoardId) || null;
+        const showWork = projectTab === 'tasks' || projectTab === 'calendar';
+        const selectProjectTab = (t: ProjectTab) => {
+          setProjectTab(t);
+          if (t === 'tasks') setViewMode(activeProject?.type === 'roadmap' ? 'roadmap' : 'board');
+          if (t === 'calendar') setViewMode('calendar');
+        };
+        return (
+          <>
+            <ProjectHeader
+              tab={projectTab}
+              onSelectTab={selectProjectTab}
+              onOpenCard={cardId => handleOpenCard(cardId)}
+              showInbox={showInbox}
+              onToggleInbox={() => setShowInbox(s => !s)}
+              filterMemberId={filterMemberId}
+              onFilterMember={setFilterMemberId}
+              onManageMembers={() => setShowMembers(true)}
+              onManageEmail={() => handleOpenSettings('email')}
+              onNewTask={() => setQuickTask({ boardId: activeBoardId })}
+              onLeftProject={() => handleNavigate('projects')}
+              onOpenProjectSwitcher={() => setShowBoardSelector(true)}
+            />
+            {showWork ? (
+              <BoardArea
+                page={page as 'board' | 'roadmap'}
+                viewMode={viewMode}
+                onSelectView={setViewMode}
+                filterMemberId={filterMemberId}
+                onClearFilter={() => setFilterMemberId(null)}
+                onOpenCard={cardId => handleOpenCard(cardId)}
+                onAddColumn={() => setShowAddColumn(true)}
+                onCreateBoard={() => setShowCreateBoard(true)}
+                onCreateRoadmap={() => setShowCreateRoadmap(true)}
+                showInbox={showInbox}
+                onToggleInbox={() => setShowInbox(s => !s)}
+              />
+            ) : activeProject && (
+              <div className="wp-page">
+                <div className="wp-project-tabpage">
+                  {projectTab === 'overview' && (
+                    <OverviewTab
+                      board={activeProject}
+                      editable={canEditBoard(activeProject, currentUser?.email)}
+                      onOpenCard={cardId => handleOpenCard(cardId)}
+                      onAddTask={() => setQuickTask({ boardId: activeBoardId })}
+                      onShowTab={selectProjectTab}
+                      onInvite={() => setShowMembers(true)}
+                      onOpenTimeline={() => handleNavigate('timeline')}
+                    />
+                  )}
+                  {projectTab === 'milestones' && <MilestonesTab board={activeProject} onOpenCard={cardId => handleOpenCard(cardId)} />}
+                  {projectTab === 'files' && <FilesTab board={activeProject} onOpenCard={cardId => handleOpenCard(cardId)} />}
+                  {projectTab === 'activity' && <ActivityTab board={activeProject} onOpenCard={cardId => handleOpenCard(cardId)} />}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      }
+    }
+  };
+
   return (
-    <div className="app-layout" style={isMobile ? { overflowX: 'hidden' } : { perspective: 1400 }}>
+    <div className="app-layout">
       {/* Mobile Sidebar Backdrop Overlay */}
       <div
         className={`sidebar-backdrop${mobileMenuOpen ? ' open' : ''}`}
@@ -690,118 +820,60 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       <div className={`app-window${(!isMobile && sidebarCollapsed) ? ' sidebar-collapsed-layout' : ''}`}>
         <Sidebar
           page={page}
-          activeView={viewMode}
-          onSelectView={setViewMode}
-          onOpenInbox={() => setShowInbox(s => !s)}
-          isInboxOpen={showInbox}
-          filterMemberId={filterMemberId}
-          onFilterMember={setFilterMemberId}
-          onManageMembers={() => setShowMembers(true)}
-          onOpenSettings={handleOpenSettings}
+          onNavigate={handleNavigate}
+          onSelectBoard={id => handleSelectBoard(id)}
           onCreateBoard={() => setShowCreateBoard(true)}
           onCreateRoadmap={() => setShowCreateRoadmap(true)}
-          onGoToDashboard={handleGoToDashboard}
-          onSelectBoard={handleSelectBoard}
+          onManageMembers={() => setShowMembers(true)}
+          onOpenSettings={handleOpenSettings}
+          inboxUnread={inboxUnread}
           collapsed={!isMobile && sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(c => !c)}
           isMobileOpen={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
 
-        <div className="app-main-content" style={isMobile ? { overflowX: 'hidden' } : { transformStyle: 'preserve-3d' }}>
+        <div className="app-main-content">
+          <Topbar
+            page={page}
+            onNavigate={handleNavigate}
+            onOpenSearch={() => setShowSearch(true)}
+            onOpenSettings={handleOpenSettings}
+            onToggleNotif={() => setNotifOpen(o => !o)}
+            notifOpen={notifOpen}
+            onToggleMobileMenu={() => setMobileMenuOpen(o => !o)}
+          />
           <AnimatePresence mode="wait">
-            {page === 'dashboard' ? (
-              <motion.div
-                key="page-dashboard"
-                variants={isMobile ? pageMobileVariants : page3DVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '100%' }}
-              >
-                <Topbar
-                  page="dashboard"
-                  onOpenSearch={() => setShowSearch(true)}
-                  onOpenInbox={() => setShowInbox(s => !s)}
-                  onManageMembers={() => setShowMembers(true)}
-                  onManageEmail={() => handleOpenSettings('email')}
-                  onOpenPrivacy={() => handleOpenSettings('privacy')}
-                  onOpenSettings={handleOpenSettings}
-                  onToggleNotif={() => setNotifOpen(o => !o)}
-                  notifOpen={notifOpen}
-                />
-                <Dashboard
-                  onSelectBoard={handleSelectBoard}
-                  onCreateBoard={() => setShowCreateBoard(true)}
-                  onCreateRoadmap={() => setShowCreateRoadmap(true)}
-                  onOpenCard={handleOpenCard}
-                />
-                {!isMobile && (
-                  <InboxDrawer
-                    isOpen={showInbox}
-                    onClose={() => setShowInbox(false)}
-                    board={currentBoard}
-                    onOpenCard={cardId => handleOpenCard(cardId)}
-                  />
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key={`page-${page}`}
-                variants={isMobile ? pageMobileVariants : page3DVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '100%' }}
-              >
-                <Topbar
-                  page={page}
-                  onOpenSearch={() => setShowSearch(true)}
-                  onOpenInbox={() => setShowInbox(s => !s)}
-                  onManageMembers={() => setShowMembers(true)}
-                  onManageEmail={() => handleOpenSettings('email')}
-                  onOpenPrivacy={() => handleOpenSettings('privacy')}
-                  onOpenSettings={handleOpenSettings}
-                  onToggleNotif={() => setNotifOpen(o => !o)}
-                  notifOpen={notifOpen}
-                  onToggleMobileMenu={() => setMobileMenuOpen(o => !o)}
-                  onOpenBoardSelector={() => setShowBoardSelector(true)}
-                />
-
-                <BoardArea
-                  page={page as 'board' | 'roadmap'}
-                  viewMode={viewMode}
-                  onSelectView={setViewMode}
-                  filterMemberId={filterMemberId}
-                  onClearFilter={() => setFilterMemberId(null)}
-                  onOpenCard={cardId => handleOpenCard(cardId)}
-                  onAddColumn={() => setShowAddColumn(true)}
-                  onCreateBoard={() => setShowCreateBoard(true)}
-                  onCreateRoadmap={() => setShowCreateRoadmap(true)}
-                  showInbox={showInbox}
-                  onToggleInbox={() => setShowInbox(s => !s)}
-                />
-              </motion.div>
-            )}
+            <motion.div
+              key={inProject ? `project-${activeBoardId}` : `page-${page}`}
+              variants={isMobile ? pageMobileVariants : pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className={`wp-page-frame${inProject ? ' project' : ''}`}
+            >
+              {renderPage()}
+            </motion.div>
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Modals with 3D Depth Entrance */}
+      {/* Modals */}
       {showSearch && (
-        <SearchModal
+        <CommandPalette
           onClose={() => setShowSearch(false)}
           onOpenCard={(cardId, boardId) => handleOpenCard(cardId, boardId)}
-          onSelectBoard={boardId => {
-            handleSelectBoard(boardId);
-            setShowSearch(false);
-          }}
-          onFilterMember={memberId => {
+          onSelectBoard={boardId => handleSelectBoard(boardId)}
+          onSelectPerson={(boardId, memberId) => {
+            handleSelectBoard(boardId, 'board');
             setFilterMemberId(memberId);
-            setShowSearch(false);
           }}
-          scope={page !== 'dashboard' ? 'board' : 'global'}
-          activeBoardId={page !== 'dashboard' ? activeBoardId : null}
+          onNavigate={handleNavigate}
+          onNewTask={() => setQuickTask(inProject ? { boardId: activeBoardId } : {})}
+          onCreateBoard={() => setShowCreateBoard(true)}
+          onCreateRoadmap={() => setShowCreateRoadmap(true)}
+          onInvite={inProject ? () => setShowMembers(true) : undefined}
+          onOpenSettings={() => handleOpenSettings()}
         />
       )}
       {showSettings && (
@@ -840,15 +912,31 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           mode="column"
         />
       )}
+      {quickTask && (
+        <QuickTaskModal
+          boardId={quickTask.boardId}
+          onClose={() => setQuickTask(null)}
+          onCreated={(cardId, boardId) => handleOpenCard(cardId, boardId)}
+          onCreateProject={() => setShowCreateBoard(true)}
+        />
+      )}
       {showMembers && <MembersModal onClose={() => setShowMembers(false)} />}
       {showEmail && <EmailNotifModal onClose={() => setShowEmail(false)} />}
 
       {/* Card Detail */}
-      {openCardId && (
-        <CardModal
+      {openCardId && !scheduleEditorOpen && (
+        <TaskSheet
           cardId={openCardId}
           boardId={openCardBoardId}
           onClose={() => { setOpenCardId(null); setOpenCardBoardId(null); }}
+          onOpenScheduleEditor={() => setScheduleEditorOpen(true)}
+        />
+      )}
+      {openCardId && scheduleEditorOpen && (
+        <CardModal
+          cardId={openCardId}
+          boardId={openCardBoardId}
+          onClose={() => setScheduleEditorOpen(false)}
         />
       )}
 
@@ -878,39 +966,16 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       {/* Mobile Quick Bottom Navigation Bar */}
       <MobileBottomNav
         page={page}
-        viewMode={viewMode}
-        showInbox={showInbox}
-        onGoHome={() => {
-          handleGoToDashboard();
+        inboxUnread={inboxUnread}
+        onNavigate={p => {
+          handleNavigate(p);
           setMobileMenuOpen(false);
           setShowBoardSelector(false);
         }}
-        onSelectBoardView={(mode) => {
-          const active = boards.find(b => b.id === activeBoardId);
-          const isRoadmap = active?.type === 'roadmap';
-          setPage(isRoadmap ? 'roadmap' : 'board');
-          const finalMode = isRoadmap
-            ? (mode === 'board' ? 'roadmap' : mode)
-            : (mode === 'roadmap' ? 'board' : mode);
-          setViewMode(finalMode);
-          setMobileMenuOpen(false);
+        onNewTask={() => {
+          setQuickTask(inProject ? { boardId: activeBoardId } : {});
           setShowBoardSelector(false);
-        }}
-        onOpenBoardSelector={() => {
-          setShowBoardSelector(true);
-          setShowInbox(false);
           setMobileMenuOpen(false);
-        }}
-        onCreateBoard={() => {
-          setShowCreateBoard(true);
-          setShowBoardSelector(false);
-          setShowInbox(false);
-          setMobileMenuOpen(false);
-        }}
-        onToggleInbox={() => {
-          setShowInbox(s => !s);
-          setMobileMenuOpen(false);
-          setShowBoardSelector(false);
         }}
       />
 

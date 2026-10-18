@@ -6,7 +6,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const PIPEDREAM_WEBHOOK_URL = (import.meta.env.VITE_PIPEDREAM_WEBHOOK_URL || '').trim();
 
-function buildWorklaneEmailHtml({
+function buildWaypointEmailHtml({
   recipientName,
   subject,
   body,
@@ -35,13 +35,13 @@ function buildWorklaneEmailHtml({
   };
 
   const badge = eventBadgeMap[eventType] || { label: 'Notification', text: '#4f46e5', icon: 'clock' };
-  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://worklane.app';
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://waypoint.app';
   
-  // Official Worklane assets hosted on CDN
-  const logoUrl = 'https://cdn.jsdelivr.net/gh/nyxieeee/Worklane@main/public/logo.png';
-  const calendarIconUrl = 'https://cdn.jsdelivr.net/gh/nyxieeee/Worklane@main/public/icons/calendar.png';
-  const alertIconUrl = 'https://cdn.jsdelivr.net/gh/nyxieeee/Worklane@main/public/icons/alert.png';
-  const userIconUrl = 'https://cdn.jsdelivr.net/gh/nyxieeee/Worklane@main/public/icons/user.png';
+  // Official Waypoint assets hosted on CDN
+  const logoUrl = 'https://cdn.jsdelivr.net/gh/nextechph/Waypoint-by-NEXT@main/public/logo.png';
+  const calendarIconUrl = 'https://cdn.jsdelivr.net/gh/nextechph/Waypoint-by-NEXT@main/public/icons/calendar.png';
+  const alertIconUrl = 'https://cdn.jsdelivr.net/gh/nextechph/Waypoint-by-NEXT@main/public/icons/alert.png';
+  const userIconUrl = 'https://cdn.jsdelivr.net/gh/nextechph/Waypoint-by-NEXT@main/public/icons/user.png';
   
   // Strip emojis and escape HTML
   const cleanSubject = subject.replace(/[\u{1F600}-\u{1F6FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu, '').trim();
@@ -79,7 +79,7 @@ function buildWorklaneEmailHtml({
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="email-wrapper" style="max-width: 540px; margin: 0 auto;">
     <tr>
       <td>
-        <!-- ── Neumorphic Outer Card ── -->
+        <!-- ── Outer Card ── -->
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="neu-card" style="background-color: #eef2f8; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 4px 4px 12px rgba(166, 175, 195, 0.4), -4px -4px 12px rgba(255, 255, 255, 0.95); overflow: hidden;">
           <tr>
             <td class="neu-card-content" style="padding: 28px 28px 24px 28px;">
@@ -90,25 +90,25 @@ function buildWorklaneEmailHtml({
                   <td style="vertical-align: middle;">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                       <tr>
-                        <!-- Raised Neumorphic Logo Tile -->
+                        <!-- Raised Logo Tile -->
                         <td style="width: 40px; height: 40px; background-color: #eef2f8; border-radius: 12px; text-align: center; vertical-align: middle; box-shadow: 2px 2px 5px rgba(166, 175, 195, 0.35), -2px -2px 5px rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.8);">
                           <img 
                             src="${logoUrl}" 
-                            alt="Worklane" 
+                            alt="Waypoint" 
                             width="30" 
                             height="30" 
                             style="display: block; margin: 0 auto; width: 30px; height: 30px; object-fit: contain;" 
                           />
                         </td>
                         <td style="padding-left: 12px; vertical-align: middle;">
-                          <div style="font-size: 17px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1.15;">Worklane</div>
+                          <div style="font-size: 17px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1.15;">Waypoint</div>
                           <div style="font-size: 11px; font-weight: 600; color: #64748b; letter-spacing: -0.01em; margin-top: 2px;">Simply get things done.</div>
                         </td>
                       </tr>
                     </table>
                   </td>
                   <td style="text-align: right; vertical-align: middle;">
-                    <!-- Raised Neumorphic Pill Badge -->
+                    <!-- Raised Pill Badge -->
                     <span style="display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 10.5px; font-weight: 700; background-color: #eef2f8; color: ${badge.text}; box-shadow: 1.5px 1.5px 4px rgba(166, 175, 195, 0.35), -1.5px -1.5px 4px rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.8); text-transform: uppercase; letter-spacing: 0.04em;">
                       ${badge.label}
                     </span>
@@ -126,13 +126,13 @@ function buildWorklaneEmailHtml({
                 ${cleanSubject}
               </h1>
 
-              <!-- ── Recessed Neumorphic Message Box ── -->
+              <!-- ── Recessed Message Box ── -->
               <div style="background-color: #e5eaf2; border-radius: 14px; border: 1px solid rgba(212, 220, 232, 0.8); box-shadow: inset 2px 2px 5px rgba(166, 175, 195, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.85); padding: 18px 20px; margin-bottom: 20px; font-size: 14px; line-height: 1.65; color: #334155; white-space: pre-line;">
                 ${cleanBody}
               </div>
 
               ${(metadata?.cardTitle || metadata?.boardName || metadata?.dueDate || metadata?.actorName) ? `
-              <!-- ── Recessed Neumorphic Spec Box ── -->
+              <!-- ── Recessed Spec Box ── -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #e5eaf2; border-radius: 14px; border: 1px solid rgba(212, 220, 232, 0.8); box-shadow: inset 2px 2px 5px rgba(166, 175, 195, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.85); margin-bottom: 24px; font-size: 13px; color: #475569; overflow: hidden;">
                 ${metadata?.cardTitle ? `
                 <tr>
@@ -165,16 +165,16 @@ function buildWorklaneEmailHtml({
               </table>
               ` : ''}
 
-              <!-- ── Raised Neumorphic CTA Button ── -->
+              <!-- ── Raised CTA Button ── -->
               <div style="text-align: center; margin: 24px 0 20px 0;">
                 <a href="${appUrl}" class="cta-button" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 12px; font-size: 13.5px; font-weight: 700; letter-spacing: 0.01em; box-shadow: 3px 3px 8px rgba(79, 70, 229, 0.35), -2px -2px 6px rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.2);">
-                  Open in Worklane &rarr;
+                  Open in Waypoint &rarr;
                 </a>
               </div>
 
               <!-- Footer Note -->
               <p style="margin: 20px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.5; text-align: center;">
-                Sent automatically by Worklane. To customize notification triggers, open <strong>Settings &rarr; Email Notifications</strong>.
+                Sent automatically by Waypoint. To customize notification triggers, open <strong>Settings &rarr; Email Notifications</strong>.
               </p>
 
             </td>
@@ -221,7 +221,7 @@ export const useEmailStore = create<EmailState>()(
         notifyOnDue: true,
         notifyOnStatusChange: true,
         notifyOnMention: true,
-        senderEmail: 'notifications@worklane.app',
+        senderEmail: 'notifications@waypoint.app',
       },
       logs: [],
 
@@ -248,7 +248,7 @@ export const useEmailStore = create<EmailState>()(
         const logId = uid();
 
         try {
-          const htmlContent = buildWorklaneEmailHtml({
+          const htmlContent = buildWaypointEmailHtml({
             recipientName: recipient.name,
             subject,
             body,
@@ -263,12 +263,12 @@ export const useEmailStore = create<EmailState>()(
               name: recipient.name,
               email: recipient.email,
             },
-            sender: settings.senderEmail || 'notifications@worklane.app',
+            sender: settings.senderEmail || 'notifications@waypoint.app',
             subject,
             body,
             html: htmlContent,
             metadata: metadata || {},
-            source: 'Worklane Kanban',
+            source: 'Waypoint Kanban',
           };
 
           const res = await fetch(PIPEDREAM_WEBHOOK_URL, {
@@ -335,14 +335,14 @@ export const useEmailStore = create<EmailState>()(
         }
 
         try {
-          const testHtml = buildWorklaneEmailHtml({
+          const testHtml = buildWaypointEmailHtml({
             recipientName: recipientEmail.split('@')[0] || 'Team Member',
-            subject: 'Worklane Email Notification Test',
-            body: 'Hello! This is an automated test notification from your Worklane Kanban workspace. If you can see this email, your Pipedream webhook is functioning perfectly!',
+            subject: 'Waypoint Email Notification Test',
+            body: 'Hello! This is an automated test notification from your Waypoint Kanban workspace. If you can see this email, your Pipedream webhook is functioning perfectly!',
             eventType: 'test_ping',
             metadata: {
               cardTitle: 'Integration Verification Test',
-              boardName: 'Worklane Kanban',
+              boardName: 'Waypoint Kanban',
             },
           });
 
@@ -353,16 +353,16 @@ export const useEmailStore = create<EmailState>()(
               name: recipientEmail.split('@')[0] || 'Team Member',
               email: recipientEmail,
             },
-            sender: 'notifications@worklane.app',
-            subject: 'Worklane Email Notification Test',
-            body: 'Hello! This is an automated test notification from your Worklane Kanban workspace.',
+            sender: 'notifications@waypoint.app',
+            subject: 'Waypoint Email Notification Test',
+            body: 'Hello! This is an automated test notification from your Waypoint Kanban workspace.',
             html: testHtml,
             metadata: {
               isTest: true,
               cardTitle: 'Integration Verification Test',
-              boardName: 'Worklane Kanban',
+              boardName: 'Waypoint Kanban',
             },
-            source: 'Worklane Integration Test',
+            source: 'Waypoint Integration Test',
           };
 
           const res = await fetch(PIPEDREAM_WEBHOOK_URL, {
@@ -388,7 +388,7 @@ export const useEmailStore = create<EmailState>()(
       deleteLog: (id: string) => set(s => ({ logs: s.logs.filter(l => l.id !== id) })),
     }),
     {
-      name: 'worklane_email_store_v1',
+      name: 'waypoint_email_store_v1',
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.logs = (state.logs || []).filter(l => l.status === 'sent' || l.status === 'failed');

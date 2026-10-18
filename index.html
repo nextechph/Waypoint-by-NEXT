@@ -3,33 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Worklane – Smart Project Management</title>
-    <meta name="description" content="Worklane is a powerful Kanban-style project management tool for teams. Organize work with boards, cards, comments, attachments, and due-date notifications." />
+    <title>Waypoint – Your work. Your direction.</title>
+    <meta name="description" content="Waypoint by Next Technology. Plan your tasks, track your progress and reach what's next with boards, roadmaps, comments, attachments and due-date notifications." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Worklane" />
-    <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#e6e9ef" media="(prefers-color-scheme: light)" />
+    <meta name="apple-mobile-web-app-title" content="Waypoint" />
+    <meta name="theme-color" content="#0F1115" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F5F6F8" media="(prefers-color-scheme: light)" />
     <meta name="format-detection" content="telephone=no" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; media-src 'self' data: blob:;" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('worklane-theme');
-          if (saved) {
-            var parsed = JSON.parse(saved);
-            if (parsed && parsed.state && parsed.state.isDark) {
-              document.documentElement.classList.add('dark');
+          // One-time migration of storage keys saved under the app's previous name:
+          // any "<prefix>-theme" / "<prefix>_<known key>" entry is moved to the "waypoint" prefix.
+          var known = ['-theme', '_alerted_', '_auth_', '_boards_cache_', '_current_', '_custom_borders', '_data_', '_email', '_notifs_', '_pending_invite', '_roadmap_tasks_width', '_settings_'];
+          [localStorage, sessionStorage].forEach(function(store) {
+            for (var i = store.length - 1; i >= 0; i--) {
+              var key = store.key(i);
+              var m = key && /^([a-z]+)([-_].*)$/.exec(key);
+              if (!m || m[1] === 'waypoint') continue;
+              var rest = m[2];
+              if (!known.some(function(k) { return rest.indexOf(k) === 0; })) continue;
+              var next = 'waypoint' + rest;
+              if (store.getItem(next) === null) store.setItem(next, store.getItem(key));
+              store.removeItem(key);
             }
-          }
+          });
         } catch (e) {}
+        try {
+          var saved = localStorage.getItem('waypoint-theme');
+          var parsed = saved ? JSON.parse(saved) : null;
+          var isDark = parsed && parsed.state ? !!parsed.state.isDark : true;
+          if (isDark) document.documentElement.classList.add('dark');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
       })();
     </script>
   </head>

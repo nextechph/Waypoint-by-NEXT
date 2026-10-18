@@ -20,8 +20,9 @@ interface WorkState {
 
   // Board & Roadmap actions
   createBoard: (name: string, color: string, createdBy?: string, creatorName?: string) => Promise<Board>;
-  createRoadmap: (name: string, color: string, createdBy?: string, creatorName?: string, description?: string, templatePhases?: string[]) => Promise<Board>;
+  createRoadmap: (name: string, color: string, createdBy?: string, creatorName?: string, description?: string, templatePhases?: Array<string | { name: string; type?: 'phase' | 'subtask' }>) => Promise<Board>;
   deleteBoard: (boardId: string) => void;
+  deleteBoards: (boardIds: string[]) => void;
   renameBoard: (boardId: string, name: string) => void;
   updateBoardColor: (boardId: string, color: string) => void;
   leaveBoard: (boardId: string, userEmail: string) => void;
@@ -180,7 +181,7 @@ export function scheduleBoardSync(board: Board, delayMs = 60) {
 try {
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const key = localStorage.key(i);
-    if (key && (key.startsWith('worklane_boards_cache_') || key.startsWith('worklane_data_'))) {
+    if (key && (key.startsWith('waypoint_boards_cache_') || key.startsWith('waypoint_data_'))) {
       localStorage.removeItem(key);
     }
   }
@@ -194,7 +195,7 @@ export function getSavedActiveBoardId(): string | null {
     const params = new URLSearchParams(window.location.search);
     const urlBoard = params.get('board') || params.get('b');
     if (urlBoard) return urlBoard;
-    return localStorage.getItem('worklane_current_board_id_v1');
+    return localStorage.getItem('waypoint_current_board_id_v1');
   } catch {
     return null;
   }
@@ -487,32 +488,69 @@ export const useWorkStore = create<WorkState>()(
         const now = new Date();
         const todayIso = now.toISOString().split('T')[0];
 
-        const phaseNames = templatePhases && templatePhases.length > 0
-          ? templatePhases
-          : ['Planning', 'Making the UI', 'Making the frontend', 'Making the backend', 'QA & Launch'];
+        const rawPhases = templatePhases ?? [];
+        interface PhaseGroup {
+          phaseName: string;
+          subtasks: string[];
+        }
+        const phaseGroups: PhaseGroup[] = [];
+        let currentGroup: PhaseGroup | null = null;
 
-        const defaultCards: Card[] = phaseNames.map((phaseTitle, idx) => {
-          const start = new Date(now);
-          start.setDate(start.getDate() + (idx * 6));
-          const due = new Date(start);
-          due.setDate(due.getDate() + 8);
+        rawPhases.forEach(item => {
+          if (typeof item === 'string') {
+            if (!currentGroup) {
+              currentGroup = { phaseName: item, subtasks: [] };
+              phaseGroups.push(currentGroup);
+            } else {
+              currentGroup.subtasks.push(item);
+            }
+          } else if (item && typeof item === 'object') {
+            if (item.type === 'phase') {
+              currentGroup = { phaseName: item.name, subtasks: [] };
+              phaseGroups.push(currentGroup);
+            } else {
+              // subtask
+              if (!currentGroup) {
+                currentGroup = { phaseName: 'Phase 1: Planning', subtasks: [] };
+                phaseGroups.push(currentGroup);
+              }
+              currentGroup.subtasks.push(item.name);
+            }
+          }
+        });
+
+        let cardOffsetCounter = 0;
+        const columns: Column[] = phaseGroups.map((group, gIdx) => {
+          const cards: Card[] = group.subtasks.map((subtaskTitle) => {
+            const totalIdx = cardOffsetCounter++;
+            const start = new Date(now);
+            start.setDate(start.getDate() + (totalIdx * 4));
+            const due = new Date(start);
+            due.setDate(due.getDate() + 7);
+
+            return {
+              id: uid(),
+              title: subtaskTitle,
+              description: '',
+              comments: [],
+              attachments: [],
+              labels: ['roadmap'],
+              assignees: creatorMember ? [creatorMember.id] : [],
+              dueDate: due.toISOString().split('T')[0],
+              startDate: start.toISOString().split('T')[0],
+              actualStartDate: totalIdx === 0 ? todayIso : null,
+              actualEndDate: null,
+              progress: totalIdx === 0 ? 20 : 0,
+              completed: false,
+              completedAt: null,
+              createdAt: new Date().toISOString(),
+            };
+          });
 
           return {
             id: uid(),
-            title: phaseTitle,
-            description: '',
-            comments: [],
-            attachments: [],
-            labels: ['roadmap'],
-            assignees: creatorMember ? [creatorMember.id] : [],
-            dueDate: due.toISOString().split('T')[0],
-            startDate: start.toISOString().split('T')[0],
-            actualStartDate: idx === 0 ? todayIso : null,
-            actualEndDate: null,
-            progress: idx === 0 ? 20 : 0,
-            completed: false,
-            completedAt: null,
-            createdAt: new Date().toISOString(),
+            name: group.phaseName,
+            cards
           };
         });
 
@@ -524,9 +562,7 @@ export const useWorkStore = create<WorkState>()(
           description: description || '',
           createdBy: creatorEmail,
           members: creatorMember ? [creatorMember] : [],
-          columns: [
-            { id: uid(), name: 'Project Deliverables', cards: defaultCards }
-          ],
+          columns,
         };
 
         set(s => ({
@@ -650,6 +686,21 @@ export const useWorkStore = create<WorkState>()(
         supabaseService.deleteBoard(boardId);
       },
 
+      deleteBoards: (boardIds) => {
+        if (!boardIds.length) return;
+        const deletedAt = Date.now();
+        boardIds.forEach(id => recentlyDeletedBoardIds.set(id, deletedAt));
+        const idsSet = new Set(boardIds);
+        set(s => {
+          const boards = s.boards.filter(b => !idsSet.has(b.id));
+          const activeBoardId = idsSet.has(s.activeBoardId || '')
+            ? (boards[0]?.id ?? null)
+            : s.activeBoardId;
+          return { boards, activeBoardId };
+        });
+        boardIds.forEach(id => supabaseService.deleteBoard(id));
+      },
+
       renameBoard: (boardId, name) => {
         const cleanName = name.trim();
         if (!cleanName) return;
@@ -717,7 +768,7 @@ export const useWorkStore = create<WorkState>()(
 
       switchBoard: (boardId) => {
         try {
-          localStorage.setItem('worklane_current_board_id_v1', boardId);
+          localStorage.setItem('waypoint_current_board_id_v1', boardId);
         } catch {}
         set({ activeBoardId: boardId });
       },
@@ -1241,7 +1292,7 @@ export const useWorkStore = create<WorkState>()(
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `Status Update: ${updatedTitle} is ${isNowComplete ? 'Completed' : 'Reopened'}`,
-                  body: `Hi ${member.name},\n\nThe task "${updatedTitle}" was marked as ${isNowComplete ? 'completed' : 'incomplete'} on board "${tb.name}".\n\nBest regards,\nWorklane Team`,
+                  body: `Hi ${member.name},\n\nThe task "${updatedTitle}" was marked as ${isNowComplete ? 'completed' : 'incomplete'} on board "${tb.name}".\n\nBest regards,\nWaypoint Team`,
                   eventType: 'status_changed',
                   metadata: {
                     cardTitle: updatedTitle,
@@ -1328,7 +1379,7 @@ export const useWorkStore = create<WorkState>()(
             useEmailStore.getState().sendEmailNotification({
               recipient: member,
               subject: `New Task Assigned: ${assignedCardTitle}`,
-              body: `Hi ${member.name},\n\nYou have been assigned to the card "${assignedCardTitle}" on board "${tb.name}".\n\nBest regards,\nWorklane Team`,
+              body: `Hi ${member.name},\n\nYou have been assigned to the card "${assignedCardTitle}" on board "${tb.name}".\n\nBest regards,\nWaypoint Team`,
               eventType: 'card_assigned',
               metadata: {
                 cardTitle: assignedCardTitle,
@@ -1494,7 +1545,7 @@ export const useWorkStore = create<WorkState>()(
               useEmailStore.getState().sendEmailNotification({
                 recipient: m,
                 subject: `[Mention] ${authorName} mentioned you on "${cardTitle}"`,
-                body: `Hi ${m.name},\n\n${authorName} mentioned you in a comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWorklane Team`,
+                body: `Hi ${m.name},\n\n${authorName} mentioned you in a comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWaypoint Team`,
                 eventType: 'mention',
                 metadata: {
                   cardTitle,
@@ -1526,7 +1577,7 @@ export const useWorkStore = create<WorkState>()(
                 useEmailStore.getState().sendEmailNotification({
                   recipient: repliedMember,
                   subject: `[Reply] ${authorName} replied to your comment on "${cardTitle}"`,
-                  body: `Hi ${repliedMember.name},\n\n${authorName} replied to your comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWorklane Team`,
+                  body: `Hi ${repliedMember.name},\n\n${authorName} replied to your comment on card "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWaypoint Team`,
                   eventType: 'comment_added',
                   metadata: {
                     cardTitle,
@@ -1555,7 +1606,7 @@ export const useWorkStore = create<WorkState>()(
                 useEmailStore.getState().sendEmailNotification({
                   recipient: member,
                   subject: `New Comment on "${cardTitle}"`,
-                  body: `Hi ${member.name},\n\n${authorName} commented on task "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWorklane Team`,
+                  body: `Hi ${member.name},\n\n${authorName} commented on task "${cardTitle}" in board "${tb.name}":\n\n"${text}"\n\nBest regards,\nWaypoint Team`,
                   eventType: 'comment_added',
                   metadata: {
                     cardTitle,

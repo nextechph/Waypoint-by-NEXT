@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   WORKLANE — MOBILE & RESPONSIVE DESIGN SYSTEM
+   WAYPOINT — MOBILE & RESPONSIVE DESIGN SYSTEM
    Isolates all mobile overrides (<= 860px, <= 640px, <= 380px)
    Protects desktop layouts from accidental mobile regressions.
    ═══════════════════════════════════════════════════════════════════ */
@@ -274,7 +274,7 @@
     background-color: hsl(var(--primary) / 0.1);
   }
 
-  /* Elevated Neumorphic Center Circular Plus Button */
+  /* Elevated Center Circular Plus Button */
   .mobile-nav-fab-wrapper {
     position: relative;
     display: flex;
@@ -294,7 +294,7 @@
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.88));
     color: #ffffff;
     border: 4px solid hsl(var(--card));
-    box-shadow: 0 6px 18px hsl(var(--primary) / 0.45), 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.14);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -305,7 +305,7 @@
   }
 
   .mobile-nav-fab:active {
-    box-shadow: 0 2px 8px hsl(var(--primary) / 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   /* Kanban Board Touch Momentum & Snap Scrolling: Column fits screen width with no peeking */

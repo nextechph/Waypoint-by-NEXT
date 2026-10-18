@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X } from '../ui/glyphs';
 import { motion } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useToastStore } from '../../store/useToastStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { BOARD_COLORS } from '../../types';
+import { useEscape } from '../../lib/useEscape';
 
 interface Props {
   onClose: (createdBoardId?: string) => void;
 }
 
 export default function CreateBoardModal({ onClose }: Props) {
+  useEscape(() => onClose());
   const createBoard = useWorkStore(s => s.createBoard);
   const showToast = useToastStore(s => s.showToast);
   const user = useAuthStore(s => s.user);

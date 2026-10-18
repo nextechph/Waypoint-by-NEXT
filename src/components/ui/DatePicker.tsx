@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   X, Check, Sparkles
-} from 'lucide-react';
+} from './glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -31,7 +31,7 @@ export function parseDateValue(val?: string | null): Date | null {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-export default function NeumorphicDatePicker({
+export default function DatePicker({
   value,
   onChange,
   placeholder = 'Set date...',
@@ -144,34 +144,39 @@ export default function NeumorphicDatePicker({
     }
   };
 
-  // Clicking a date selects it (highlighting it) without closing popover, allowing user to press Apply
+  // Clicking a date selects and applies it immediately
   const handleSelectDate = (dateObj: Date) => {
-    setViewMonth(dateObj.getMonth());
-    setViewYear(dateObj.getFullYear());
-    setSelectedDate(dateObj);
+    const target = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 12, 0, 0, 0);
+    setViewMonth(target.getMonth());
+    setViewYear(target.getFullYear());
+    setSelectedDate(target);
+    const iso = computeIso(target);
+    if (iso) onChange(iso);
+    setIsOpen(false);
   };
 
   const handleQuickPreset = (preset: 'today' | 'tomorrow' | 'nextWeek' | 'endOfWeek') => {
     const now = new Date();
-    let d = now;
+    let d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0);
 
     if (preset === 'today') {
-      d = now;
+      d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0);
     } else if (preset === 'tomorrow') {
-      d = new Date();
-      d.setDate(d.getDate() + 1);
+      d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0, 0);
     } else if (preset === 'endOfWeek') {
-      d = new Date();
-      const diff = 5 - d.getDay();
-      d.setDate(d.getDate() + (diff >= 0 ? diff : diff + 7));
+      const diff = 5 - now.getDay();
+      const daysToAdd = diff >= 0 ? diff : diff + 7;
+      d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToAdd, 12, 0, 0, 0);
     } else if (preset === 'nextWeek') {
-      d = new Date();
-      d.setDate(d.getDate() + 7);
+      d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, 12, 0, 0, 0);
     }
 
     setViewYear(d.getFullYear());
     setViewMonth(d.getMonth());
     setSelectedDate(d);
+    const iso = computeIso(d);
+    if (iso) onChange(iso);
+    setIsOpen(false);
   };
 
   const handleApply = () => {
@@ -313,22 +318,6 @@ export default function NeumorphicDatePicker({
         onClick={handleToggleOpen}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1, overflow: 'hidden' }}>
-          <div
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              backgroundColor: formatted ? 'hsl(var(--primary) / 0.12)' : 'hsl(var(--secondary) / 0.8)',
-              color: formatted ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: 'var(--neu-shadow-raised-sm)',
-            }}
-          >
-            <CalendarIcon size={12} strokeWidth={2} />
-          </div>
 
           {formatted ? (
             <span
@@ -398,7 +387,7 @@ export default function NeumorphicDatePicker({
         ) : null}
       </motion.button>
 
-      {/* Neumorphic Dropdown Popover */}
+      {/* Dropdown Popover */}
       <AnimatePresence>
         {isOpen && (
           <motion.div

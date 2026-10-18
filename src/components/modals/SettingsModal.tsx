@@ -3,7 +3,7 @@ import {
   X, Sun, Moon, Bell, Shield, Sliders, Mail, Tag, Plus, Trash2, Check,
   AlertTriangle, Upload, Download, RefreshCw, Send, CheckCircle2, User, Camera, Image, Sparkles,
   Globe, AlertCircle, Loader2, Crop
-} from 'lucide-react';
+} from '../ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
@@ -16,6 +16,7 @@ import { useConfirmStore } from '../../store/useConfirmStore';
 import { avatarInitials } from '../../utils';
 import ProfileBorderPicker from '../ui/ProfileBorderPicker';
 import AvatarCropperModal from './AvatarCropperModal';
+import { useEscape } from '../../lib/useEscape';
 
 type TabKey = 'profile' | 'appearance' | 'notifications' | 'email' | 'privacy' | 'labels';
 
@@ -36,6 +37,7 @@ const PRESET_AVATARS = [
 ];
 
 export default function SettingsModal({ initialTab = 'profile', onClose }: Props) {
+  useEscape(() => onClose());
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
   // Stores
@@ -79,7 +81,7 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
   // Test email state
   const [testEmail, setTestEmail] = useState('');
   const [testSubject, setTestSubject] = useState('Task Update: Project Milestone');
-  const [testBody, setTestBody] = useState('Hi! This is a test email notification dispatched from Worklane.');
+  const [testBody, setTestBody] = useState('Hi! This is a test email notification dispatched from Waypoint.');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,11 +90,11 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
   const totalAttachments = boards.reduce((acc, b) => acc + (b.columns?.reduce((cAcc, c) => cAcc + (c.cards?.reduce((aAcc, a) => aAcc + (a.attachments?.length || 0), 0) || 0), 0) || 0), 0);
 
   const storageBytes = new Blob([
-    localStorage.getItem('worklane_data_v4') || '',
-    localStorage.getItem('worklane_notifs_v3') || '',
-    localStorage.getItem('worklane_auth_v2') || '',
-    localStorage.getItem('worklane_emails_v2') || '',
-    localStorage.getItem('worklane_settings_v1') || '',
+    localStorage.getItem('waypoint_data_v4') || '',
+    localStorage.getItem('waypoint_notifs_v3') || '',
+    localStorage.getItem('waypoint_auth_v2') || '',
+    localStorage.getItem('waypoint_emails_v2') || '',
+    localStorage.getItem('waypoint_settings_v1') || '',
   ]).size;
   const storageKB = (storageBytes / 1024).toFixed(1);
 
@@ -166,7 +168,7 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `worklane-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `waypoint-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showToast('Workspace backup exported successfully', 'success');
@@ -373,7 +375,7 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
                           width: '100%',
                           height: '100%',
                           backgroundColor: 'hsl(var(--primary))',
-                          color: '#fff',
+                          color: 'hsl(var(--primary-foreground))',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -589,7 +591,7 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div>
                   <h3 style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 2 }}>Theme & Color Mode</h3>
-                  <p style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Choose between bright neumorphic daylight mode or deep dark gunmetal theme.</p>
+                  <p style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Choose between bright daylight mode or deep dark gunmetal theme.</p>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

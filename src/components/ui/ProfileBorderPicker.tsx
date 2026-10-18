@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Check, Code2, Plus, Sparkles, Trash2, X, Briefcase
-} from 'lucide-react';
+} from './glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BORDER_PRESETS, type BorderPreset, type CustomBorderDef } from '../../types';
 import {
@@ -537,7 +537,7 @@ export default function ProfileBorderPicker({
                     backgroundColor: 'hsl(var(--primary))',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Check size={9} color="#fff" strokeWidth={3} />
+                    <Check size={9} color="hsl(var(--primary-foreground))" strokeWidth={3} />
                   </div>
                 )}
                 <SwatchPreview preset={preset} size={22} />
@@ -597,7 +597,7 @@ export default function ProfileBorderPicker({
                     backgroundColor: 'hsl(var(--primary))',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Check size={9} color="#fff" strokeWidth={3} />
+                    <Check size={9} color="hsl(var(--primary-foreground))" strokeWidth={3} />
                   </div>
                 )}
                 <SwatchPreview preset={preset} size={22} />
@@ -641,7 +641,7 @@ export default function ProfileBorderPicker({
                 backgroundColor: 'hsl(var(--primary))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Check size={9} color="#fff" strokeWidth={3} />
+                <Check size={9} color="hsl(var(--primary-foreground))" strokeWidth={3} />
               </div>
             )}
             <SwatchPreview preset={nonePreset} size={22} />

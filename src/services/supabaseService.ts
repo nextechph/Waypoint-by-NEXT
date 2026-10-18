@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { Board, Column, Card, Comment, Attachment, Member, MemberRole, Notification, Sprint } from '../types';
+import type { Board, Column, Card, Comment, Attachment, Member, MemberRole, Notification, Sprint, Subtask } from '../types';
 import { uid, sortMembersWithOwnerFirst } from '../utils';
 
 // Active WebSocket channel reference for instant peer broadcasting
@@ -197,7 +197,7 @@ export const supabaseService = {
             .map(cm => {
               let text = cm.text || '';
               let attachments: Attachment[] | undefined;
-              const match = text.match(/<!--worklane_attachments:([\s\S]*?)-->/);
+              const match = text.match(/<!--[a-z]+_attachments:([\s\S]*?)-->/);
               if (match) {
                 try {
                   attachments = JSON.parse(match[1]);
@@ -239,9 +239,10 @@ export const supabaseService = {
           let workSuspensions: any[] = [];
           let workedDays: string[] = [];
           let linkedRoadmapId: string | null = null;
+          let subtasks: Subtask[] = [];
 
           // Parse embedded roadmap metadata from card description
-          const rMatch = desc.match(/<!--worklane_roadmap:([\s\S]*?)-->/);
+          const rMatch = desc.match(/<!--[a-z]+_roadmap:([\s\S]*?)-->/);
           if (rMatch) {
             try {
               const meta = JSON.parse(rMatch[1]);
@@ -255,18 +256,19 @@ export const supabaseService = {
               if (meta.workSuspensions !== undefined) workSuspensions = meta.workSuspensions;
               if (meta.workedDays !== undefined) workedDays = meta.workedDays;
               if (meta.linkedRoadmapId !== undefined) linkedRoadmapId = meta.linkedRoadmapId;
+              if (Array.isArray(meta.subtasks)) subtasks = meta.subtasks;
               desc = desc.replace(rMatch[0], '').trimEnd();
             } catch {}
           }
 
           // Strip any embedded board sprints tag from card description
-          const spMatch = desc.match(/<!--worklane_board_sprints:[\s\S]*?-->/);
+          const spMatch = desc.match(/<!--[a-z]+_board_sprints:[\s\S]*?-->/);
           if (spMatch) {
             desc = desc.replace(spMatch[0], '').trimEnd();
           }
 
           // Strip any embedded board meta tag from card description
-          const bmMatch = desc.match(/<!--worklane_board_meta:[\s\S]*?-->/);
+          const bmMatch = desc.match(/<!--[a-z]+_board_meta:[\s\S]*?-->/);
           if (bmMatch) {
             desc = desc.replace(bmMatch[0], '').trimEnd();
           }
@@ -289,6 +291,7 @@ export const supabaseService = {
             workSuspensions,
             workedDays,
             linkedRoadmapId,
+            subtasks,
             coverAttachmentId: card.cover_attachment_id,
             createdAt: card.created_at,
             isInbox: !!card.is_inbox,
@@ -331,7 +334,7 @@ export const supabaseService = {
         let bSprints: Sprint[] = [];
         for (const card of allCards) {
           if (card.board_id === b.id && card.description) {
-            const sMatch = card.description.match(/<!--worklane_board_sprints:([\s\S]*?)-->/);
+            const sMatch = card.description.match(/<!--[a-z]+_board_sprints:([\s\S]*?)-->/);
             if (sMatch) {
               try {
                 const parsed = JSON.parse(sMatch[1]);
@@ -350,7 +353,7 @@ export const supabaseService = {
 
         for (const card of allCards) {
           if (card.board_id === b.id && card.description) {
-            const mMatch = card.description.match(/<!--worklane_board_meta:([\s\S]*?)-->/);
+            const mMatch = card.description.match(/<!--[a-z]+_board_meta:([\s\S]*?)-->/);
             if (mMatch) {
               try {
                 const parsedMeta = JSON.parse(mMatch[1]);
@@ -477,15 +480,16 @@ export const supabaseService = {
             (item.card.dependencies && item.card.dependencies.length > 0) ||
             (item.card.workSuspensions && item.card.workSuspensions.length > 0) ||
             (item.card.workedDays && item.card.workedDays.length > 0) ||
-            item.card.linkedRoadmapId
+            item.card.linkedRoadmapId ||
+            (item.card.subtasks && item.card.subtasks.length > 0)
           );
 
           let encodedDescription = item.card.description || '';
-          // Always strip any existing worklane tags first (ensures cleared values don't survive)
+          // Always strip existing metadata tags first (any brand prefix), so cleared values and tags saved before the rename don't survive
           encodedDescription = encodedDescription
-            .replace(/<!--worklane_board_meta:[\s\S]*?-->/g, '')
-            .replace(/<!--worklane_roadmap:[\s\S]*?-->/g, '')
-            .replace(/<!--worklane_board_sprints:[\s\S]*?-->/g, '')
+            .replace(/<!--[a-z]+_board_meta:[\s\S]*?-->/g, '')
+            .replace(/<!--[a-z]+_roadmap:[\s\S]*?-->/g, '')
+            .replace(/<!--[a-z]+_board_sprints:[\s\S]*?-->/g, '')
             .trimEnd();
 
           if (hasRoadmapMeta) {
@@ -501,19 +505,20 @@ export const supabaseService = {
             if (item.card.workSuspensions?.length) rMeta.workSuspensions = item.card.workSuspensions;
             if (item.card.workedDays?.length) rMeta.workedDays = item.card.workedDays;
             if (item.card.linkedRoadmapId) rMeta.linkedRoadmapId = item.card.linkedRoadmapId;
-            encodedDescription = `${encodedDescription}\n<!--worklane_roadmap:${JSON.stringify(rMeta)}-->`.trim();
+            if (item.card.subtasks?.length) rMeta.subtasks = item.card.subtasks;
+            encodedDescription = `${encodedDescription}\n<!--waypoint_roadmap:${JSON.stringify(rMeta)}-->`.trim();
           }
 
 
           // If this is the first card, embed board metadata tag as bulletproof backup
           if (index === 0) {
             const boardMeta = { type: board.type || 'board', description: board.description || '' };
-            encodedDescription = `${encodedDescription}\n<!--worklane_board_meta:${JSON.stringify(boardMeta)}-->`.trim();
+            encodedDescription = `${encodedDescription}\n<!--waypoint_board_meta:${JSON.stringify(boardMeta)}-->`.trim();
           }
 
           // If this is the first card and board has sprints, embed board sprints tag as bulletproof backup
           if (index === 0 && board.sprints && board.sprints.length > 0) {
-            encodedDescription = `${encodedDescription}\n<!--worklane_board_sprints:${JSON.stringify(board.sprints)}-->`.trim();
+            encodedDescription = `${encodedDescription}\n<!--waypoint_board_sprints:${JSON.stringify(board.sprints)}-->`.trim();
           }
 
           return {
@@ -646,7 +651,7 @@ export const supabaseService = {
         allCardsWithMeta.forEach(item => {
           (item.card.comments || []).forEach(cm => {
             const encodedText = cm.attachments && cm.attachments.length > 0
-              ? `${cm.text || ''}\n<!--worklane_attachments:${JSON.stringify(cm.attachments)}-->`
+              ? `${cm.text || ''}\n<!--waypoint_attachments:${JSON.stringify(cm.attachments)}-->`
               : (cm.text || '');
             allComments.push({
               id: cm.id,
@@ -777,7 +782,7 @@ export const supabaseService = {
         }
       }
 
-      const channel = supabase.channel('worklane-realtime-channel');
+      const channel = supabase.channel('waypoint-realtime-channel');
       await channel.send({
         type: 'broadcast',
         event,
@@ -1023,7 +1028,7 @@ export const supabaseService = {
           .map(cm => {
             let text = cm.text || '';
             let attachments: Attachment[] | undefined;
-            const match = text.match(/<!--worklane_attachments:([\s\S]*?)-->/);
+            const match = text.match(/<!--[a-z]+_attachments:([\s\S]*?)-->/);
             if (match) {
               try {
                 attachments = JSON.parse(match[1]);
@@ -1065,9 +1070,10 @@ export const supabaseService = {
         let workSuspensions: any[] = [];
         let workedDays: string[] = [];
         let linkedRoadmapId: string | null = null;
+        let subtasks: Subtask[] = [];
 
         // Parse embedded roadmap metadata from card description
-        const rMatch = desc.match(/<!--worklane_roadmap:([\s\S]*?)-->/);
+        const rMatch = desc.match(/<!--[a-z]+_roadmap:([\s\S]*?)-->/);
         if (rMatch) {
           try {
             const meta = JSON.parse(rMatch[1]);
@@ -1081,12 +1087,13 @@ export const supabaseService = {
             if (meta.workSuspensions !== undefined) workSuspensions = meta.workSuspensions;
             if (meta.workedDays !== undefined) workedDays = meta.workedDays;
             if (meta.linkedRoadmapId !== undefined) linkedRoadmapId = meta.linkedRoadmapId;
+            if (Array.isArray(meta.subtasks)) subtasks = meta.subtasks;
             desc = desc.replace(rMatch[0], '').trimEnd();
           } catch {}
         }
 
         // Strip any embedded board sprints tag from card description
-        const spMatch = desc.match(/<!--worklane_board_sprints:[\s\S]*?-->/);
+        const spMatch = desc.match(/<!--[a-z]+_board_sprints:[\s\S]*?-->/);
         if (spMatch) {
           desc = desc.replace(spMatch[0], '').trimEnd();
         }
@@ -1109,6 +1116,7 @@ export const supabaseService = {
           workSuspensions,
           workedDays,
           linkedRoadmapId,
+          subtasks,
           coverAttachmentId: card.cover_attachment_id,
           createdAt: card.created_at,
           isInbox: !!card.is_inbox,
@@ -1149,7 +1157,7 @@ export const supabaseService = {
       let bSprints: Sprint[] = [];
       for (const card of allCards) {
         if (card.description) {
-          const sMatch = card.description.match(/<!--worklane_board_sprints:([\s\S]*?)-->/);
+          const sMatch = card.description.match(/<!--[a-z]+_board_sprints:([\s\S]*?)-->/);
           if (sMatch) {
             try {
               const parsed = JSON.parse(sMatch[1]);
@@ -1741,7 +1749,7 @@ export const supabaseService = {
     if (!isSupabaseConfigured()) return () => {};
 
     const cleanEmail = userEmail ? userEmail.toLowerCase().trim() : '';
-    const channelName = 'worklane-realtime-channel';
+    const channelName = 'waypoint-realtime-channel';
 
     // Clean up any stale channel with this name to avoid topic collisions
     const existing = supabase.getChannels().find(ch => ch.topic === `realtime:${channelName}`);

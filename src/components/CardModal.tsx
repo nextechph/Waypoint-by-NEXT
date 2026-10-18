@@ -7,7 +7,7 @@ import {
   Edit3, Crown, Shield, Save, Loader2, Globe, Server, Cpu, Briefcase,
   Link2, ExternalLink, ArrowRightLeft, Inbox,
   Milestone, Layers, Activity, CalendarCheck, Clock
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -17,10 +17,11 @@ import { useAuthStore } from '../store/useAuthStore';
 import { LABELS, type Attachment, type Comment, type Member, type WorkSuspension, type Card } from '../types';
 import { avatarInitials, formatBytes, formatTime, uid, truncateFileName, sortMembersWithOwnerFirst, getMemberTeamCategory, getTeamBadgeInfo } from '../utils';
 import { supabaseService } from '../services/supabaseService';
-import NeumorphicDatePicker from './ui/NeumorphicDatePicker';
-import { NeumorphicSelect } from './ui/NeumorphicSelect';
+import DatePicker from './ui/DatePicker';
+import { Select } from './ui/Select';
 import AvatarBorder from './ui/AvatarBorder';
 import { deriveCardProgress, getCardWorkStatus } from './RoadmapView';
+import CreateRoadmapModal from './modals/CreateRoadmapModal';
 
 interface Props {
   cardId: string | null;
@@ -52,6 +53,45 @@ function getFileTypeInfo(fileName: string, type: string) {
 }
 
 export default function CardModal({ cardId, boardId, onClose }: Props) {
+  const boards = useWorkStore(s => s.boards);
+
+  const result = useMemo(() => {
+    if (!cardId) return null;
+    let targetBoard = boardId ? boards.find(b => b.id === boardId) : null;
+    if (!targetBoard) {
+      targetBoard = boards.find(b =>
+        b.columns?.some(c => c.cards?.some(card => card.id === cardId)) ||
+        (b.inboxCards || []).some(card => card.id === cardId)
+      ) || null;
+    }
+    if (!targetBoard) return null;
+
+    for (const column of targetBoard.columns || []) {
+      const card = column.cards?.find(c => c.id === cardId);
+      if (card) {
+        return { card, column, board: targetBoard, isInbox: false };
+      }
+    }
+
+    const inboxCard = (targetBoard.inboxCards || []).find(c => c.id === cardId);
+    if (inboxCard) {
+      return { card: inboxCard, column: null, board: targetBoard, isInbox: true };
+    }
+
+    return null;
+  }, [boards, cardId, boardId]);
+
+  if (!cardId || !result) return null;
+  return <CardModalInner cardId={cardId} result={result} onClose={onClose} />;
+}
+
+type InnerProps = {
+  cardId: string;
+  result: { card: ReturnType<typeof useWorkStore.getState>['boards'][0]['columns'][0]['cards'][0]; column: ReturnType<typeof useWorkStore.getState>['boards'][0]['columns'][0] | null; board: ReturnType<typeof useWorkStore.getState>['boards'][0]; isInbox: boolean };
+  onClose: () => void;
+};
+
+function CardModalInner({ cardId, result, onClose }: InnerProps) {
   const boards = useWorkStore(s => s.boards);
   const getVisibleBoards = useWorkStore(s => s.getVisibleBoards);
   const switchBoard = useWorkStore(s => s.switchBoard);
@@ -100,34 +140,6 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
   const commentInputRef = useRef<HTMLInputElement>(null);
   const replyInputRef = useRef<HTMLInputElement>(null);
   const mentionBlurTimeoutRef = useRef<number | undefined>(undefined);
-
-  const result = useMemo(() => {
-    if (!cardId) return null;
-    let targetBoard = boardId ? boards.find(b => b.id === boardId) : null;
-    if (!targetBoard) {
-      targetBoard = boards.find(b =>
-        b.columns?.some(c => c.cards?.some(card => card.id === cardId)) ||
-        (b.inboxCards || []).some(card => card.id === cardId)
-      ) || null;
-    }
-    if (!targetBoard) return null;
-
-    for (const column of targetBoard.columns || []) {
-      const card = column.cards?.find(c => c.id === cardId);
-      if (card) {
-        return { card, column, board: targetBoard, isInbox: false };
-      }
-    }
-
-    const inboxCard = (targetBoard.inboxCards || []).find(c => c.id === cardId);
-    if (inboxCard) {
-      return { card: inboxCard, column: null, board: targetBoard, isInbox: true };
-    }
-
-    return null;
-  }, [boards, cardId, boardId]);
-
-  if (!cardId || !result) return null;
 
   const { card, column, board, isInbox } = result;
   const isRoadmap = board.type === 'roadmap';
@@ -223,6 +235,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
   const [workedRangeFrom, setWorkedRangeFrom] = useState<string | null>(null);
   const [workedRangeTo, setWorkedRangeTo] = useState<string | null>(null);
   const [showWorkedDaysList, setShowWorkedDaysList] = useState(false);
+  const [showCreateRoadmapModal, setShowCreateRoadmapModal] = useState(false);
 
   useEffect(() => {
     setLocalTitle(card.title);
@@ -912,18 +925,14 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
 
   return (
     <>
-    <div className="modal-overlay" style={{ perspective: 1200 }} onClick={handleSafeClose}>
+    <div className="modal-overlay" onClick={handleSafeClose}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -60 }}
-        animate={
-          isDeleting
-            ? { opacity: 0, scale: 0.72, filter: 'blur(10px)', rotateX: 20, y: 30 }
-            : { opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }
-        }
-        exit={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -60 }}
-        transition={{ duration: 0.22, ease: 'easeOut' }}
-        className="modal large-modal"
-        style={{ transformStyle: 'preserve-3d', overflow: 'hidden' }}
+        initial={{ opacity: 0, x: 56 }}
+        animate={isDeleting ? { opacity: 0, x: 80 } : { opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 56 }}
+        transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+        className="modal large-modal wp-card-modal"
+        style={{ overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Cover Image Banner (Trello style) */}
@@ -1017,11 +1026,11 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
 
         {/* Header */}
         <div className="modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              in column:
-            </span>
-            <NeumorphicSelect
+          <div className="wp-card-crumbs">
+            <span className="wp-project-dot" style={{ backgroundColor: board.color }} />
+            <span className="wp-card-crumb">{board.name}</span>
+            <span className="wp-crumb-sep">/</span>
+            <Select
               size="sm"
               value={isInbox ? 'inbox' : (column?.id || '')}
               options={[
@@ -1044,11 +1053,14 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 }
               }}
             />
+            <span className={`wp-status-pill${card.completed ? ' done' : ''}`}>
+              {card.completed ? 'Completed' : isInbox ? 'Backlog' : 'In motion'}
+            </span>
           </div>
           {!coverAttachment && (
-            <motion.button whileTap={{ scale: 0.92 }} className="icon-btn" onClick={handleSafeClose}>
-              <X size={15} />
-            </motion.button>
+            <button type="button" className="wp-icon-ghost bordered" onClick={handleSafeClose} aria-label="Close">
+              <X size={16} />
+            </button>
           )}
         </div>
 
@@ -1072,27 +1084,9 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0, width: '100%', overflow: 'visible' }}>
             {/* Title Field */}
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 6px 0' }}>
-                <Edit3 size={13} /> Card Title
-              </label>
               <textarea
-                className="textarea-input"
-                style={{
-                  fontSize: 15,
-                  fontWeight: 600,
-                  resize: 'none',
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius)',
-                  backgroundColor: 'hsl(var(--card))',
-                  boxShadow: 'var(--neu-shadow-input)',
-                  border: '1px solid hsl(var(--border) / 0.6)',
-                  color: 'hsl(var(--foreground))',
-                  outline: 'none',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  lineHeight: 1.4,
-                  minHeight: 44,
-                }}
+                className="wp-card-title-input"
+                aria-label="Card title"
                 value={localTitle}
                 rows={1}
                 onChange={e => setLocalTitle(e.target.value)}
@@ -2289,7 +2283,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
                   <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
                     <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled Start</label>
-                    <NeumorphicDatePicker
+                    <DatePicker
                       value={card.startDate || null}
                       onChange={newStart => {
                         updateCard(cardId, { startDate: newStart });
@@ -2300,7 +2294,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                   </div>
                   <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
                     <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled End</label>
-                    <NeumorphicDatePicker
+                    <DatePicker
                       value={card.dueDate}
                       onChange={newDue => {
                         updateCard(cardId, { dueDate: newDue });
@@ -2313,7 +2307,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               ) : (
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="field-label" style={{ margin: '0 0 4px 0' }}>Deadline</label>
-                  <NeumorphicDatePicker
+                  <DatePicker
                     value={card.dueDate}
                     onChange={newDue => {
                       updateCard(cardId, { dueDate: newDue });
@@ -2347,7 +2341,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         return null;
                       })()}
                     </div>
-                    <NeumorphicDatePicker
+                    <DatePicker
                       value={card.actualStartDate || null}
                       onChange={newActualStart => {
                         updateCard(cardId, { actualStartDate: newActualStart });
@@ -2409,7 +2403,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         }
                       })()}
                     </div>
-                    <NeumorphicDatePicker
+                    <DatePicker
                       value={card.actualEndDate || null}
                       onChange={newActual => {
                         updateCard(cardId, { actualEndDate: newActual });
@@ -2488,9 +2482,9 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         onClose();
                         switchBoard(linkedRoadmap.id);
                         try {
-                          localStorage.setItem('worklane_current_page_v1', 'board');
-                          localStorage.setItem('worklane_current_board_id_v1', linkedRoadmap.id);
-                          localStorage.setItem('worklane_current_view_mode_v1', 'roadmap');
+                          localStorage.setItem('waypoint_current_page_v1', 'board');
+                          localStorage.setItem('waypoint_current_board_id_v1', linkedRoadmap.id);
+                          localStorage.setItem('waypoint_current_view_mode_v1', 'roadmap');
                           window.dispatchEvent(new Event('storage'));
                         } catch {}
                       }}
@@ -2501,7 +2495,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <NeumorphicSelect
+                    <Select
                       value={card.linkedRoadmapId || ''}
                       options={[
                         { value: '', label: 'None (Select a roadmap...)' },
@@ -2523,24 +2517,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       type="button"
                       className="btn btn-secondary"
                       style={{ fontSize: 11, padding: '5px 8px', justifyContent: 'flex-start', gap: 5, borderRadius: 7, overflow: 'hidden', maxWidth: '100%' }}
-                      onClick={async () => {
-                        const created = await createRoadmap(
-                          card.title,
-                          '#3b82f6',
-                          currentUser?.email || undefined,
-                          currentUser?.name || undefined,
-                          `Roadmap for ${card.title}`,
-                          [
-                            'Planning',
-                            'Making the UI',
-                            'Making the frontend',
-                            'Making the backend',
-                            'QA & Launch'
-                          ]
-                        );
-                        updateCard(cardId, { linkedRoadmapId: created.id });
-                        showToast(`Created & linked roadmap "${card.title}"`, 'success');
-                      }}
+                      onClick={() => setShowCreateRoadmapModal(true)}
                     >
                       <Plus size={12} style={{ flexShrink: 0 }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2642,7 +2619,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
                           <div style={{ minWidth: 0 }}>
                             <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
-                            <NeumorphicDatePicker
+                            <DatePicker
                               value={s.from}
                               onChange={val => {
                                 const updated = [...(card.workSuspensions as WorkSuspension[])];
@@ -2658,7 +2635,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                           </div>
                           <div style={{ minWidth: 0 }}>
                             <label style={{ fontSize: 10, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
-                            <NeumorphicDatePicker
+                            <DatePicker
                               value={s.to}
                               onChange={val => {
                                 const updated = [...(card.workSuspensions as WorkSuspension[])];
@@ -2892,7 +2869,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       </span>
                     </div>
                     <div style={{ width: 140, flexShrink: 0 }}>
-                      <NeumorphicDatePicker
+                      <DatePicker
                         value={card.actualStartDate || null}
                         onChange={newActualStart => {
                           const patch: Partial<Card> = { actualStartDate: newActualStart };
@@ -2940,7 +2917,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 6 }}>
                         <div>
                           <label style={{ fontSize: 9.5, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>From</label>
-                          <NeumorphicDatePicker
+                          <DatePicker
                             value={workedRangeFrom}
                             onChange={setWorkedRangeFrom}
                             placeholder="Start date..."
@@ -2949,7 +2926,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         </div>
                         <div>
                           <label style={{ fontSize: 9.5, fontWeight: 600, color: 'hsl(var(--muted-foreground))', display: 'block', marginBottom: 3 }}>To</label>
-                          <NeumorphicDatePicker
+                          <DatePicker
                             value={workedRangeTo}
                             onChange={setWorkedRangeTo}
                             placeholder="End date..."
@@ -3147,7 +3124,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                     <span>{card.isMilestone ? 'Milestone' : 'Set Milestone'}</span>
                   </motion.button>
                 </div>
-                <NeumorphicSelect
+                <Select
                   value={card.sprintId || ''}
                   options={[
                     { value: '', label: 'No Phase (General Timeline)' },
@@ -3508,14 +3485,12 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                                   textAlign: 'left',
                                   boxSizing: 'border-box',
                                   border: isAssigned
-                                    ? '1.5px solid #f59e0b'
-                                    : '1px solid hsl(var(--border) / 0.55)',
+                                    ? '1px solid hsl(var(--foreground) / 0.55)'
+                                    : '1px solid hsl(var(--border))',
                                   backgroundColor: isAssigned
-                                    ? 'rgba(245, 158, 11, 0.12)'
+                                    ? 'hsl(var(--foreground) / 0.05)'
                                     : 'hsl(var(--card))',
-                                  boxShadow: isAssigned
-                                    ? '0 2px 8px rgba(245, 158, 11, 0.22), var(--neu-shadow-raised-sm)'
-                                    : 'var(--neu-shadow-raised-sm)',
+                                  boxShadow: 'none',
                                   color: isAssigned
                                     ? 'hsl(var(--foreground))'
                                     : 'hsl(var(--muted-foreground))',
@@ -3590,9 +3565,8 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                                     fontWeight: 700,
                                     padding: '2.5px 7px',
                                     borderRadius: 6,
-                                    backgroundColor: '#f59e0b',
-                                    color: '#ffffff',
-                                    boxShadow: '0 1px 4px rgba(245, 158, 11, 0.4)',
+                                    backgroundColor: 'hsl(var(--primary))',
+                                    color: 'hsl(var(--primary-foreground))',
                                     flexShrink: 0,
                                     whiteSpace: 'nowrap'
                                   }}>
@@ -3634,7 +3608,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.05em',
-                                    color: '#d97706',
+                                    color: 'hsl(var(--foreground))',
                                     padding: '2px 4px'
                                   }}>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -3813,7 +3787,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                   padding: '10px 14px',
                   borderRadius: 11,
                   backgroundColor: isSavedSuccess ? '#10b981' : isDirty ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                  color: isSavedSuccess ? '#fff' : isDirty ? '#fff' : 'hsl(var(--foreground))',
+                  color: isSavedSuccess ? '#fff' : isDirty ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
                   border: isDirty ? 'none' : '1px solid hsl(var(--border))',
                   cursor: isSaving ? 'wait' : 'pointer',
                   transition: 'background-color 0.2s, color 0.2s, border 0.2s'
@@ -4058,6 +4032,26 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
         </div>
       )}
     </AnimatePresence>
+    {showCreateRoadmapModal && (
+      <CreateRoadmapModal
+        initialName={card.title}
+        onClose={(createdRoadmapId?: string) => {
+          setShowCreateRoadmapModal(false);
+          if (createdRoadmapId) {
+            updateCard(cardId, { linkedRoadmapId: createdRoadmapId });
+            showToast(`Created & linked roadmap "${card.title}"`, 'success');
+            onClose();
+            switchBoard(createdRoadmapId);
+            try {
+              localStorage.setItem('waypoint_current_page_v1', 'board');
+              localStorage.setItem('waypoint_current_board_id_v1', createdRoadmapId);
+              localStorage.setItem('waypoint_current_view_mode_v1', 'roadmap');
+              window.dispatchEvent(new Event('storage'));
+            } catch {}
+          }
+        }}
+      />
+    )}
     </>
   );
 }

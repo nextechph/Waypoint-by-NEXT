@@ -1,18 +1,17 @@
 <div align="center">
 
-  <img src="assets/banner.png" alt="Worklane Banner" width="100%" style="border-radius: 14px; margin-bottom: 20px;" />
+  <img src="assets/banner.png" alt="Waypoint Banner" width="100%" style="border-radius: 14px; margin-bottom: 20px;" />
 
   <br />
 
-  <h1>🚀 Worklane</h1>
-  <p><strong>A Next-Generation Neumorphic Project Management & Collaborative Workspace</strong></p>
+  <h1>Waypoint</h1>
+  <p><strong>Your work. Your direction.</strong><br />Plan your tasks. Track your progress. Reach what’s next. — <em>by Next Technology</em></p>
 
   <p>
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></a>
     <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-6.3-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
     <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-v4.1-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4" /></a>
-    <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-3D_WebGL-000000?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" /></a>
     <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Supabase-Backend%20Ready-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" /></a>
     <a href="https://zustand.docs.pmnd.rs/"><img src="https://img.shields.io/badge/Zustand-State%20Management-4338CA?style=for-the-badge" alt="Zustand" /></a>
     <a href="https://www.framer.com/motion/"><img src="https://img.shields.io/badge/Framer%20Motion-Animations-EA4C89?style=for-the-badge&logo=framer&logoColor=white" alt="Framer Motion" /></a>
@@ -30,7 +29,7 @@
    - [Productivity Views: Kanban, Roadmap & Calendar](#2-multi-view-productivity-modes)
    - [Interactive Roadmap & Gantt Timeline Engine](#3-interactive-roadmap--gantt-timeline-engine)
    - [Task Backlog & Inbox Drawer](#4-task-backlog--inbox-drawer)
-   - [Interactive 3D WebGL Atmosphere (Three.js)](#5-interactive-3d-webgl-atmosphere-threejs)
+   - [Brand Login & Loading Experience](#5-brand-login--loading-experience)
    - [Real-Time Due Date Engine & Overdue Detection](#6-real-time-due-date-engine--overdue-detection)
    - [Automated Email Notifications via Pipedream](#7-automated-email-notifications-via-pipedream-webhooks)
    - [Team Collaboration, @Mentions & Role-Based Permissions (RBAC)](#8-team-collaboration--role-based-permissions-rbac)
@@ -55,9 +54,9 @@
 
 ## 🌟 Overview
 
-**Worklane** is an ultra-tactile, high-performance project management workspace engineered with React 19, TypeScript, Vite, Tailwind CSS v4, Three.js, and a bespoke Neumorphic design system. Designed for agile engineering squads, product teams, and high-velocity creators, Worklane marries tactile physical feedback with multi-view productivity (Kanban, Roadmap/Gantt timeline, Calendar, and Backlog Inbox), real-time Supabase cloud synchronization, automated transactional email alerts via Pipedream, and an interactive 3D WebGL visual environment.
+**Waypoint** is an ultra-tactile, high-performance project management workspace engineered with React 19, TypeScript, Vite, Tailwind CSS v4, and a flat, monochrome brand design system. Designed for agile engineering squads, product teams, and high-velocity creators, Waypoint marries tactile physical feedback with multi-view productivity (Kanban, Roadmap/Gantt timeline, Calendar, and Backlog Inbox), real-time Supabase cloud synchronization, automated transactional email alerts via Pipedream.
 
-Worklane operates with zero-latency optimistic local state persisted in `localStorage` alongside real-time PostgreSQL subscriptions and storage integration powered by **Supabase**.
+Waypoint operates with zero-latency optimistic local state persisted in `localStorage` alongside real-time PostgreSQL subscriptions and storage integration powered by **Supabase**.
 
 ---
 
@@ -84,6 +83,7 @@ Worklane operates with zero-latency optimistic local state persisted in `localSt
   - Automatically subtracts paused periods from total duration to compute true active working days.
   - Computes real-time schedule variance (planned vs. actual elapsed duration).
   - One-click export of roadmap timeline and variance data to CSV.
+  - 📖 *For the complete workspace and user guide, see [`USER_MANUAL.md`](USER_MANUAL.md).*
   - 📖 *For technical standards & variance formulas, see [`GANTT_SPECIFICATION.md`](GANTT_SPECIFICATION.md).*
   - 📘 *For step-by-step instructions on using the Roadmap & Gantt features, see [`GANTT_USER_MANUAL.md`](GANTT_USER_MANUAL.md).*
 
@@ -92,20 +92,19 @@ Worklane operates with zero-latency optimistic local state persisted in `localSt
 - **Bidirectional Drag-and-Drop**: Drag cards seamlessly between the Inbox Backlog and Kanban columns.
 - **Isolated Backlog Search**: Search, filter, and prioritize backlog items without cluttering active board columns.
 
-### 🌐 5. Interactive 3D WebGL Atmosphere (Three.js)
-- **Physically Rendered 3D Ribbons**: Custom Three.js scene rendered across login and loading screens featuring smooth sinusoidal wave deformers.
-- **Dynamic Lighting & Shading**: ACES Filmic tone mapping, ambient illumination, directional key light, cyan/purple rim lights, and floating dust particle systems with additive blending.
-- **Interactive Mouse Parallax**: Fluid camera tracking reacting to cursor movement and viewport tilt.
-- **Theme-Adaptive Shaders**: Automatic real-time color and fog transitions between Dark and Light neumorphic modes.
+### 🌄 5. Brand Login & Loading Experience
+- **Waypoint Hero**: Split-screen sign-in with the "path to the summit" brand illustration and the *Your work. Your direction.* tagline.
+- **Theme-Aware Logos**: White wordmark on dark surfaces, charcoal wordmark on light surfaces, applied across the sidebar, top bar and loading screen.
+- **Minimal Loading Screen**: Wordmark, "By Next Technology" lockup and a hairline progress bar.
 
 ### ⏰ 6. Real-Time Due Date Engine & Overdue Detection
-- **Tactile Neumorphic Date & Time Picker**: 12-hour analog clock selector, AM/PM switcher, and instant presets (`Today`, `Tomorrow`, `End of Week`, `Next Week`).
+- **Custom Date & Time Picker**: 12-hour analog clock selector, AM/PM switcher, and instant presets (`Today`, `Tomorrow`, `End of Week`, `Next Week`).
 - **10-Second Real-Time Tick Daemon**: Background daemon constantly evaluates card due dates against the system clock, instantly promoting tags from amber (`Due Soon`) to glowing red (`Overdue`).
 - **Targeted Notification Routing**: Alerts and emails are routed exclusively to assignees on each card, preventing notification fatigue.
 
 ### 📧 7. Automated Email Notifications via Pipedream Webhooks
 - **Zero-Friction Transactional Delivery**: Connects to Pipedream HTTP Webhooks to deliver emails through Gmail, Resend, SendGrid, or custom SMTP without complex backend servers.
-- **Pre-Rendered HTML Templates**: Responsive email cards styled with Worklane branding, dynamic event badges, metadata summaries, and deep-link CTA buttons.
+- **Pre-Rendered HTML Templates**: Responsive email cards styled with Waypoint branding, dynamic event badges, metadata summaries, and deep-link CTA buttons.
 - **Event-Driven Triggers**:
   - `card_assigned`: Alert members when assigned to a task.
   - `due_reminder`: Notify members when deadlines are nearing or breached.
@@ -123,7 +122,7 @@ Worklane operates with zero-latency optimistic local state persisted in `localSt
 - **Member Invitations**:
   - Direct user search to add registered accounts by email.
   - Shareable role-specific invitation links (`?joinBoard=<id>&role=admin|member|observer`).
-  - Dedicated `InviteLandingPage` with inline Google OAuth or email sign-up.
+  - Dedicated `InviteLandingPage` with Google, Apple or Microsoft sign-in, or email sign-up.
 - **Discussions & Mention System**:
   - Comment threads with nested replies.
   - Proof and screenshot attachments directly within comment replies.
@@ -143,35 +142,35 @@ Worklane operates with zero-latency optimistic local state persisted in `localSt
 
 ### 📱 11. Mobile-Optimized Experience
 - **Responsive Mobile Navigation (`MobileBottomNav`)**: Dedicated bottom tab bar for Dashboard, Active Board, Calendar, and Inbox.
-- **Neumorphic Center FAB**: Prominent extruded plus button for rapid board and card creation on touch screens.
+- **Center FAB**: Prominent plus button for rapid board and card creation on touch screens.
 - **Mobile Board Selector**: Touch-friendly bottom drawer for switching workspaces on handheld devices.
 
 ---
 
 ## 🎨 Design System & Aesthetics
 
-Worklane is engineered with a **Soft Neumorphic & Glassmorphic** visual aesthetic:
-- **Tailored Light & Dark Tokens**: Complete HSL-driven token design system with CSS custom properties.
-- **Dual-Layer Inset & Extruded Elevation**: High-precision multi-box-shadow combinations (`var(--neu-shadow-raised-sm)`, `var(--neu-shadow-raised-md)`, `var(--neu-shadow-inset)`).
-- **Physical Micro-Animations**: Powered by **Framer Motion** for spring modals, 3D card tilt physics, smooth drawer slide-ins, and animated toast alerts.
-- **Custom Neumorphic Form Controls**: Custom styled date pickers, dropdown selects, border pickers, and toggle switches.
+Waypoint uses a **modern, minimal, focused and premium** monochrome aesthetic:
+- **Brand Palette**: White `#FFFFFF` (primary), Charcoal `#0F1115` (background), Gray `#2A2F36` (surface), Slate `#6B7280` (secondary).
+- **Light & Dark Tokens**: HSL-driven CSS custom properties in `src/styles/index.css`. Dark mode is charcoal with white accents; light mode is paper white with charcoal accents.
+- **Flat Elevation**: Hairline borders and soft, low-contrast drop shadows instead of extruded/inset neumorphic shadows.
+- **Typography**: Inter for UI text and Manrope for headings.
+- **Micro-Animations**: Powered by **Framer Motion** for modals, card tilt, drawer slide-ins and toast alerts.
 
 ---
 
 ## 🏗️ System Architecture
 
-Worklane utilizes a modular reactive architecture featuring unidirectional state flow, client caching, and real-time cloud synchronization.
+Waypoint utilizes a modular reactive architecture featuring unidirectional state flow, client caching, and real-time cloud synchronization.
 
 ```mermaid
 graph TD
-    subgraph Presentation_Layer ["🎨 Presentation Layer (React 19 + Framer Motion + Three.js)"]
+    subgraph Presentation_Layer ["🎨 Presentation Layer (React 19 + Framer Motion)"]
         UI_Dash[Executive Dashboard]
         UI_Kanban[Kanban Board View]
         UI_Roadmap[Roadmap & Gantt Engine]
         UI_Calendar[Calendar Schedule View]
         UI_Inbox[Task Backlog & Inbox Drawer]
         UI_Card[Card Detail Modal & Comment Proofs]
-        UI_3D[Three.js 3D WebGL Atmosphere]
         UI_Mobile[Mobile Navigation & Bottom Selector]
     end
 
@@ -188,7 +187,7 @@ graph TD
 
     subgraph Backend_Services ["☁️ Backend & Integration Services"]
         DB_Postgres[(Supabase PostgreSQL)]
-        DB_Auth[Supabase Auth - Google OAuth & Email OTP]
+        DB_Auth[Supabase Auth - Google/Apple/Microsoft OAuth & Email OTP]
         DB_Storage[Supabase Storage - Attachments & Avatars]
         DB_Realtime[Supabase Realtime WebSocket Subscriptions]
         EXT_Pipedream[Pipedream HTTP Webhook Pipeline]
@@ -216,18 +215,18 @@ graph TD
 ```mermaid
 graph LR
     User([👤 Team Member / Contributor])
-    Worklane[("🚀 Worklane Application")]
+    Waypoint[("🚀 Waypoint Application")]
     Supabase[("☁️ Supabase Cloud (Auth, Postgres, Storage, Realtime)")]
     Pipedream[("⚡ Pipedream HTTP Webhook Service")]
     EmailInbox[("📬 Member's Email Inbox")]
 
-    User -->|Card CRUD, Drag-Drop, Mentions, Sprints, Invites| Worklane
-    Worklane -->|Interactive UI, 3D Canvas, Toasts, Badges| User
+    User -->|Card CRUD, Drag-Drop, Mentions, Sprints, Invites| Waypoint
+    Waypoint -->|Interactive UI, Toasts, Badges| User
 
-    Worklane -->|Auth Tokens, RLS Upserts, File Blobs| Supabase
-    Supabase -->|Live DB Updates, Session Validation| Worklane
+    Waypoint -->|Auth Tokens, RLS Upserts, File Blobs| Supabase
+    Supabase -->|Live DB Updates, Session Validation| Waypoint
 
-    Worklane -->|Dispatches JSON Webhook Payload + Pre-rendered HTML| Pipedream
+    Waypoint -->|Dispatches JSON Webhook Payload + Pre-rendered HTML| Pipedream
     Pipedream -->|Delivers Transactional Email Card| EmailInbox
 ```
 
@@ -240,7 +239,7 @@ graph TD
     User([👤 User])
 
     subgraph P1 ["1.0 Authentication & Session Management"]
-        P1_1[Google OAuth / Email OTP / Password Reset]
+        P1_1[Google / Apple / Microsoft OAuth, Email OTP, Password Reset]
         P1_2[Profile Sync & Role Border Picker]
     end
 
@@ -323,7 +322,6 @@ graph TD
 | **TypeScript** | `5.8.3` | Strict end-to-end typing, interfaces, and compile-time guarantees |
 | **Vite** | `6.3.5` | Next-generation dev server with rapid HMR and optimized Rollup production bundler |
 | **Tailwind CSS** | `4.1.11` | Modern utility framework integrated via `@tailwindcss/vite` |
-| **Three.js** | `0.185.1` | WebGL 3D scene rendering, ribbon geometry, ACES Filmic lighting, and particle dust |
 | **Zustand** | `5.0.5` | Lightweight unidirectional state management with localStorage persistence |
 | **Framer Motion** | `13.1.1` | Tactile spring physics, 3D card tilt, and page transitions |
 | **Supabase Client** | `2.112.4` | PostgreSQL database, Auth (OAuth + OTP), Storage buckets, and Realtime subscriptions |
@@ -335,11 +333,11 @@ graph TD
 ## 📁 Project Structure
 
 ```text
-worklane/
+waypoint/
 ├── assets/                          # Static branding, banner, and preview media
 ├── public/                          # Static web assets and favicons
 ├── src/
-│   ├── assets/                      # Application logo and sidebar imagery
+│   ├── assets/                      # Logos, wordmarks and login hero imagery
 │   ├── components/
 │   │   ├── mobile/                  # Mobile-first responsive navigation components
 │   │   │   ├── MobileBoardSelector.tsx
@@ -353,16 +351,16 @@ worklane/
 │   │   │   ├── PrivacyModal.tsx
 │   │   │   ├── SearchModal.tsx
 │   │   │   └── SettingsModal.tsx
-│   │   ├── ui/                      # Reusable Neumorphic UI design system components
+│   │   ├── ui/                      # Reusable UI design system components
 │   │   │   ├── AvatarBorder.tsx
 │   │   │   ├── BoardColorPicker.tsx
-│   │   │   ├── NeumorphicDatePicker.tsx
-│   │   │   ├── NeumorphicSelect.tsx
+│   │   │   ├── DatePicker.tsx
 │   │   │   ├── ProfileBorderPicker.tsx
+│   │   │   ├── Select.tsx
 │   │   │   └── Tilt3D.tsx
-│   │   ├── AppLoadingScreen.tsx     # Three.js 3D loading overlay
+│   │   ├── AppLoadingScreen.tsx     # Branded loading overlay
 │   │   ├── BoardArea.tsx            # Main board container (Kanban, Roadmap, Calendar)
-│   │   ├── Card.tsx                 # Neumorphic Kanban card component
+│   │   ├── Card.tsx                 # Kanban card component
 │   │   ├── CardModal.tsx            # Full task editor (proofs, dates, suspensions, @mentions)
 │   │   ├── Column.tsx               # Drag-and-drop workflow column
 │   │   ├── Dashboard.tsx            # Executive cross-board dashboard and KPI hub
@@ -374,7 +372,6 @@ worklane/
 │   │   ├── NotifPanel.tsx           # In-app notification popover
 │   │   ├── RoadmapView.tsx          # Gantt roadmap, sprints, milestones & variance engine
 │   │   ├── Sidebar.tsx              # Workspace sidebar with board listing
-│   │   ├── ThreeDBackground.tsx     # WebGL 3D ribbon and lighting canvas
 │   │   ├── Toast.tsx                # Action toast notification banner
 │   │   └── Topbar.tsx               # Context-aware navigation topbar
 │   ├── lib/
@@ -390,7 +387,7 @@ worklane/
 │   │   ├── useThemeStore.ts
 │   │   ├── useToastStore.ts
 │   │   └── useWorkStore.ts
-│   ├── styles/                      # Neumorphic CSS token system & mobile overrides
+│   ├── styles/                      # Waypoint CSS token system & mobile overrides
 │   │   ├── index.css
 │   │   └── mobile.css
 │   ├── App.tsx                      # Root application router & lifecycle controller
@@ -411,7 +408,7 @@ worklane/
 
 ## 🗄️ Database Schema (Supabase)
 
-Worklane includes a comprehensive SQL schema in [`supabase_schema.sql`](supabase_schema.sql) configured for immediate execution in your **Supabase Dashboard &rarr; SQL Editor**:
+Waypoint includes a comprehensive SQL schema in [`supabase_schema.sql`](supabase_schema.sql) configured for immediate execution in your **Supabase Dashboard &rarr; SQL Editor**:
 
 - **Tables**:
   - `profiles`: User information, custom avatars, and role border styles (`border_style`).
@@ -434,7 +431,7 @@ Worklane includes a comprehensive SQL schema in [`supabase_schema.sql`](supabase
 
 ## 📧 Automated Email Setup (Pipedream)
 
-Worklane features a zero-backend email architecture using **Pipedream HTTP Webhooks**:
+Waypoint features a zero-backend email architecture using **Pipedream HTTP Webhooks**:
 
 1. Create a free HTTP Webhook trigger on [Pipedream](https://pipedream.com).
 2. Set your webhook URL in `.env`:
@@ -456,8 +453,8 @@ Worklane features a zero-backend email architecture using **Pipedream HTTP Webho
 
 ### 2. Clone & Install
 ```bash
-git clone https://github.com/nyxieeee/Worklane.git
-cd Worklane
+git clone https://github.com/nyxieeee/Waypoint.git
+cd Waypoint
 npm install
 ```
 
@@ -482,6 +479,16 @@ VITE_PIPEDREAM_WEBHOOK_URL=https://eoxxxxxxxxx.m.pipedream.net
 2. Open the **SQL Editor**.
 3. Copy and run the entire content of [`supabase_schema.sql`](supabase_schema.sql).
 4. *(Optional)* In **Authentication &rarr; URL Configuration**, add your local URL (`http://localhost:5173`) and production domain to the **Redirect URLs**.
+
+### 4b. Enable Social Sign-In (Google, Apple, Microsoft)
+The login and invite pages show separate **Continue with Google**, **Continue with Apple** and **Continue with Microsoft** buttons. Each uses Supabase OAuth, so turn the providers on in your Supabase project:
+
+1. **Supabase → Authentication → Providers**: enable **Google**, **Apple** and **Azure** (Supabase's provider for Microsoft accounts) and paste each provider's client ID and secret.
+2. **Callback URL**: register `https://<your-project>.supabase.co/auth/v1/callback` with each provider (Google Cloud Console, Apple Developer "Sign in with Apple" Services ID, and the Microsoft Entra app registration).
+3. **Microsoft**: in the Entra app registration choose the account types you want (work/school and/or personal) and grant the `email` permission. Waypoint requests the `email` scope so the account's address is returned.
+4. **Authentication → URL Configuration**: add your app's origin (e.g. `http://localhost:5173` and your production URL) to the redirect allow-list.
+
+Without Supabase configured, the buttons sign you into a local demo account.
 
 ### 5. Launch Development Server
 ```bash
