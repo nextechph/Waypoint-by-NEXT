@@ -292,6 +292,13 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   }, []);
 
 
+  // GroupBy Options
+  const groupByOptions: SelectOption<GroupByMode>[] = useMemo(() => [
+    { value: 'column', label: 'Group: Phases' },
+    { value: 'assignee', label: 'Group: Assignees' },
+    { value: 'label', label: 'Group: Categories' },
+  ], []);
+
   // Status Filter options
   const statusFilterOptions: SelectOption<StatusFilter>[] = useMemo(() => [
     { value: 'all', label: 'All Status', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'hsl(var(--muted-foreground))', display: 'inline-block', flexShrink: 0 }} /> },
@@ -919,14 +926,15 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   // Escape key listener for roadmap modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && (showSprintModal || showQuickAddModal)) {
+      if (e.key === 'Escape' && (showSprintModal || showQuickAddModal || showHelpGuide)) {
         setShowSprintModal(false);
         setShowQuickAddModal(false);
+        setShowHelpGuide(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showSprintModal, showQuickAddModal]);
+  }, [showSprintModal, showQuickAddModal, showHelpGuide]);
 
   // Nav prev/next
   const handleNav = (direction: 'prev' | 'next') => {
@@ -1090,8 +1098,8 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
     const baseHeaders = [
       'Task Name',
-      'Phase / Group',
-      'Sprint',
+      'Phase / Stage',
+      'Workstream / Subgroup',
       'Assignee',
       'Track',
       'Start Date',
@@ -1152,7 +1160,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       const planRowMeta = [
         `"${(t.card.title || '').replace(/"/g, '""')}"`,
         `"${(t.columnName || '').replace(/"/g, '""')}"`,
-        `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
+        `"${(t.sprint ? t.sprint.name : 'General').replace(/"/g, '""')}"`,
         `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
         '"Planned Goal"',
         formatDateForExport(t.card.startDate || t.targetStartDate),
@@ -1183,7 +1191,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       const actualRowMeta = [
         `"  ↳ ${(t.card.title || '').replace(/"/g, '""')}"`,
         `"${(t.columnName || '').replace(/"/g, '""')}"`,
-        `"${(t.sprint ? t.sprint.name : 'Backlog').replace(/"/g, '""')}"`,
+        `"${(t.sprint ? t.sprint.name : 'General').replace(/"/g, '""')}"`,
         `"${(t.card.assignees || []).map(id => board.members?.find(m => m.id === id)?.name || id).join(', ').replace(/"/g, '""')}"`,
         '"Work Done"',
         formatDateForExport(t.card.actualStartDate || t.actualStartDate),
@@ -1386,6 +1394,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
           { value: totalCount, label: board.type === 'roadmap' ? 'Deliverables' : 'Total tasks', color: 'hsl(var(--foreground))' },
           { value: completedCount, label: 'Completed', color: 'hsl(var(--foreground))' },
           { value: overdueCount, label: 'Overdue', color: overdueCount > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))' },
+          { value: totalCount > 0 ? `${Math.max(0, Math.round(((totalCount - overdueCount - behindCount) / totalCount) * 100))}%` : '100%', label: 'On Schedule', color: '#10b981' },
         ].map(card => (
           <div key={card.label} className="wp-stat">
             <span className="wp-stat-value" style={{ color: card.color }}>{card.value}</span>
@@ -1403,7 +1412,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               borderRadius: 8, padding: '5px 10px', fontSize: 12,
             }}>
               <span className="sprint-status-dot pulse" />
-              <span style={{ fontWeight: 600 }}>{activeSprint.name}</span>
+              <span style={{ fontWeight: 600 }}>Active Phase: {activeSprint.name}</span>
               <span style={{ color: 'hsl(var(--muted-foreground))' }}>
                 {activeSprintCompleted}/{activeSprintTasks.length} done
               </span>
@@ -1416,15 +1425,55 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                     completeSprint(board.id, activeSprint.id);
                     showToast(`Completed phase "${activeSprint.name}"!`, 'success');
                   }}
-                >Finish Phase</button>
+                >Complete Phase</button>
               )}
             </div>
           )}
+
+          {!isObserver && (
+            <>
+              <motion.button whileTap={{ scale: 0.95 }} type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setQuickTaskColumnId(board.columns?.[0]?.id || '');
+                  setQuickTaskSprintId('');
+                  setShowQuickAddModal(true);
+                }}
+                title="Add a new deliverable to the roadmap"
+                style={{ fontSize: 11.5, height: 28, padding: '0 10px' }}
+              >+ Add Deliverable</motion.button>
+
+              <motion.button whileTap={{ scale: 0.95 }} type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setEditingSprint(null);
+                  setSprintName(`Phase ${(board.columns?.length || 0) + 1}`);
+                  setSprintGoal('');
+                  const now = new Date();
+                  setSprintStartDate(now.toISOString().split('T')[0]);
+                  const twoWeeks = new Date(now);
+                  twoWeeks.setDate(twoWeeks.getDate() + 14);
+                  setSprintEndDate(twoWeeks.toISOString().split('T')[0]);
+                  setShowSprintModal(true);
+                }}
+                title="Create a new project phase"
+                style={{ fontSize: 11.5, height: 28, padding: '0 10px' }}
+              >+ Add Phase</motion.button>
+            </>
+          )}
+
+          <motion.button whileTap={{ scale: 0.95 }} type="button"
+            className="btn btn-secondary"
+            onClick={() => setShowHelpGuide(true)}
+            title="How roadmap & Gantt schedule works"
+            style={{ fontSize: 11.5, height: 28, padding: '0 10px' }}
+          >How It Works</motion.button>
 
           <motion.button whileTap={{ scale: 0.95 }} type="button"
             className="btn btn-secondary"
             onClick={handleExportCSV}
             title="Export Gantt chart as CSV for Excel"
+            style={{ fontSize: 11.5, height: 28, padding: '0 10px' }}
           >Export CSV</motion.button>
         </div>
       </div>
@@ -1523,6 +1572,15 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
         </div>
 
 
+        {/* Group By Switcher */}
+        <Select<GroupByMode>
+          value={groupBy}
+          options={groupByOptions}
+          onChange={setGroupBy}
+          size="sm"
+          style={{ minWidth: 145, flex: '0 0 auto' }}
+        />
+
         {/* Status Filter */}
         <Select<StatusFilter>
           value={statusFilter}
@@ -1549,6 +1607,10 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
             Actual
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ color: '#8b5cf6', fontSize: 11, fontWeight: 700 }}>◆</span>
+            Milestone
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ width: 2, height: 10, borderRadius: 2, background: '#3b82f6', display: 'inline-block' }} />
             Today
           </span>
@@ -1561,7 +1623,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
         {/* Left Side: Tasks Table */}
         <div className="roadmap-tasks-pane" style={{ width: tasksPaneWidth }}>
           <div className="roadmap-pane-header">
-            <div className="roadmap-col-header-cell task-col">Task</div>
+            <div className="roadmap-col-header-cell task-col">Deliverables &amp; Milestones</div>
             <div className="roadmap-col-header-cell sched-col" title="Baseline planned schedule (Start to Due Date)">
               <span className="roadmap-header-tag sched">S</span>
               <span>Schedule</span>
@@ -1570,7 +1632,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               <span className="roadmap-header-tag act">A</span>
               <span>Actual</span>
             </div>
-            <div className="roadmap-col-header-cell status-col">Status</div>
+            <div className="roadmap-col-header-cell status-col">Health &amp; Status</div>
           </div>
 
           <div className="roadmap-tasks-list" ref={taskListRef} onScroll={handleTaskListScroll}>
@@ -1598,10 +1660,19 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                         backgroundColor: section.color || 'hsl(var(--primary))',
                         flexShrink: 0
                       }} />
-                      <span style={{ fontWeight: 700, fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {section.title}
-                      </span>
-                      <span className="roadmap-col-badge">{tasks.length}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontWeight: 700, fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {section.title}
+                          </span>
+                          <span className="roadmap-col-badge">{tasks.length}</span>
+                        </div>
+                        {section.subtitle && (
+                          <span style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {section.subtitle}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1609,6 +1680,22 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                         <span style={{ fontSize: 10.5, color: 'hsl(var(--muted-foreground))' }}>
                           {sectionCompleted}/{tasks.length}
                         </span>
+                      )}
+                      {!isObserver && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          style={{ fontSize: 10, padding: '1px 6px', height: 21, borderRadius: 5 }}
+                          title={`Add deliverable to ${section.title}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQuickTaskColumnId(section.id);
+                            if (section.sprint) setQuickTaskSprintId(section.sprint.id);
+                            setShowQuickAddModal(true);
+                          }}
+                        >
+                          + Add
+                        </button>
                       )}
                       {section.sprint && !isObserver && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 3 }} onClick={e => e.stopPropagation()}>
@@ -1653,7 +1740,24 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                       <div className="roadmap-col-rows">
                         {tasks.length === 0 ? (
-                          <div className="roadmap-empty-col-row">No deliverables in this phase yet</div>
+                          <div className="roadmap-empty-col-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
+                            <span>No deliverables scheduled in this phase yet</span>
+                            {!isObserver && (
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                style={{ fontSize: 10.5, padding: '1px 7px', height: 21 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setQuickTaskColumnId(section.id);
+                                  if (section.sprint) setQuickTaskSprintId(section.sprint.id);
+                                  setShowQuickAddModal(true);
+                                }}
+                              >
+                                + Add Deliverable
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           tasks.map(t => {
                             const progressPct = deriveCardProgress(t.card, t.columnName);
@@ -2282,23 +2386,23 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                   <div className="roadmap-modal-body">
                     <div className="form-group">
-                      <label className="field-label">Phase / Package Name</label>
+                      <label className="field-label">Phase Name</label>
                       <input
                         type="text"
                         value={sprintName}
                         onChange={e => setSprintName(e.target.value)}
-                        placeholder="e.g. Phase 1 - Foundation & Rough-In"
+                        placeholder="e.g. Phase 1 - Discovery & Planning, Production, Launch..."
                         className="text-input"
                         autoFocus
                       />
                     </div>
 
                     <div className="form-group">
-                      <label className="field-label">Scope & Key Objectives</label>
+                      <label className="field-label">Scope &amp; Key Objectives</label>
                       <textarea
                         value={sprintGoal}
                         onChange={e => setSprintGoal(e.target.value)}
-                        placeholder="What are the main deliverables and scope for this phase?"
+                        placeholder="What are the key goals, scope, or milestones for this phase?"
                         className="text-input"
                         rows={2}
                         style={{ resize: 'none' }}
@@ -2396,7 +2500,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                   <div className="roadmap-modal-header">
                     <div>
                       <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
-                        Add Task to Roadmap
+                        Add Deliverable to Roadmap
                       </h3>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2412,12 +2516,12 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
                   <div className="roadmap-modal-body">
                     <div className="form-group">
-                      <label className="field-label">Task Title</label>
+                      <label className="field-label">Deliverable / Task Title</label>
                       <input
                         type="text"
                         value={quickTaskTitle}
                         onChange={e => setQuickTaskTitle(e.target.value)}
-                        placeholder="e.g. Design UI mockups, Implement user authentication..."
+                        placeholder="e.g. Prepare client brief, Site survey, Finalize proposal..."
                         className="text-input"
                         autoFocus
                       />
@@ -2536,12 +2640,94 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                       className="btn btn-primary"
                       onClick={handleQuickAddTask}
                     >
-                      Add to Roadmap
+                      Add Deliverable
                     </button>
                   </div>
                 </motion.div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Roadmap Guide Modal */}
+        {showHelpGuide && (
+          <div className="modal-overlay" style={{ perspective: 1200 }} onClick={() => setShowHelpGuide(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="modal"
+              style={{ maxWidth: 580 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <div>
+                  <h2 className="modal-title" style={{ margin: 0, fontSize: 16 }}>How Project Roadmaps Work</h2>
+                  <p style={{ margin: 0, fontSize: 11.5, color: 'hsl(var(--muted-foreground))' }}>
+                    A clear, universal Gantt timeline for any industry, project, or workflow
+                  </p>
+                </div>
+                <button type="button" className="icon-btn" onClick={() => setShowHelpGuide(false)}>
+                  <X size={15} />
+                </button>
+              </div>
+
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* Concept 1: Phases */}
+                <div style={{ display: 'flex', gap: 12, padding: '10px 12px', borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.6)' }}>
+                  <div style={{ fontSize: 18, lineHeight: 1 }}>📐</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Phases &amp; Stages</div>
+                    <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', lineHeight: 1.45 }}>
+                      Group deliverables into natural chronological stages such as <strong>Discovery</strong>, <strong>Planning</strong>, <strong>Execution</strong>, and <strong>Handover</strong>. You can switch the roadmap grouping anytime by Phase, Assignee, or Category.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Concept 2: Planned vs Actual */}
+                <div style={{ display: 'flex', gap: 12, padding: '10px 12px', borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.6)' }}>
+                  <div style={{ fontSize: 18, lineHeight: 1 }}>📊</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>
+                      <span>Planned Schedule [S] vs. Actual Progress [A]</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', lineHeight: 1.45 }}>
+                      <span style={{ color: '#10b981', fontWeight: 600 }}>[S] Schedule</span>: The baseline target start and deadline dates committed for the work.<br />
+                      <span style={{ color: '#f97316', fontWeight: 600 }}>[A] Actual</span>: The real working timeframe. As milestones and tasks are worked on, Waypoint logs actual progress against your baseline.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Concept 3: Health & Suspensions */}
+                <div style={{ display: 'flex', gap: 12, padding: '10px 12px', borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.6)' }}>
+                  <div style={{ fontSize: 18, lineHeight: 1 }}>⏱️</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Health Tracking &amp; Work Pauses</div>
+                    <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', lineHeight: 1.45 }}>
+                      Waypoint automatically detects whether work is <strong>On Schedule</strong>, <strong>Ahead</strong>, or <strong>Delayed</strong>. If a project is paused for client review, permits, or supply delays, those suspended days are factored out so delay metrics reflect real active work.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Concept 4: Milestones */}
+                <div style={{ display: 'flex', gap: 12, padding: '10px 12px', borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border) / 0.6)' }}>
+                  <div style={{ fontSize: 18, lineHeight: 1 }}>◆</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Key Milestones</div>
+                    <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', lineHeight: 1.45 }}>
+                      Flag critical deliverables, executive decisions, or delivery checkpoints as Milestones. They stand out with diamond marks across the timeline and in your project overview.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-primary" onClick={() => setShowHelpGuide(false)}>
+                  Got it
+                </button>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

@@ -55,7 +55,7 @@ export default function CreateBoardModal({ onClose }: Props) {
             <input
               type="text"
               className="text-input"
-              placeholder="e.g. Engineering Sprint"
+              placeholder="e.g. Marketing Campaign, Operations, Project Board"
               maxLength={50}
               value={name}
               onChange={e => setName(e.target.value)}

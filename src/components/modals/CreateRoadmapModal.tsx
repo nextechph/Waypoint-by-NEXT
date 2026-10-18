@@ -191,9 +191,9 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
 
           {/* Name */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="field-label">Project / Application Name</label>
+            <label className="field-label">Roadmap / Project Name</label>
             <input type="text" className="text-input"
-              placeholder="e.g. Inky, Mobile App v2, Brand Redesign"
+              placeholder="e.g. Brand Redesign, Product Launch, Event Schedule, Q3 Strategy"
               maxLength={60} value={name}
               onChange={e => setName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
@@ -205,7 +205,7 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="field-label">Project Goal / Summary (Optional)</label>
             <input type="text" className="text-input"
-              placeholder="e.g. Development of our new customer facing application"
+              placeholder="e.g. Coordinate deliverables, key milestones, and timeline for the team"
               maxLength={120} value={description}
               onChange={e => setDescription(e.target.value)}
             />
@@ -215,7 +215,7 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
           <div className="form-group" style={{ marginBottom: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <label className="field-label" style={{ margin: 0 }}>
-                Phases &amp; Subtasks ({phases.length})
+                Phases &amp; Deliverables ({phases.length})
               </label>
               <span style={{ fontSize: 10.5, color: 'hsl(var(--muted-foreground))' }}>
                 You can add or modify more anytime
@@ -262,12 +262,12 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
                     background: newPhaseType === t ? 'hsl(var(--primary))' : 'hsl(var(--secondary) / 0.5)',
                     color: newPhaseType === t ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
                     transition: 'all 0.15s ease',
-                  }}>{t}</button>
+                  }}>{t === 'subtask' ? 'item' : t}</button>
                 ))}
               </div>
               <input type="text" className="text-input"
                 style={{ fontSize: 11.5, padding: '4px 8px', height: 28 }}
-                placeholder={`Add a ${newPhaseType} (e.g. ${newPhaseType === 'phase' ? 'Design System' : 'Write unit tests'})...`}
+                placeholder={`Add a ${newPhaseType === 'subtask' ? 'deliverable' : 'phase'} (e.g. ${newPhaseType === 'phase' ? 'Phase 1: Planning' : 'Review proposal'})...`}
                 value={newPhaseInput}
                 onChange={e => setNewPhaseInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddPhase(); } }}
