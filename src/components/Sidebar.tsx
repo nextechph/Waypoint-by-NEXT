@@ -33,7 +33,7 @@ interface Props {
   onCloseMobile?: () => void;
 }
 
-// Expanded: numbered text navigation. Collapsed: Phosphor icons stand in for the labels.
+// Phosphor icons label every destination; the collapsed rail shows the icons alone.
 const NAV: Array<{ page: AppPage; label: string; icon: PhosphorIcon }> = [
   { page: 'dashboard', label: 'Today', icon: House },
   { page: 'mywork', label: 'My Work', icon: CheckSquareOffset },
@@ -136,7 +136,7 @@ export default function Sidebar({
       <div className="wp-sidebar-scroll">
         {/* Primary navigation */}
         <nav className="wp-nav" aria-label="Primary">
-          {NAV.map(({ page: p, label, icon: NavIcon }, i) => (
+          {NAV.map(({ page: p, label, icon: NavIcon }) => (
             <button
               key={p}
               type="button"
@@ -144,14 +144,8 @@ export default function Sidebar({
               onClick={() => go(p)}
               title={isCollapsed ? label : undefined}
             >
-              {isCollapsed ? (
-                <NavIcon size={21} weight={isNavActive(p) ? 'fill' : 'regular'} aria-hidden />
-              ) : (
-                <>
-                  <span className="wp-nav-index">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="wp-nav-label">{label}</span>
-                </>
-              )}
+              <NavIcon size={isCollapsed ? 21 : 19} weight={isNavActive(p) ? 'fill' : 'regular'} aria-hidden />
+              {!isCollapsed && <span className="wp-nav-label">{label}</span>}
               {p === 'inbox' && inboxUnread && <span className="wp-nav-dot" aria-label="Unread" />}
             </button>
           ))}
@@ -210,7 +204,7 @@ export default function Sidebar({
       <div className="wp-sidebar-foot">
         {activeBoard && (
           <button type="button" className="wp-foot-link" onClick={() => { onManageMembers(); close(); }} title="Team">
-            {isCollapsed && <Users size={20} aria-hidden />}
+            <Users size={isCollapsed ? 20 : 18} aria-hidden />
             {!isCollapsed && (
               <>
                 <span style={{ flex: 1, textAlign: 'left' }}>Team</span>
@@ -266,7 +260,8 @@ export default function Sidebar({
 
         <div className="wp-foot-row">
           <button type="button" className="wp-foot-link" onClick={() => { onOpenSettings(); close(); }} title="Settings">
-            {isCollapsed ? <GearSix size={20} aria-hidden /> : <span style={{ flex: 1, textAlign: 'left' }}>Settings</span>}
+            <GearSix size={isCollapsed ? 20 : 18} aria-hidden />
+            {!isCollapsed && <span style={{ flex: 1, textAlign: 'left' }}>Settings</span>}
           </button>
           {!isCollapsed && (
             <button
