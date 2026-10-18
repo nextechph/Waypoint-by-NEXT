@@ -3,7 +3,7 @@ import {
   X, Sun, Moon, Bell, Shield, Sliders, Mail, Tag, Plus, Trash2, Check,
   AlertTriangle, Upload, Download, RefreshCw, Send, CheckCircle2, User, Camera, Image, Sparkles,
   Globe, AlertCircle, Loader2, Crop
-} from '../ui/glyphs';
+} from '../ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useSettingsStore } from '../../store/useSettingsStore';

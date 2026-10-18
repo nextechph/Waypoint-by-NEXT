@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Bell, Clock, AlertTriangle, CheckCircle2, X, Trash2 } from './ui/glyphs';
+import { Bell, Clock, AlertTriangle, CheckCircle2, X, Trash2 } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifStore } from '../store/useNotifStore';
 import { useAuthStore } from '../store/useAuthStore';

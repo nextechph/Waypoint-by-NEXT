@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { KanbanSquare, Plus, X, Check, ArrowRight } from '../ui/glyphs';
+import { KanbanSquare, Plus, X, Check, ArrowRight } from '../ui/icons';
 import type { Board } from '../../types';
 
 interface MobileBoardSelectorProps {

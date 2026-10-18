@@ -7,6 +7,7 @@ import {
 } from '../lib/workspace';
 import { AvatarStack, Eyebrow, EmptyState } from './wp/primitives';
 import heroImg from '../assets/login-hero.jpg';
+import { ArrowRight, Plus, Kanban, Milestone as MilestoneIcon, FileText, Path, UserPlus } from './ui/icons';
 
 const STATUS_LABEL = { completed: 'Completed', current: 'In progress', upcoming: 'Upcoming' } as const;
 
@@ -107,7 +108,7 @@ export function OverviewTab({ board, onOpenCard, onAddTask, onShowTab, onInvite,
         <section>
           <div className="wp-section-head compact">
             <Eyebrow>{fromTasks ? 'Key milestones' : 'Stages'}</Eyebrow>
-            <button type="button" className="wp-link sm" onClick={() => onShowTab('milestones')}>View all →</button>
+            <button type="button" className="wp-link sm" onClick={() => onShowTab('milestones')}>View all <ArrowRight size={13} /></button>
           </div>
           <MilestoneRows items={items.slice(0, 5)} onOpenCard={onOpenCard} />
           {!fromTasks && (
@@ -118,11 +119,11 @@ export function OverviewTab({ board, onOpenCard, onAddTask, onShowTab, onInvite,
         <section className="wp-panel">
           <Eyebrow>Quick actions</Eyebrow>
           <div className="wp-quick-actions">
-            {editable && <button type="button" onClick={onAddTask}>Add task <span>→</span></button>}
-            <button type="button" onClick={() => onShowTab('tasks')}>Open {board.type === 'roadmap' ? 'roadmap' : 'board'} <span>→</span></button>
-            <button type="button" onClick={() => onShowTab('files')}>Browse files <span>→</span></button>
-            <button type="button" onClick={onOpenTimeline}>View timeline <span>→</span></button>
-            <button type="button" onClick={onInvite}>Invite members <span>→</span></button>
+            {editable && <button type="button" onClick={onAddTask}><Plus size={17} /> Add task <ArrowRight size={14} className="wp-qa-arrow" /></button>}
+            <button type="button" onClick={() => onShowTab('tasks')}>{board.type === 'roadmap' ? <MilestoneIcon size={17} /> : <Kanban size={17} />} Open {board.type === 'roadmap' ? 'roadmap' : 'board'} <ArrowRight size={14} className="wp-qa-arrow" /></button>
+            <button type="button" onClick={() => onShowTab('files')}><FileText size={17} /> Browse files <ArrowRight size={14} className="wp-qa-arrow" /></button>
+            <button type="button" onClick={onOpenTimeline}><Path size={17} /> View timeline <ArrowRight size={14} className="wp-qa-arrow" /></button>
+            <button type="button" onClick={onInvite}><UserPlus size={17} /> Invite members <ArrowRight size={14} className="wp-qa-arrow" /></button>
           </div>
         </section>
       </div>

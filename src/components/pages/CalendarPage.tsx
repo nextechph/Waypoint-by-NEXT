@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useWorkspace, toDate, hasTime, startOfDay, dayDiff, formatTime, type CardMeta } from '../../lib/workspace';
 import { useIsMobile } from '../../utils';
+import { ChevronLeft, ChevronRight } from '../ui/icons';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -63,9 +64,9 @@ export default function CalendarPage({ onOpenCard }: Props) {
 
         <div className="wp-toolbar">
           <div className="wp-cal-nav">
-            <button type="button" className="wp-icon-ghost bordered" onClick={() => shift(-1)} aria-label="Previous">←</button>
+            <button type="button" className="wp-icon-ghost bordered" onClick={() => shift(-1)} aria-label="Previous"><ChevronLeft size={16} /></button>
             <button type="button" className="wp-btn wp-btn-ghost" onClick={() => setAnchor(startOfDay(new Date()))}>Today</button>
-            <button type="button" className="wp-icon-ghost bordered" onClick={() => shift(1)} aria-label="Next">→</button>
+            <button type="button" className="wp-icon-ghost bordered" onClick={() => shift(1)} aria-label="Next"><ChevronRight size={16} /></button>
             <span className="wp-cal-title">{title}</span>
           </div>
           <div className="wp-toolbar-right">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, User, Eye, Crown, Users, CheckCircle2, ArrowRight,
   Sparkles, Lock, Mail, AlertCircle, LogIn, Loader2
-} from './ui/glyphs';
+} from './ui/icons';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useWorkStore } from '../store/useWorkStore';

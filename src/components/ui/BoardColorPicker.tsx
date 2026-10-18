@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pipette, X } from './glyphs';
+import { Check, Pipette, X } from './icons';
 import { BOARD_COLORS } from '../../types';
 
 interface Props {

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   X, Check, Sparkles
-} from './glyphs';
+} from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {

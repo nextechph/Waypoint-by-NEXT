@@ -3,7 +3,7 @@ import {
   Plus, Edit3, Trash2, Layout, X, Inbox,
   Calendar, CheckSquare, Square, Filter, ChevronRight, ChevronLeft, User, Eye,
   Milestone
-} from './ui/glyphs';
+} from './ui/icons';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';

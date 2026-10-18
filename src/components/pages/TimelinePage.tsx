@@ -4,6 +4,7 @@ import { useWorkspace, toDate, startOfDay, dayDiff, formatShortDate, type CardMe
 import type { Board } from '../../types';
 import { EmptyState } from '../wp/primitives';
 import { Select } from '../ui/Select';
+import { ChevronLeft, ChevronRight, ChevronDown } from '../ui/icons';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -88,9 +89,9 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
             <p className="wp-lede">See every project’s route at a glance — what’s scheduled, what overlaps, and what’s next.</p>
           </div>
           <div className="wp-timeline-nav">
-            <button type="button" className="wp-icon-ghost bordered" onClick={() => setOffset(o => o - 1)} aria-label="Earlier">←</button>
+            <button type="button" className="wp-icon-ghost bordered" onClick={() => setOffset(o => o - 1)} aria-label="Earlier"><ChevronLeft size={16} /></button>
             <button type="button" className="wp-btn wp-btn-ghost" onClick={() => setOffset(0)}>Today</button>
-            <button type="button" className="wp-icon-ghost bordered" onClick={() => setOffset(o => o + 1)} aria-label="Later">→</button>
+            <button type="button" className="wp-icon-ghost bordered" onClick={() => setOffset(o => o + 1)} aria-label="Later"><ChevronRight size={16} /></button>
             <span className="wp-muted-sm hide-on-mobile" style={{ marginLeft: 6 }}>{rangeLabel}</span>
           </div>
         </header>
@@ -150,7 +151,7 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
                             })}
                             aria-label={open ? 'Collapse' : 'Expand'}
                           >
-                            {open ? '−' : '+'}
+                            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                           </button>
                           <button type="button" className="wp-gantt-project" onClick={() => onSelectBoard(board.id)}>
                             <span className="wp-project-dot" style={{ backgroundColor: board.color }} />

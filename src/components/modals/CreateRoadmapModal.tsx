@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Plus, Trash2, Upload, FileText, Loader2, CheckCircle2 } from '../ui/glyphs';
+import { X, Plus, Trash2, Upload, FileText, Loader2, CheckCircle2 } from '../ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useToastStore } from '../../store/useToastStore';
