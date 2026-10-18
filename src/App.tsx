@@ -98,14 +98,17 @@ export default function App() {
     };
   }, [initializeAuth]);
 
-  // Safety fallback: Never keep the user on the global loading screen for more than 2.5 seconds
+
+  // Safety fallback: Never keep the user on the global loading screen for more than 8 seconds
+  // (handles edge case where cloud load hangs indefinitely)
   useEffect(() => {
     const timer = setTimeout(() => {
       setAuthInitialized(true);
       useWorkStore.setState({ hasLoadedOnce: true });
-    }, 2500);
+    }, 8000);
     return () => clearTimeout(timer);
   }, []);
+
 
   // Pending invite link state
   const [pendingInvite, setPendingInvite] = useState<{ boardId: string; role: MemberRole } | null>(null);
@@ -209,13 +212,14 @@ export default function App() {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Periodic safety sync (every 4 seconds) to guarantee 100% realtime sync across devices
+    // Periodic safety sync (every 30 seconds) to guarantee sync across devices
+    // (Realtime subscriptions handle instant sync; this is just a safety fallback)
     const pollInterval = window.setInterval(() => {
       if (document.visibilityState === 'visible') {
         loadBoardsFromCloud(email);
         loadNotificationsFromCloud(email);
       }
-    }, 4000);
+    }, 30000);
 
     return () => {
       if (boardsDebounceTimer) clearTimeout(boardsDebounceTimer);
@@ -766,6 +770,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
             />
             {showWork ? (
               <BoardArea
+                page={page as 'board' | 'roadmap'}
                 viewMode={viewMode}
                 onSelectView={setViewMode}
                 filterMemberId={filterMemberId}
@@ -773,6 +778,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
                 onOpenCard={cardId => handleOpenCard(cardId)}
                 onAddColumn={() => setShowAddColumn(true)}
                 onCreateBoard={() => setShowCreateBoard(true)}
+                onCreateRoadmap={() => setShowCreateRoadmap(true)}
                 showInbox={showInbox}
                 onToggleInbox={() => setShowInbox(s => !s)}
               />

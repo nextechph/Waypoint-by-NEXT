@@ -215,7 +215,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
             </span>
             <span>{assignees.length ? `${assignees.length} ${assignees.length === 1 ? 'assignee' : 'assignees'}` : 'Unassigned'}</span>
             <span className="wp-sheet-sep" />
-            <span>{card.dueDate ? `Due ${formatShortDate(card.dueDate)}` : 'No due date'}</span>
+            <span>{card.dueDate ? `${isRoadmap ? 'Ends' : 'Due'} ${formatShortDate(card.dueDate)}` : isRoadmap ? 'No end date' : 'No deadline'}</span>
             <span className="wp-sheet-sep" />
             <span className={`wp-status-pill${card.completed ? ' done' : ''}`}>{card.completed ? 'Completed' : isInbox ? 'Backlog' : column?.name}</span>
           </div>
@@ -293,11 +293,16 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
                   </div>
                 </dd>
 
-                <dt>Start</dt>
-                <dd>{editable ? <DatePicker value={card.startDate || null} onChange={v => updateCard(card.id, { startDate: v })} placeholder="No start date" /> : (card.startDate ? formatShortDate(card.startDate) : '—')}</dd>
+                {/* Roadmaps schedule a start and end; task boards track a single deadline. */}
+                {isRoadmap && (
+                  <>
+                    <dt>Scheduled start</dt>
+                    <dd>{editable ? <DatePicker value={card.startDate || null} onChange={v => updateCard(card.id, { startDate: v })} placeholder="No start date" /> : (card.startDate ? formatShortDate(card.startDate) : '—')}</dd>
+                  </>
+                )}
 
-                <dt>Due</dt>
-                <dd>{editable ? <DatePicker value={card.dueDate} onChange={v => updateCard(card.id, { dueDate: v })} placeholder="No due date" /> : (card.dueDate ? formatShortDate(card.dueDate) : '—')}</dd>
+                <dt>{isRoadmap ? 'Scheduled end' : 'Deadline'}</dt>
+                <dd>{editable ? <DatePicker value={card.dueDate} onChange={v => updateCard(card.id, { dueDate: v })} placeholder={isRoadmap ? 'No end date' : 'No deadline'} /> : (card.dueDate ? formatShortDate(card.dueDate) : '—')}</dd>
 
                 <dt>Milestone</dt>
                 <dd>

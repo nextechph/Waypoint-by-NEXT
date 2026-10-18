@@ -144,6 +144,9 @@ const recentlyAddedMembers = new Map<string, number>(); // email -> timestamp ms
 const recentlyUpdatedMemberStyles = new Map<string, { borderStyle: string; timestamp: number }>(); // id or email -> { borderStyle, timestamp }
 const recentlyUpdatedMemberAvatars = new Map<string, { avatarUrl: string; timestamp: number }>(); // id or email -> { avatarUrl, timestamp }
 const recentlyDeletedCommentIds = new Map<string, number>(); // commentId -> timestamp ms
+const recentlyDeletedBoardIds = new Map<string, number>(); // boardId -> timestamp ms
+const recentlyDeletedCardIds = new Map<string, number>(); // cardId -> timestamp ms
+const recentlyDeletedColumnIds = new Map<string, number>(); // colId -> timestamp ms
 
 export function markLocalBoardMutation(boardId: string) {
   if (!boardId) return;
@@ -252,6 +255,15 @@ export const useWorkStore = create<WorkState>()(
               for (const [cId, t] of recentlyDeletedCommentIds.entries()) {
                 if (now - t > 10000) recentlyDeletedCommentIds.delete(cId);
               }
+              for (const [bId, t] of recentlyDeletedBoardIds.entries()) {
+                if (now - t > 15000) recentlyDeletedBoardIds.delete(bId);
+              }
+              for (const [cId, t] of recentlyDeletedCardIds.entries()) {
+                if (now - t > 15000) recentlyDeletedCardIds.delete(cId);
+              }
+              for (const [cId, t] of recentlyDeletedColumnIds.entries()) {
+                if (now - t > 15000) recentlyDeletedColumnIds.delete(cId);
+              }
 
               const sanitizeCardComments = (card: Card): Card => {
                 if (!card.comments || card.comments.length === 0 || recentlyDeletedCommentIds.size === 0) return card;
@@ -263,7 +275,10 @@ export const useWorkStore = create<WorkState>()(
                 };
               };
 
-              const finalBoards: Board[] = cloudBoards.map(cb => {
+              // Filter out boards that were recently deleted locally
+              const filteredCloudBoards = cloudBoards.filter(cb => !recentlyDeletedBoardIds.has(cb.id));
+
+              const finalBoards: Board[] = filteredCloudBoards.map(cb => {
                 const memBoard = s.boards.find(lb => lb.id === cb.id);
                 if (!memBoard) {
                   const cleanMembers = (cb.members || []).filter(
@@ -331,6 +346,17 @@ export const useWorkStore = create<WorkState>()(
                 const bType = memBoard.type || cb.type || (cb.columns?.some(c => c.name === 'Project Deliverables') ? 'roadmap' : 'board');
                 const bDesc = memBoard.description || cb.description || '';
 
+                // Helper to sanitize columns by filtering recently deleted columns and cards
+                const sanitizeColumns = (cols: Column[]) =>
+                  cols
+                    .filter(col => !recentlyDeletedColumnIds.has(col.id))
+                    .map(col => ({
+                      ...col,
+                      cards: (col.cards || [])
+                        .filter(c => !recentlyDeletedCardIds.has(c.id))
+                        .map(sanitizeCardComments),
+                    }));
+
                 if (hasPendingSync || isActivelySyncing || isRecentLocalEdit) {
                   return {
                     ...cb,
@@ -338,7 +364,7 @@ export const useWorkStore = create<WorkState>()(
                     description: bDesc,
                     name: memBoard.name,
                     color: memBoard.color,
-                    columns: memBoard.columns?.map(col => ({ ...col, cards: (col.cards || []).map(sanitizeCardComments) })),
+                    columns: sanitizeColumns(memBoard.columns || []),
                     inboxCards: memBoard.inboxCards?.map(sanitizeCardComments),
                     members: memBoard.members?.length ? memBoard.members : mergedMembers,
                     sprints: memBoard.sprints?.length ? memBoard.sprints : (cb.sprints || []),
@@ -349,7 +375,7 @@ export const useWorkStore = create<WorkState>()(
                   ...cb,
                   type: bType,
                   description: bDesc,
-                  columns: (cb.columns || []).map(col => ({ ...col, cards: (col.cards || []).map(sanitizeCardComments) })),
+                  columns: sanitizeColumns(cb.columns || []),
                   inboxCards: (cb.inboxCards || []).map(sanitizeCardComments),
                   members: mergedMembers,
                   sprints: cb.sprints || [],
@@ -649,6 +675,7 @@ export const useWorkStore = create<WorkState>()(
       },
 
       deleteBoard: (boardId) => {
+        recentlyDeletedBoardIds.set(boardId, Date.now());
         set(s => {
           const boards = s.boards.filter(b => b.id !== boardId);
           const activeBoardId = s.activeBoardId === boardId
@@ -661,6 +688,8 @@ export const useWorkStore = create<WorkState>()(
 
       deleteBoards: (boardIds) => {
         if (!boardIds.length) return;
+        const deletedAt = Date.now();
+        boardIds.forEach(id => recentlyDeletedBoardIds.set(id, deletedAt));
         const idsSet = new Set(boardIds);
         set(s => {
           const boards = s.boards.filter(b => !idsSet.has(b.id));
@@ -804,6 +833,7 @@ export const useWorkStore = create<WorkState>()(
       },
 
       deleteColumn: (colId) => {
+        recentlyDeletedColumnIds.set(colId, Date.now());
         let targetBoard: Board | undefined;
         set(s => {
           if (!s.activeBoardId) return s;
@@ -973,6 +1003,7 @@ export const useWorkStore = create<WorkState>()(
       },
 
       deleteCard: (cardId) => {
+        recentlyDeletedCardIds.set(cardId, Date.now());
         let targetBoard: Board | undefined;
         set(s => {
           const tb = s.boards.find(b =>
