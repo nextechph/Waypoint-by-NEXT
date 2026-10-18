@@ -197,7 +197,7 @@ export const supabaseService = {
             .map(cm => {
               let text = cm.text || '';
               let attachments: Attachment[] | undefined;
-              const match = text.match(/<!--worklane_attachments:([\s\S]*?)-->/);
+              const match = text.match(/<!--[a-z]+_attachments:([\s\S]*?)-->/);
               if (match) {
                 try {
                   attachments = JSON.parse(match[1]);
@@ -241,7 +241,7 @@ export const supabaseService = {
           let linkedRoadmapId: string | null = null;
 
           // Parse embedded roadmap metadata from card description
-          const rMatch = desc.match(/<!--worklane_roadmap:([\s\S]*?)-->/);
+          const rMatch = desc.match(/<!--[a-z]+_roadmap:([\s\S]*?)-->/);
           if (rMatch) {
             try {
               const meta = JSON.parse(rMatch[1]);
@@ -260,13 +260,13 @@ export const supabaseService = {
           }
 
           // Strip any embedded board sprints tag from card description
-          const spMatch = desc.match(/<!--worklane_board_sprints:[\s\S]*?-->/);
+          const spMatch = desc.match(/<!--[a-z]+_board_sprints:[\s\S]*?-->/);
           if (spMatch) {
             desc = desc.replace(spMatch[0], '').trimEnd();
           }
 
           // Strip any embedded board meta tag from card description
-          const bmMatch = desc.match(/<!--worklane_board_meta:[\s\S]*?-->/);
+          const bmMatch = desc.match(/<!--[a-z]+_board_meta:[\s\S]*?-->/);
           if (bmMatch) {
             desc = desc.replace(bmMatch[0], '').trimEnd();
           }
@@ -331,7 +331,7 @@ export const supabaseService = {
         let bSprints: Sprint[] = [];
         for (const card of allCards) {
           if (card.board_id === b.id && card.description) {
-            const sMatch = card.description.match(/<!--worklane_board_sprints:([\s\S]*?)-->/);
+            const sMatch = card.description.match(/<!--[a-z]+_board_sprints:([\s\S]*?)-->/);
             if (sMatch) {
               try {
                 const parsed = JSON.parse(sMatch[1]);
@@ -350,7 +350,7 @@ export const supabaseService = {
 
         for (const card of allCards) {
           if (card.board_id === b.id && card.description) {
-            const mMatch = card.description.match(/<!--worklane_board_meta:([\s\S]*?)-->/);
+            const mMatch = card.description.match(/<!--[a-z]+_board_meta:([\s\S]*?)-->/);
             if (mMatch) {
               try {
                 const parsedMeta = JSON.parse(mMatch[1]);
@@ -478,11 +478,11 @@ export const supabaseService = {
           );
 
           let encodedDescription = item.card.description || '';
-          // Strip any existing metadata tags first (legacy "worklane_" prefix kept for stored data)
+          // Strip any existing metadata tags first (any brand prefix, so tags saved before the rename are replaced too)
           encodedDescription = encodedDescription
-            .replace(/<!--worklane_board_meta:[\s\S]*?-->/g, '')
-            .replace(/<!--worklane_roadmap:[\s\S]*?-->/g, '')
-            .replace(/<!--worklane_board_sprints:[\s\S]*?-->/g, '')
+            .replace(/<!--[a-z]+_board_meta:[\s\S]*?-->/g, '')
+            .replace(/<!--[a-z]+_roadmap:[\s\S]*?-->/g, '')
+            .replace(/<!--[a-z]+_board_sprints:[\s\S]*?-->/g, '')
             .trimEnd();
 
           if (hasRoadmapMeta) {
@@ -497,18 +497,18 @@ export const supabaseService = {
             if (item.card.workSuspensions?.length) rMeta.workSuspensions = item.card.workSuspensions;
             if (item.card.workedDays?.length) rMeta.workedDays = item.card.workedDays;
             if (item.card.linkedRoadmapId) rMeta.linkedRoadmapId = item.card.linkedRoadmapId;
-            encodedDescription = `${encodedDescription}\n<!--worklane_roadmap:${JSON.stringify(rMeta)}-->`.trim();
+            encodedDescription = `${encodedDescription}\n<!--waypoint_roadmap:${JSON.stringify(rMeta)}-->`.trim();
           }
 
           // If this is the first card, embed board metadata tag as bulletproof backup
           if (index === 0) {
             const boardMeta = { type: board.type || 'board', description: board.description || '' };
-            encodedDescription = `${encodedDescription}\n<!--worklane_board_meta:${JSON.stringify(boardMeta)}-->`.trim();
+            encodedDescription = `${encodedDescription}\n<!--waypoint_board_meta:${JSON.stringify(boardMeta)}-->`.trim();
           }
 
           // If this is the first card and board has sprints, embed board sprints tag as bulletproof backup
           if (index === 0 && board.sprints && board.sprints.length > 0) {
-            encodedDescription = `${encodedDescription}\n<!--worklane_board_sprints:${JSON.stringify(board.sprints)}-->`.trim();
+            encodedDescription = `${encodedDescription}\n<!--waypoint_board_sprints:${JSON.stringify(board.sprints)}-->`.trim();
           }
 
           return {
@@ -641,7 +641,7 @@ export const supabaseService = {
         allCardsWithMeta.forEach(item => {
           (item.card.comments || []).forEach(cm => {
             const encodedText = cm.attachments && cm.attachments.length > 0
-              ? `${cm.text || ''}\n<!--worklane_attachments:${JSON.stringify(cm.attachments)}-->`
+              ? `${cm.text || ''}\n<!--waypoint_attachments:${JSON.stringify(cm.attachments)}-->`
               : (cm.text || '');
             allComments.push({
               id: cm.id,
@@ -1018,7 +1018,7 @@ export const supabaseService = {
           .map(cm => {
             let text = cm.text || '';
             let attachments: Attachment[] | undefined;
-            const match = text.match(/<!--worklane_attachments:([\s\S]*?)-->/);
+            const match = text.match(/<!--[a-z]+_attachments:([\s\S]*?)-->/);
             if (match) {
               try {
                 attachments = JSON.parse(match[1]);
@@ -1062,7 +1062,7 @@ export const supabaseService = {
         let linkedRoadmapId: string | null = null;
 
         // Parse embedded roadmap metadata from card description
-        const rMatch = desc.match(/<!--worklane_roadmap:([\s\S]*?)-->/);
+        const rMatch = desc.match(/<!--[a-z]+_roadmap:([\s\S]*?)-->/);
         if (rMatch) {
           try {
             const meta = JSON.parse(rMatch[1]);
@@ -1081,7 +1081,7 @@ export const supabaseService = {
         }
 
         // Strip any embedded board sprints tag from card description
-        const spMatch = desc.match(/<!--worklane_board_sprints:[\s\S]*?-->/);
+        const spMatch = desc.match(/<!--[a-z]+_board_sprints:[\s\S]*?-->/);
         if (spMatch) {
           desc = desc.replace(spMatch[0], '').trimEnd();
         }
@@ -1144,7 +1144,7 @@ export const supabaseService = {
       let bSprints: Sprint[] = [];
       for (const card of allCards) {
         if (card.description) {
-          const sMatch = card.description.match(/<!--worklane_board_sprints:([\s\S]*?)-->/);
+          const sMatch = card.description.match(/<!--[a-z]+_board_sprints:([\s\S]*?)-->/);
           if (sMatch) {
             try {
               const parsed = JSON.parse(sMatch[1]);

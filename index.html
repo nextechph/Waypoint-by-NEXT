@@ -23,15 +23,19 @@
     <script>
       (function() {
         try {
-          // One-time migration of storage keys from the previous "Worklane" brand.
+          // One-time migration of storage keys saved under the app's previous name:
+          // any "<prefix>-theme" / "<prefix>_<known key>" entry is moved to the "waypoint" prefix.
+          var known = ['-theme', '_alerted_', '_auth_', '_boards_cache_', '_current_', '_custom_borders', '_data_', '_email', '_notifs_', '_pending_invite', '_roadmap_tasks_width', '_settings_'];
           [localStorage, sessionStorage].forEach(function(store) {
             for (var i = store.length - 1; i >= 0; i--) {
               var key = store.key(i);
-              if (key && key.indexOf('worklane') === 0) {
-                var next = 'waypoint' + key.slice(8);
-                if (store.getItem(next) === null) store.setItem(next, store.getItem(key));
-                store.removeItem(key);
-              }
+              var m = key && /^([a-z]+)([-_].*)$/.exec(key);
+              if (!m || m[1] === 'waypoint') continue;
+              var rest = m[2];
+              if (!known.some(function(k) { return rest.indexOf(k) === 0; })) continue;
+              var next = 'waypoint' + rest;
+              if (store.getItem(next) === null) store.setItem(next, store.getItem(key));
+              store.removeItem(key);
             }
           });
         } catch (e) {}

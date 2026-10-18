@@ -45,7 +45,7 @@ interface AuthState {
 
 function hashPassword(pass: string): string {
   let hash = 0x811c9dc5;
-  const salt = 'worklane_auth_salt_v2';
+  const salt = 'waypoint_auth_salt_v2';
   const str = salt + pass;
   for (let i = 0; i < str.length; i++) {
     hash ^= str.charCodeAt(i);
