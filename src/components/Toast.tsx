@@ -21,10 +21,10 @@ export default function Toast() {
         {toasts.map(t => (
           <motion.div
             key={t.id}
-            initial={{ opacity: 0, y: 16, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 16, scale: 0.95, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(3px)' }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
             className={`toast ${t.type}`}
           >
             <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>

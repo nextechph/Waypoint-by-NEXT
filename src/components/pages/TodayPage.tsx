@@ -18,8 +18,13 @@ interface Props {
 }
 
 const fade = {
-  hidden: { opacity: 0, y: 10 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05, duration: 0.35, ease: [0.25, 1, 0.5, 1] as const } }),
+  hidden: { opacity: 0, y: 12, filter: 'blur(4px)' },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { delay: i * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] as const }
+  }),
 };
 
 export function plainText(desc: string): string {

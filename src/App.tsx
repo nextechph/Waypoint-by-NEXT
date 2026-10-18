@@ -46,15 +46,35 @@ import { SHELL_PAGES, canEditBoard, getInboxSeen, markInboxSeen, useMyNotificati
 const CHECK_INTERVAL_MS = 10_000;
 
 const pageVariants: Variants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.25, 1, 0.5, 1] } },
-  exit: { opacity: 0, transition: { duration: 0.12 } }
+  initial: { opacity: 0, y: 12, filter: 'blur(5px)' },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    filter: 'blur(4px)',
+    transition: { duration: 0.16, ease: [0.65, 0, 0.35, 1] }
+  }
 };
 
 const pageMobileVariants: Variants = {
-  initial: { opacity: 0, y: 6 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-  exit: { opacity: 0, y: -6, transition: { duration: 0.15 } }
+  initial: { opacity: 0, y: 8, filter: 'blur(3px)' },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] }
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    filter: 'blur(2px)',
+    transition: { duration: 0.14, ease: [0.65, 0, 0.35, 1] }
+  }
 };
 
 export default function App() {

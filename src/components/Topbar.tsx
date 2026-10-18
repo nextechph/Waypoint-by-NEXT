@@ -120,10 +120,10 @@ export default function Topbar({
               <motion.div
                 className="wp-menu"
                 style={{ right: 0, top: 'calc(100% + 10px)', width: 248 }}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.12 }}
+                initial={{ opacity: 0, y: -6, scale: 0.96, filter: 'blur(3px)' }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -4, scale: 0.96, filter: 'blur(2px)' }}
+                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="wp-menu-head">
                   <div className="wp-menu-name">{user?.name || 'User'}</div>

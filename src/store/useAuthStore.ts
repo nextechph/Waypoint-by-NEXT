@@ -54,15 +54,13 @@ interface AuthState {
   deleteAccount: () => Promise<{ success: boolean; error?: string }>;
 }
 
-function hashPassword(pass: string): string {
-  let hash = 0x811c9dc5;
-  const salt = 'waypoint_auth_salt_v2';
-  const str = salt + pass;
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i);
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
-  }
-  return (hash >>> 0).toString(16);
+async function hashPassword(pass: string): Promise<string> {
+  const salt = 'waypoint_auth_salt_v3_sha256_';
+  const encoder = new TextEncoder();
+  const data = encoder.encode(salt + pass);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -257,7 +255,7 @@ export const useAuthStore = create<AuthState>()(
           id: `usr_${Date.now()}`,
           name: name.trim() || cleanEmail.split('@')[0],
           email: cleanEmail,
-          password: hashPassword(password),
+          password: await hashPassword(password),
           provider: 'email',
           createdAt: new Date().toISOString(),
         };
@@ -396,8 +394,8 @@ export const useAuthStore = create<AuthState>()(
           return { success: false, error: 'Account not found! Please sign up first.' };
         }
 
-        const hashedPassword = hashPassword(password);
-        if (account.password && account.password !== hashedPassword && account.password !== password) {
+        const hashedPassword = await hashPassword(password);
+        if (account.password && account.password !== hashedPassword) {
           return { success: false, error: 'Incorrect password! Please try again.' };
         }
 

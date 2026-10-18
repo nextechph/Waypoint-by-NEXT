@@ -235,10 +235,10 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
   return (
     <div className="modal-overlay" style={{ perspective: 1200 }} onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-        animate={{ opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }}
-        exit={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        initial={{ opacity: 0, scale: 0.96, y: 16, filter: 'blur(5px)' }}
+        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, scale: 0.96, y: 12, filter: 'blur(3px)' }}
+        transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
         className="modal"
         style={{
           maxWidth: 740,

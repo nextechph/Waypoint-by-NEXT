@@ -147,15 +147,22 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
   });
 
   return (
-    <div className="wp-sheet-overlay" onClick={onClose}>
+    <motion.div
+      className="wp-sheet-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.24 }}
+      onClick={onClose}
+    >
       <motion.aside
         className="wp-sheet"
         role="dialog"
         aria-label={card.title}
-        initial={{ opacity: 0, x: 56 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 56 }}
-        transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+        initial={{ opacity: 0, x: 60, filter: 'blur(6px)' }}
+        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, x: 60, filter: 'blur(4px)' }}
+        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         onClick={e => e.stopPropagation()}
       >
         <header className="wp-sheet-head">
@@ -432,7 +439,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
           </footer>
         )}
       </motion.aside>
-    </div>
+    </motion.div>
   );
 }
 

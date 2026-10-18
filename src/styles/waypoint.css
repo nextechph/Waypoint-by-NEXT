@@ -9,12 +9,168 @@
   --wp-sidebar-w-collapsed: 72px;
   --wp-topbar-h: 68px;
   --wp-gutter: 48px;
-  --wp-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --wp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
   --wp-hairline: hsl(var(--border));
   --wp-ink: hsl(var(--foreground));
   --wp-ink-2: hsl(var(--foreground) / 0.72);
   --wp-ink-3: hsl(var(--muted-foreground));
 }
+
+/* ══════════════════════════════════════════════════════════
+   TRANSITIONS.DEV — Theme Toggle Blur & Fade Transition
+   Emil Kowalski / transitions.dev pattern using View Transitions
+   ══════════════════════════════════════════════════════════ */
+::view-transition-group(root) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  animation-name: transitions-dev-blur-out;
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  animation-name: transitions-dev-blur-in;
+  z-index: 2;
+}
+
+@keyframes transitions-dev-blur-out {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(14px);
+    transform: scale(0.99);
+  }
+}
+
+@keyframes transitions-dev-blur-in {
+  0% {
+    opacity: 0;
+    filter: blur(14px);
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+}
+
+/* Fallback theme transition for browsers without View Transitions */
+html.theme-fade-transition {
+  transition: filter 380ms cubic-bezier(0.16, 1, 0.3, 1);
+  filter: blur(6px);
+}
+html.theme-fade-transition *,
+html.theme-fade-transition *::before,
+html.theme-fade-transition *::after {
+  transition: background-color 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition-delay: 0s !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TRANSITIONS.DEV — Keyframes & Animation Utilities
+   ══════════════════════════════════════════════════════════ */
+@keyframes wp-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes wp-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes wp-fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes wp-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes wp-blur-in {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+.wp-fade-in {
+  animation: wp-fade-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.wp-fade-in-up {
+  animation: wp-fade-in-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.wp-fade-in-down {
+  animation: wp-fade-in-down 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.wp-scale-in {
+  animation: wp-scale-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.wp-blur-in {
+  animation: wp-blur-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.wp-stagger-1 { animation-delay: 40ms; }
+.wp-stagger-2 { animation-delay: 80ms; }
+.wp-stagger-3 { animation-delay: 120ms; }
+.wp-stagger-4 { animation-delay: 160ms; }
+.wp-stagger-5 { animation-delay: 200ms; }
+
 
 /* ── Shared atoms ───────────────────────────────────────── */
 .wp-eyebrow {

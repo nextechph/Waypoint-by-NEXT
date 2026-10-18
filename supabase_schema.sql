@@ -41,7 +41,11 @@ create table public.profiles (
 
 -- Trigger to automatically create or update profile upon auth.users signup
 create or replace function public.handle_new_user()
-returns trigger as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
   insert into public.profiles (id, name, email, avatar_url)
   values (
@@ -57,7 +61,7 @@ begin
     updated_at = now();
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -240,7 +244,7 @@ create index if not exists idx_comments_card_id on public.comments(card_id);
 create index if not exists idx_notifs_recipient on public.notifications(recipient_email);
 
 -- ==============================================================================
--- 16. ROW LEVEL SECURITY (RLS) - PERMISSIVE FOR AUTHENTICATED TEAM USERS
+-- 16. ROW LEVEL SECURITY (RLS) - HARDENED TENANT ISOLATION
 -- ==============================================================================
 alter table public.profiles enable row level security;
 alter table public.boards enable row level security;
@@ -255,42 +259,212 @@ alter table public.comments enable row level security;
 alter table public.notifications enable row level security;
 alter table public.email_logs enable row level security;
 
--- Policies for Workspace Collaborators & Public Anon Access
-create policy "Allow all access to profiles" on public.profiles
-  for all using (true) with check (true);
+-- ── RLS Security Helper Functions (SECURITY DEFINER to avoid RLS recursion) ────
+create or replace function public.auth_user_email()
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select email from auth.users where id = auth.uid();
+$$;
 
-create policy "Allow all access to boards" on public.boards
-  for all using (true) with check (true);
+create or replace function public.is_board_collaborator(b_id text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.boards b
+    where b.id = b_id
+      and (
+        b.created_by ilike (select email from auth.users where id = auth.uid())
+        or exists (
+          select 1 from public.board_members bm
+          where bm.board_id = b_id
+            and bm.email ilike (select email from auth.users where id = auth.uid())
+        )
+      )
+  );
+$$;
 
-create policy "Allow all access to board_members" on public.board_members
-  for all using (true) with check (true);
+create or replace function public.get_board_role(b_id text)
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(
+    (select 'owner' from public.boards where id = b_id and created_by ilike (select email from auth.users where id = auth.uid())),
+    (select role from public.board_members where board_id = b_id and email ilike (select email from auth.users where id = auth.uid()) limit 1),
+    'none'
+  );
+$$;
 
-create policy "Allow all access to columns" on public.columns
-  for all using (true) with check (true);
+-- ── 16.1 Profiles Policies ──
+create policy "Allow authenticated users to read profiles" on public.profiles
+  for select to authenticated using (true);
 
-create policy "Allow all access to cards" on public.cards
-  for all using (true) with check (true);
+create policy "Users can insert their own profile" on public.profiles
+  for insert to authenticated with check (id = auth.uid() or email ilike public.auth_user_email());
 
-create policy "Allow all access to card_assignees" on public.card_assignees
-  for all using (true) with check (true);
+create policy "Users can update their own profile" on public.profiles
+  for update to authenticated using (id = auth.uid() or email ilike public.auth_user_email());
 
-create policy "Allow all access to card_labels" on public.card_labels
-  for all using (true) with check (true);
+create policy "Users can delete their own profile" on public.profiles
+  for delete to authenticated using (id = auth.uid());
 
-create policy "Allow all access to custom_labels" on public.custom_labels
-  for all using (true) with check (true);
+-- ── 16.2 Boards Policies ──
+create policy "Users can view boards they created or belong to" on public.boards
+  for select to authenticated
+  using (created_by ilike public.auth_user_email() or public.is_board_collaborator(id));
 
-create policy "Allow all access to attachments" on public.attachments
-  for all using (true) with check (true);
+create policy "Users can insert boards" on public.boards
+  for insert to authenticated
+  with check (created_by ilike public.auth_user_email());
 
-create policy "Allow all access to comments" on public.comments
-  for all using (true) with check (true);
+create policy "Board owners and admins can update boards" on public.boards
+  for update to authenticated
+  using (public.get_board_role(id) in ('owner', 'admin'))
+  with check (public.get_board_role(id) in ('owner', 'admin'));
 
-create policy "Allow all access to notifications" on public.notifications
-  for all using (true) with check (true);
+create policy "Board owners can delete boards" on public.boards
+  for delete to authenticated
+  using (public.get_board_role(id) = 'owner');
 
-create policy "Allow all access to email_logs" on public.email_logs
-  for all using (true) with check (true);
+-- ── 16.3 Board Members Policies ──
+create policy "Collaborators can view board members" on public.board_members
+  for select to authenticated
+  using (public.is_board_collaborator(board_id));
+
+create policy "Owners and admins can add members, or users can accept invites" on public.board_members
+  for insert to authenticated
+  with check (public.get_board_role(board_id) in ('owner', 'admin') or email ilike public.auth_user_email());
+
+create policy "Owners and admins can update members" on public.board_members
+  for update to authenticated
+  using (public.get_board_role(board_id) in ('owner', 'admin') or email ilike public.auth_user_email());
+
+create policy "Owners, admins, or leaving members can delete membership" on public.board_members
+  for delete to authenticated
+  using (public.get_board_role(board_id) in ('owner', 'admin') or email ilike public.auth_user_email());
+
+-- ── 16.4 Columns Policies ──
+create policy "Collaborators can view columns" on public.columns
+  for select to authenticated
+  using (public.is_board_collaborator(board_id));
+
+create policy "Board editors can manage columns" on public.columns
+  for all to authenticated
+  using (public.get_board_role(board_id) in ('owner', 'admin', 'member'))
+  with check (public.get_board_role(board_id) in ('owner', 'admin', 'member'));
+
+-- ── 16.5 Cards Policies ──
+create policy "Collaborators can view cards" on public.cards
+  for select to authenticated
+  using (public.is_board_collaborator(board_id));
+
+create policy "Board editors can insert cards" on public.cards
+  for insert to authenticated
+  with check (public.get_board_role(board_id) in ('owner', 'admin', 'member'));
+
+create policy "Board collaborators can update cards" on public.cards
+  for update to authenticated
+  using (public.is_board_collaborator(board_id));
+
+create policy "Board editors can delete cards" on public.cards
+  for delete to authenticated
+  using (public.get_board_role(board_id) in ('owner', 'admin', 'member'));
+
+-- ── 16.6 Card Assignees Policies ──
+create policy "Collaborators can view card assignees" on public.card_assignees
+  for select to authenticated
+  using (exists (select 1 from public.cards c where c.id = card_assignees.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Board editors can manage card assignees" on public.card_assignees
+  for all to authenticated
+  using (exists (select 1 from public.cards c where c.id = card_assignees.card_id and public.get_board_role(c.board_id) in ('owner', 'admin', 'member')))
+  with check (exists (select 1 from public.cards c where c.id = card_assignees.card_id and public.get_board_role(c.board_id) in ('owner', 'admin', 'member')));
+
+-- ── 16.7 Card Labels Policies ──
+create policy "Collaborators can view card labels" on public.card_labels
+  for select to authenticated
+  using (exists (select 1 from public.cards c where c.id = card_labels.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Board editors can manage card labels" on public.card_labels
+  for all to authenticated
+  using (exists (select 1 from public.cards c where c.id = card_labels.card_id and public.get_board_role(c.board_id) in ('owner', 'admin', 'member')))
+  with check (exists (select 1 from public.cards c where c.id = card_labels.card_id and public.get_board_role(c.board_id) in ('owner', 'admin', 'member')));
+
+-- ── 16.8 Custom Labels Policies ──
+create policy "Users can view global and own custom labels" on public.custom_labels
+  for select to authenticated
+  using (user_email is null or user_email ilike public.auth_user_email());
+
+create policy "Users can manage own custom labels" on public.custom_labels
+  for all to authenticated
+  using (user_email is null or user_email ilike public.auth_user_email())
+  with check (user_email is null or user_email ilike public.auth_user_email());
+
+-- ── 16.9 Attachments Policies ──
+create policy "Collaborators can view attachments" on public.attachments
+  for select to authenticated
+  using (exists (select 1 from public.cards c where c.id = attachments.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Collaborators can add and update attachments" on public.attachments
+  for insert to authenticated
+  with check (exists (select 1 from public.cards c where c.id = attachments.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Board editors can delete attachments" on public.attachments
+  for delete to authenticated
+  using (exists (select 1 from public.cards c where c.id = attachments.card_id and public.get_board_role(c.board_id) in ('owner', 'admin', 'member')));
+
+-- ── 16.10 Comments Policies ──
+create policy "Collaborators can view comments" on public.comments
+  for select to authenticated
+  using (exists (select 1 from public.cards c where c.id = comments.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Collaborators can add comments" on public.comments
+  for insert to authenticated
+  with check (exists (select 1 from public.cards c where c.id = comments.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Collaborators can update comments" on public.comments
+  for update to authenticated
+  using (exists (select 1 from public.cards c where c.id = comments.card_id and public.is_board_collaborator(c.board_id)));
+
+create policy "Collaborators can delete comments" on public.comments
+  for delete to authenticated
+  using (exists (select 1 from public.cards c where c.id = comments.card_id and public.is_board_collaborator(c.board_id)));
+
+-- ── 16.11 Notifications Policies ──
+create policy "Users can view their own notifications" on public.notifications
+  for select to authenticated
+  using (recipient_email ilike public.auth_user_email() or recipient_id = auth.uid());
+
+create policy "Collaborators can dispatch notifications" on public.notifications
+  for insert to authenticated
+  with check (true);
+
+create policy "Users can update their own notifications" on public.notifications
+  for update to authenticated
+  using (recipient_email ilike public.auth_user_email() or recipient_id = auth.uid());
+
+create policy "Users can delete their own notifications" on public.notifications
+  for delete to authenticated
+  using (recipient_email ilike public.auth_user_email() or recipient_id = auth.uid());
+
+-- ── 16.12 Email Logs Policies ──
+create policy "Users can view their own email logs" on public.email_logs
+  for select to authenticated
+  using (recipient_email ilike public.auth_user_email());
+
+create policy "Authenticated callers can write email logs" on public.email_logs
+  for insert to authenticated
+  with check (true);
 
 -- ==============================================================================
 -- 17. ENABLE REALTIME REPLICATION & REPLICA IDENTITY (Safe & Idempotent)
@@ -335,38 +509,48 @@ end;
 $$;
 
 -- ==============================================================================
--- 18. STORAGE BUCKET FOR ATTACHMENTS
+-- 18. STORAGE BUCKET FOR ATTACHMENTS (Private, Authenticated Access Only)
 -- ==============================================================================
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'attachments',
   'attachments',
-  true,
+  false, -- Private bucket
   52428800, -- 50MB
-  array['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/pdf', 'text/plain', 'application/zip']
+  array['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain', 'application/zip']
 )
 on conflict (id) do update set
-  public = true,
-  file_size_limit = 52428800;
+  public = false,
+  file_size_limit = 52428800,
+  allowed_mime_types = array['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain', 'application/zip'];
 
--- Storage Policies for Attachments
+-- Storage Policies for Attachments (Restricted to authenticated users)
 drop policy if exists "Authenticated Uploads" on storage.objects;
-create policy "Authenticated Uploads" on storage.objects
-  for insert with check (bucket_id = 'attachments' and auth.role() = 'authenticated');
-
 drop policy if exists "Public/Authenticated Reads" on storage.objects;
-create policy "Public/Authenticated Reads" on storage.objects
-  for select using (bucket_id = 'attachments');
-
+drop policy if exists "Authenticated Reads" on storage.objects;
 drop policy if exists "Authenticated Deletes" on storage.objects;
+
+create policy "Authenticated Uploads" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'attachments');
+
+create policy "Authenticated Reads" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'attachments');
+
 create policy "Authenticated Deletes" on storage.objects
-  for delete using (bucket_id = 'attachments' and auth.role() = 'authenticated');
+  for delete to authenticated
+  using (bucket_id = 'attachments' and (owner = auth.uid() or auth.role() = 'authenticated'));
 
 -- ==============================================================================
--- 19. ACCOUNT DELETION & DEACTIVATION RPC
+-- 19. ACCOUNT DELETION & DEACTIVATION RPC (Hardened with search_path and cascade)
 -- ==============================================================================
 create or replace function public.delete_user_account()
-returns void as $$
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
 declare
   v_user_id uuid := auth.uid();
   v_email text;
@@ -377,19 +561,28 @@ begin
   
   select email into v_email from auth.users where id = v_user_id;
   
-  -- 1. Remove user from board memberships
   if v_email is not null then
+    -- 1. Cascade delete boards created by this user (and their columns, cards, comments, attachments)
+    delete from public.boards where created_by ilike v_email;
+
+    -- 2. Remove user from other boards' memberships
     delete from public.board_members where email ilike v_email;
+
+    -- 3. Delete user notifications and custom labels
     delete from public.notifications where recipient_email ilike v_email;
+    delete from public.custom_labels where user_email ilike v_email;
   end if;
   
-  -- 2. Delete user profile record
+  -- 4. Delete user profile record
   delete from public.profiles where id = v_user_id;
   
-  -- 3. Delete user from auth.users
+  -- 5. Delete user from auth.users
   delete from auth.users where id = v_user_id;
 end;
-$$ language plpgsql security definer;
+$$;
+
+revoke execute on function public.delete_user_account() from public;
+grant execute on function public.delete_user_account() to authenticated;
 
 
 -- ==============================================================================

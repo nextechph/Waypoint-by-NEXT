@@ -61,9 +61,10 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
   return (
     <div className="modal-overlay" onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.18, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 16, scale: 0.96, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: 10, scale: 0.96, filter: 'blur(3px)' }}
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
         className="modal small-modal wp-quick-task"
         onClick={e => e.stopPropagation()}
       >

@@ -208,9 +208,9 @@ function ProjectCard({
   return (
     <motion.div
       className={`wp-project-card${selected ? ' selected' : ''}`}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index, 8) * 0.03, duration: 0.3 }}
+      initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ delay: Math.min(index, 8) * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => { if (!editing) onOpen(); }}
       role="button"
       tabIndex={0}
@@ -246,10 +246,10 @@ function ProjectCard({
                   <motion.div
                     className="wp-menu"
                     style={{ right: 0, top: 'calc(100% + 6px)', width: 190 }}
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.12 }}
+                    initial={{ opacity: 0, y: -6, scale: 0.96, filter: 'blur(3px)' }}
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, y: -4, scale: 0.96, filter: 'blur(2px)' }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                   >
                     {editable && (
                       <>

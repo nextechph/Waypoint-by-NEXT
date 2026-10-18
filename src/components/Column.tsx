@@ -151,13 +151,13 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       transition={{
         layout: { type: 'spring', damping: 26, stiffness: 220, mass: 0.8 },
-        duration: 0.3,
-        delay: colIndex * 0.04,
-        ease: [0.25, 1, 0.5, 1]
+        duration: 0.32,
+        delay: Math.min(colIndex * 0.04, 0.24),
+        ease: [0.16, 1, 0.3, 1]
       }}
       className="column"
       data-col-id={col.id}

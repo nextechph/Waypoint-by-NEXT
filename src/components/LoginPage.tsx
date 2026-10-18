@@ -339,9 +339,9 @@ export default function LoginPage() {
       {/* ── Right Side Full-Height Login Panel ── */}
       <motion.div
         className="login-right-panel"
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        initial={{ opacity: 0, x: 24, filter: 'blur(6px)' }}
+        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         style={{
           width: '100%',
           maxWidth: 480,

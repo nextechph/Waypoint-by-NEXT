@@ -97,9 +97,9 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
             <motion.section
               key={g.bucket}
               className="wp-task-group"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: gi * 0.04, duration: 0.3 }}
+              initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ delay: gi * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="wp-task-group-head">
                 <Eyebrow style={g.bucket === 'Overdue' ? { color: 'hsl(var(--destructive))' } : undefined}>{g.bucket}</Eyebrow>

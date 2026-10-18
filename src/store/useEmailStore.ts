@@ -233,12 +233,25 @@ export const useEmailStore = create<EmailState>()(
         const { settings } = get();
         if (!settings.enabled) return;
 
+        // Allowlist valid event types
+        const ALLOWED_EVENTS = ['card_assigned', 'due_reminder', 'status_changed', 'mention', 'test'];
+        if (!ALLOWED_EVENTS.includes(eventType)) {
+          console.warn('[useEmailStore] Blocked unauthorized email event type:', eventType);
+          return;
+        }
+
         if (eventType === 'card_assigned' && !settings.notifyOnAssign) return;
         if (eventType === 'due_reminder' && !settings.notifyOnDue) return;
         if (eventType === 'status_changed' && !settings.notifyOnStatusChange) return;
         if (eventType === 'mention' && settings.notifyOnMention === false) return;
 
-        if (!recipient.email) return;
+        // Strict recipient email validation
+        const cleanEmail = (recipient.email || '').trim().toLowerCase();
+        const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+        if (!cleanEmail || !EMAIL_REGEX.test(cleanEmail)) {
+          console.warn('[useEmailStore] Invalid recipient email address:', cleanEmail);
+          return;
+        }
 
         // Only dispatch and log when a deployment webhook URL is configured
         if (!PIPEDREAM_WEBHOOK_URL) {
@@ -246,12 +259,14 @@ export const useEmailStore = create<EmailState>()(
         }
 
         const logId = uid();
+        const cleanSubject = (subject || '').trim().slice(0, 200);
+        const cleanRecipientName = (recipient.name || cleanEmail.split('@')[0]).trim().slice(0, 100);
 
         try {
           const htmlContent = buildWaypointEmailHtml({
-            recipientName: recipient.name,
-            subject,
-            body,
+            recipientName: cleanRecipientName,
+            subject: cleanSubject,
+            body: (body || '').trim().slice(0, 4000),
             eventType,
             metadata,
           });
@@ -260,25 +275,31 @@ export const useEmailStore = create<EmailState>()(
             event: eventType,
             timestamp: new Date().toISOString(),
             recipient: {
-              name: recipient.name,
-              email: recipient.email,
+              name: cleanRecipientName,
+              email: cleanEmail,
             },
-            sender: settings.senderEmail || 'notifications@waypoint.app',
-            subject,
-            body,
+            sender: 'notifications@waypoint.app',
+            subject: cleanSubject,
+            body: (body || '').trim(),
             html: htmlContent,
             metadata: metadata || {},
             source: 'Waypoint Kanban',
           };
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
 
           const res = await fetch(PIPEDREAM_WEBHOOK_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json, text/plain, */*',
+              'X-Waypoint-Event': eventType,
             },
             body: JSON.stringify(payload),
+            signal: controller.signal,
           });
+          clearTimeout(timeoutId);
 
           const isSuccess = res.ok;
           const finalStatus: 'sent' | 'failed' = isSuccess ? 'sent' : 'failed';
