@@ -77,7 +77,7 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
 
   const [name, setName]                   = useState(initialName);
   const [description, setDescription]     = useState('');
-  const [selectedColor, setSelectedColor] = useState<string>('#6366f1');
+  const [selectedColor, setSelectedColor] = useState<string>('#6B7280');
   const [phases, setPhases]               = useState<PhaseItem[]>([]);
   const [newPhaseInput, setNewPhaseInput] = useState('');
   const [newPhaseType, setNewPhaseType]   = useState<'phase' | 'subtask'>('phase');
@@ -380,24 +380,6 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-
-          {/* Color Theme */}
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="field-label">Color Theme</label>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {BOARD_COLORS.map(c => (
-                <motion.button key={c.value} type="button" whileTap={{ scale: 0.9 }}
-                  style={{
-                    width: 24, height: 24, borderRadius: '50%', backgroundColor: c.value,
-                    boxShadow: selectedColor === c.value ? 'var(--neu-shadow-pressed)' : 'var(--neu-shadow-raised-sm)',
-                    border: selectedColor === c.value ? '2px solid hsl(var(--foreground))' : 'none',
-                    cursor: 'pointer', outline: 'none',
-                  }}
-                  title={c.name} onClick={() => setSelectedColor(c.value)}
-                />
-              ))}
-            </div>
           </div>
         </div>
 

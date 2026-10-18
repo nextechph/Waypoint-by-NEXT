@@ -314,7 +314,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   const [sprintGoal, setSprintGoal] = useState('');
   const [sprintStartDate, setSprintStartDate] = useState('');
   const [sprintEndDate, setSprintEndDate] = useState('');
-  const [sprintColor, setSprintColor] = useState('#6366f1');
+  const [sprintColor, setSprintColor] = useState('#6B7280');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   // Quick Task Add dialog
@@ -508,10 +508,9 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
   const totalViewMs = Math.max(1, viewEnd.getTime() - viewStart.getTime());
 
-  // Flatten all cards with calculated schedule
   const allTasks = useMemo(() => {
     const list: TaskWithSchedule[] = [];
-    const colPalette = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#06b6d4', '#ec4899'];
+    const colPalette = ['#6B7280', '#8A8F98', '#9CA3AF', '#7A7F88', '#4B5563', '#64748B'];
 
     board.columns?.forEach((col, colIdx) => {
       const colColor = colPalette[colIdx % colPalette.length];
@@ -800,7 +799,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
     }
 
     if (groupBy === 'column') {
-      const colPalette = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'];
+      const colPalette = ['#6B7280', '#8A8F98', '#9CA3AF', '#7A7F88', '#4B5563', '#64748B'];
       const columnSections: GroupSection[] = (board.columns || []).map((col, idx) => {
         const displayTitle = col.name === 'Project Deliverables' ? `Phase ${idx + 1}` : col.name;
         const matchingSprint = (board.sprints || []).find(s => s.id === col.id || s.name.toLowerCase() === col.name.toLowerCase());
@@ -2425,26 +2424,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                           onChange={val => setSprintEndDate(val ? val.split('T')[0] : '')}
                           align="right"
                         />
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="field-label">Color Theme</label>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        {['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'].map(col => (
-                          <div
-                            key={col}
-                            onClick={() => setSprintColor(col)}
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: '50%',
-                              backgroundColor: col,
-                              cursor: 'pointer',
-                              boxShadow: sprintColor === col ? '0 0 0 2px hsl(var(--card)), 0 0 0 4px ' + col : 'none',
-                            }}
-                          />
-                        ))}
                       </div>
                     </div>
                   </div>

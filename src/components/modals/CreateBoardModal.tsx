@@ -63,30 +63,6 @@ export default function CreateBoardModal({ onClose }: Props) {
               autoFocus
             />
           </div>
-          <div className="form-group">
-            <label className="field-label">Accent Color</label>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {BOARD_COLORS.map(c => (
-                <motion.button
-                  key={c.value}
-                  type="button"
-                  whileTap={{ scale: 0.9 }}
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: '50%',
-                    backgroundColor: c.value,
-                    boxShadow: selectedColor === c.value ? 'var(--neu-shadow-pressed)' : 'var(--neu-shadow-raised-sm)',
-                    border: selectedColor === c.value ? '2px solid hsl(var(--foreground))' : 'none',
-                    cursor: 'pointer',
-                    outline: 'none'
-                  }}
-                  title={c.name}
-                  onClick={() => setSelectedColor(c.value)}
-                />
-              ))}
-            </div>
-          </div>
         </div>
         <div className="modal-footer">
           <motion.button whileTap={{ scale: 0.95 }} className="btn btn-secondary" onClick={() => onClose()}>Cancel</motion.button>

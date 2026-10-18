@@ -14,7 +14,6 @@ import { useEmailStore } from '../../store/useEmailStore';
 import { useToastStore } from '../../store/useToastStore';
 import { useConfirmStore } from '../../store/useConfirmStore';
 import { avatarInitials } from '../../utils';
-import ProfileBorderPicker from '../ui/ProfileBorderPicker';
 import AvatarCropperModal from './AvatarCropperModal';
 import { useEscape } from '../../lib/useEscape';
 
@@ -519,23 +518,6 @@ export default function SettingsModal({ initialTab = 'profile', onClose }: Props
                       );
                     })}
                   </div>
-                </div>
-
-                {/* Avatar Border Customization */}
-                <div style={{ paddingTop: 4, borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
-                  <div style={{ marginBottom: 12 }}>
-                    <h4 style={{ fontSize: 13.5, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 3 }}>Profile Border Style</h4>
-                    <p style={{ fontSize: 11.5, color: 'hsl(var(--muted-foreground))' }}>
-                      Choose a border to display around your avatar — useful for IT role identification or personal flair.
-                    </p>
-                  </div>
-                  <ProfileBorderPicker
-                    name={displayName || user?.name || 'User'}
-                    avatarUrl={customAvatarUrl || undefined}
-                    color="hsl(var(--primary))"
-                    value={borderStyle}
-                    onChange={setBorderStyle}
-                  />
                 </div>
 
                 {/* Display Name & Email Fields */}
