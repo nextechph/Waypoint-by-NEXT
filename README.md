@@ -24,7 +24,6 @@
 9. [User stories](#user-stories)
 10. [Project structure](#project-structure)
 11. [Tech stack](#tech-stack)
-12. [Further documentation](#further-documentation)
 
 ---
 
@@ -172,8 +171,6 @@ If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are not set, Waypoint runs w
 ### Email notifications (optional)
 1. Create an HTTP webhook trigger on [Pipedream](https://pipedream.com) and put its URL in `VITE_PIPEDREAM_WEBHOOK_URL`. Users choose which events email them in **Settings → Email Updates**.
 2. Add a "Send email" step (Gmail, Resend, SendGrid, …) that uses the payload's `html` field as the message body.
-
-See [`PIPEDREAM_SETUP_GUIDE.md`](PIPEDREAM_SETUP_GUIDE.md) for the payload format and a step-by-step walkthrough.
 
 ---
 
@@ -403,7 +400,7 @@ Waypoint-by-NEXT/
 │   ├── store/               Zustand stores (work, auth, notifications, email, settings, theme, toast, confirm)
 │   └── styles/              index.css (tokens), waypoint.css (layout), mobile.css
 ├── supabase_schema.sql      Database schema, policies and triggers
-└── *.md                     User manual, Gantt guide and specification, Pipedream guide
+└── README.md                Project overview and documentation
 ```
 
 ---
@@ -424,15 +421,7 @@ Waypoint-by-NEXT/
 
 ---
 
-## Further documentation
-
-- [`USER_MANUAL.md`](USER_MANUAL.md): using Waypoint day to day
-- [`GANTT_USER_MANUAL.md`](GANTT_USER_MANUAL.md): working with roadmaps and the Gantt timeline
-- [`GANTT_SPECIFICATION.md`](GANTT_SPECIFICATION.md): how the roadmap engine calculates schedules and variance
-- [`PIPEDREAM_SETUP_GUIDE.md`](PIPEDREAM_SETUP_GUIDE.md): setting up notification emails
-
----
-
 <div align="center">
   <sub>Waypoint by Next Technology</sub>
 </div>
+
