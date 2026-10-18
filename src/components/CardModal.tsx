@@ -2283,32 +2283,46 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
               </motion.button>
             </div>
 
-            {/* Scheduled Start & Scheduled End (all boards) */}
+            {/* Date fields: Roadmap gets Scheduled Start + Scheduled End; Board gets single Deadline */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
-                <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
-                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled Start</label>
-                  <NeumorphicDatePicker
-                    value={card.startDate || null}
-                    onChange={newStart => {
-                      updateCard(cardId, { startDate: newStart });
-                    }}
-                    placeholder="Scheduled start..."
-                    align="left"
-                  />
+              {isRoadmap ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 10 }}>
+                  <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
+                    <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled Start</label>
+                    <NeumorphicDatePicker
+                      value={card.startDate || null}
+                      onChange={newStart => {
+                        updateCard(cardId, { startDate: newStart });
+                      }}
+                      placeholder="Scheduled start..."
+                      align="left"
+                    />
+                  </div>
+                  <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
+                    <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled End</label>
+                    <NeumorphicDatePicker
+                      value={card.dueDate}
+                      onChange={newDue => {
+                        updateCard(cardId, { dueDate: newDue });
+                      }}
+                      placeholder="Scheduled end..."
+                      align="right"
+                    />
+                  </div>
                 </div>
-                <div className="form-group" style={{ minWidth: 0, margin: 0 }}>
-                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Scheduled End</label>
+              ) : (
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="field-label" style={{ margin: '0 0 4px 0' }}>Deadline</label>
                   <NeumorphicDatePicker
                     value={card.dueDate}
                     onChange={newDue => {
                       updateCard(cardId, { dueDate: newDue });
                     }}
-                    placeholder="Scheduled end..."
-                    align="right"
+                    placeholder="Set deadline..."
+                    align="left"
                   />
                 </div>
-              </div>
+              )}
 
               {/* Actual Start & Actual End — Roadmap boards only */}
               {isRoadmap && (
@@ -2396,7 +2410,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                       })()}
                     </div>
                     <NeumorphicDatePicker
-                      value={card.actualEndDate || (card.completed ? (card.completedAt || null) : null)}
+                      value={card.actualEndDate || null}
                       onChange={newActual => {
                         updateCard(cardId, { actualEndDate: newActual });
                       }}
@@ -2508,7 +2522,7 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      style={{ fontSize: 11, padding: '5px 8px', justifyContent: 'center', gap: 5, borderRadius: 7 }}
+                      style={{ fontSize: 11, padding: '5px 8px', justifyContent: 'flex-start', gap: 5, borderRadius: 7, overflow: 'hidden', maxWidth: '100%' }}
                       onClick={async () => {
                         const created = await createRoadmap(
                           card.title,
@@ -2528,8 +2542,10 @@ export default function CardModal({ cardId, boardId, onClose }: Props) {
                         showToast(`Created & linked roadmap "${card.title}"`, 'success');
                       }}
                     >
-                      <Plus size={12} />
-                      <span>Create Roadmap for "{card.title}"</span>
+                      <Plus size={12} style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        Create Roadmap for &ldquo;{card.title}&rdquo;
+                      </span>
                     </button>
                   </div>
                 )}

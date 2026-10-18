@@ -35,6 +35,7 @@ interface ContextMenu {
 }
 
 interface Props {
+  page?: 'board' | 'roadmap';
   viewMode: 'board' | 'roadmap' | 'calendar';
   onSelectView?: (view: 'board' | 'roadmap' | 'calendar') => void;
   filterMemberId: string | null;
@@ -42,6 +43,7 @@ interface Props {
   onOpenCard: (cardId: string) => void;
   onAddColumn: () => void;
   onCreateBoard: () => void;
+  onCreateRoadmap?: () => void;
   showInbox?: boolean;
   onToggleInbox?: () => void;
 }
@@ -59,6 +61,7 @@ const viewMobileVariants: Variants = {
 };
 
 export default function BoardArea({
+  page,
   viewMode,
   onSelectView,
   filterMemberId,
@@ -66,6 +69,7 @@ export default function BoardArea({
   onOpenCard,
   onAddColumn,
   onCreateBoard,
+  onCreateRoadmap,
   showInbox: controlledShowInbox,
   onToggleInbox: controlledToggleInbox,
 }: Props) {
@@ -141,6 +145,8 @@ export default function BoardArea({
   }, [board?.id, board?.type, viewMode, onSelectView]);
 
   if (!board) {
+    const isRoadmapPage = page === 'roadmap';
+    const handleCreate = isRoadmapPage && onCreateRoadmap ? onCreateRoadmap : onCreateBoard;
     return (
       <div className="board-area" style={{ alignItems: 'center', justifyContent: 'center', perspective: 1000 }}>
         <motion.div
@@ -163,16 +169,18 @@ export default function BoardArea({
               marginBottom: 16
             }}
           >
-            <Layout size={26} />
+            {isRoadmapPage ? <Milestone size={26} /> : <Layout size={26} />}
           </div>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 6 }}>
             Welcome to Worklane
           </h2>
           <p style={{ fontSize: 13, color: 'hsl(var(--muted-foreground))', lineHeight: 1.5, marginBottom: 20 }}>
-            Create your first board from the sidebar or click below to organize your workspace.
+            {isRoadmapPage
+              ? 'Create your first roadmap from the sidebar or click below to plan your project timeline.'
+              : 'Create your first board from the sidebar or click below to organize your workspace.'}
           </p>
-          <motion.button whileTap={{ scale: 0.95 }} className="btn btn-primary" onClick={onCreateBoard}>
-            <Plus size={15} /> Create First Board
+          <motion.button whileTap={{ scale: 0.95 }} className="btn btn-primary" onClick={handleCreate}>
+            <Plus size={15} /> {isRoadmapPage ? 'Create First Roadmap' : 'Create First Board'}
           </motion.button>
         </motion.div>
       </div>

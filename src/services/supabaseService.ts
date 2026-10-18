@@ -229,7 +229,7 @@ export const supabaseService = {
             }));
 
           let desc = card.description || '';
-          let startDate: string | null = card.created_at ? card.created_at.split('T')[0] : null;
+          let startDate: string | null = null;
           let actualStartDate: string | null = null;
           let actualEndDate: string | null = null;
           let sprintId: string | null = null;
@@ -464,10 +464,13 @@ export const supabaseService = {
 
       if (allCardsWithMeta.length > 0) {
         const cardRows = allCardsWithMeta.map((item, index) => {
+          // hasRoadmapMeta: true if this card ever had or currently has ANY roadmap field.
+          // We must also write the block when fields are being CLEARED (e.g. startDate: null) so
+          // the old embedded value doesn't survive in Supabase and come back on the next sync.
           const hasRoadmapMeta = !!(
-            item.card.startDate ||
-            item.card.actualStartDate ||
-            item.card.actualEndDate ||
+            item.card.startDate != null ||   // null OR non-null: always write if it changed
+            item.card.actualStartDate != null ||
+            item.card.actualEndDate != null ||
             item.card.sprintId ||
             item.card.isMilestone ||
             (item.card.progress !== undefined && item.card.progress !== (item.card.completed ? 100 : 0)) ||
@@ -478,7 +481,7 @@ export const supabaseService = {
           );
 
           let encodedDescription = item.card.description || '';
-          // Strip any existing worklane tags first
+          // Always strip any existing worklane tags first (ensures cleared values don't survive)
           encodedDescription = encodedDescription
             .replace(/<!--worklane_board_meta:[\s\S]*?-->/g, '')
             .replace(/<!--worklane_roadmap:[\s\S]*?-->/g, '')
@@ -487,9 +490,10 @@ export const supabaseService = {
 
           if (hasRoadmapMeta) {
             const rMeta: Record<string, any> = {};
-            if (item.card.startDate) rMeta.startDate = item.card.startDate;
-            if (item.card.actualStartDate) rMeta.actualStartDate = item.card.actualStartDate;
-            if (item.card.actualEndDate) rMeta.actualEndDate = item.card.actualEndDate;
+            // Always write date fields explicitly (null means "cleared") so old values are overwritten
+            rMeta.startDate = item.card.startDate ?? null;
+            rMeta.actualStartDate = item.card.actualStartDate ?? null;
+            rMeta.actualEndDate = item.card.actualEndDate ?? null;
             if (item.card.sprintId) rMeta.sprintId = item.card.sprintId;
             if (item.card.isMilestone) rMeta.isMilestone = true;
             if (item.card.progress !== undefined) rMeta.progress = item.card.progress;
@@ -499,6 +503,7 @@ export const supabaseService = {
             if (item.card.linkedRoadmapId) rMeta.linkedRoadmapId = item.card.linkedRoadmapId;
             encodedDescription = `${encodedDescription}\n<!--worklane_roadmap:${JSON.stringify(rMeta)}-->`.trim();
           }
+
 
           // If this is the first card, embed board metadata tag as bulletproof backup
           if (index === 0) {
@@ -1050,7 +1055,7 @@ export const supabaseService = {
           }));
 
         let desc = card.description || '';
-        let startDate: string | null = card.created_at ? card.created_at.split('T')[0] : null;
+        let startDate: string | null = null;
         let actualStartDate: string | null = null;
         let actualEndDate: string | null = null;
         let sprintId: string | null = null;

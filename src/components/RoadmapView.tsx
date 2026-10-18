@@ -2448,7 +2448,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                         />
                       </div>
                       <div className="form-group">
-                        <label className="field-label">Scheduled Date</label>
+                        <label className="field-label">Scheduled End</label>
                         <NeumorphicDatePicker
                           value={quickTaskDueDate || null}
                           onChange={val => setQuickTaskDueDate(val ? val.split('T')[0] : '')}

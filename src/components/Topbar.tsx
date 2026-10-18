@@ -240,8 +240,8 @@ export default function Topbar({
           )}
         </motion.button>
 
-        {/* Member avatar stack (Board context only) */}
-        {page === 'board' && board && members.length > 0 && (
+        {/* Member avatar stack (Board / Roadmap context) */}
+        {(page === 'board' || page === 'roadmap') && board && members.length > 0 && (
           <div
             className="card-assignees hide-on-mobile"
             onClick={onManageMembers}
