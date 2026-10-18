@@ -73,6 +73,8 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
   const members = sortMembersWithOwnerFirst(board.members || [], board.createdBy);
   const me = members.find(m => isMe(m, user));
   const isAdmin = me?.role === 'admin';
+  // Observers are read-only for task fields but can still take part in the discussion.
+  const canComment = editable || Boolean(me);
   const columns = sortColumnsByWorkflow(board.columns || []);
   const subtasks: Subtask[] = card.subtasks || [];
   const doneSubtasks = subtasks.filter(s => s.done).length;
@@ -354,7 +356,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
               <ul className="wp-comments">
                 {topComments.map(c => (
                   <li key={c.id}>
-                    <CommentItem c={c} canDelete={!!canDeleteComment(c)} onReply={editable ? () => setReplyTo(c) : undefined} onDelete={() => deleteComment(card.id, c.id)} />
+                    <CommentItem c={c} canDelete={!!canDeleteComment(c)} onReply={canComment ? () => setReplyTo(c) : undefined} onDelete={() => deleteComment(card.id, c.id)} />
                     {repliesOf(c.id).length > 0 && (
                       <ul className="wp-replies">
                         {repliesOf(c.id).map(r => (
@@ -409,7 +411,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
           )}
         </div>
 
-        {editable && (
+        {canComment && (
           <footer className="wp-sheet-composer">
             {replyTo && (
               <div className="wp-replying">
