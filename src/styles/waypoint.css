@@ -1397,3 +1397,19 @@ li.current .wp-ms-status { color: var(--wp-ink); }
 .wp-oauth-btn:hover:not(:disabled) { border-color: hsl(var(--foreground) / 0.45); background: hsl(var(--accent)); }
 .wp-oauth-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .wp-oauth-btn svg { flex-shrink: 0; }
+
+/* ══ Collapsed rail (Phosphor icons) ═══════════════════════ */
+.collapsed .wp-sidebar-brand { flex-direction: row; justify-content: center; padding: 24px 0 22px; }
+.wp-rail-toggle { position: relative; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 10px; }
+.wp-rail-toggle .wp-rail-toggle-icon { position: absolute; inset: 0; margin: auto; opacity: 0; color: var(--wp-ink); transition: opacity 0.15s ease; }
+.wp-rail-toggle .wp-brand-mark { transition: opacity 0.15s ease; }
+.wp-rail-toggle:hover, .wp-rail-toggle:focus-visible { background: hsl(var(--accent)); }
+.wp-rail-toggle:hover .wp-brand-mark, .wp-rail-toggle:focus-visible .wp-brand-mark { opacity: 0; }
+.wp-rail-toggle:hover .wp-rail-toggle-icon, .wp-rail-toggle:focus-visible .wp-rail-toggle-icon { opacity: 1; }
+.collapsed .wp-nav-item { height: 44px; color: var(--wp-ink-3); }
+.collapsed .wp-nav-item:hover, .collapsed .wp-nav-item.active { color: var(--wp-ink); }
+.collapsed .wp-nav-item svg { flex-shrink: 0; }
+.collapsed .wp-foot-link { color: var(--wp-ink-3); height: 40px; }
+.collapsed .wp-foot-link:hover { color: var(--wp-ink); }
+.collapsed .wp-foot-row { justify-content: center; }
+.collapsed .wp-sidebar-foot { align-items: center; }
