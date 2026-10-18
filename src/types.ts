@@ -55,6 +55,12 @@ export interface WorkSuspension {
   reason?: string;
 }
 
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
 export interface Card {
   id: string;
   title: string;
@@ -82,6 +88,8 @@ export interface Card {
   workedDays?: string[];
   /** Optional reference to a Project Roadmap */
   linkedRoadmapId?: string | null;
+  /** Checklist items shown in the task detail. */
+  subtasks?: Subtask[];
   // due-date alert flags
   [key: string]: unknown;
 }

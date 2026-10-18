@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { sortMembersWithOwnerFirst, useIsMobile } from '../utils';
-import { canEditBoard, isBoardOwner, projectStats, type ViewMode } from '../lib/workspace';
+import { canEditBoard, isBoardOwner, projectStats } from '../lib/workspace';
+import { MilestoneStepper, type ProjectTab } from './ProjectViews';
 import { AvatarStack, MemberAvatar, ProgressBar } from './wp/primitives';
 import { useProjectActions } from './wp/useProjectActions';
 
 interface Props {
-  viewMode: ViewMode;
-  onSelectView: (view: ViewMode) => void;
+  tab: ProjectTab;
+  onSelectTab: (tab: ProjectTab) => void;
+  onOpenCard: (cardId: string) => void;
   showInbox: boolean;
   onToggleInbox: () => void;
   filterMemberId: string | null;
@@ -22,8 +24,9 @@ interface Props {
 }
 
 export default function ProjectHeader({
-  viewMode,
-  onSelectView,
+  tab,
+  onSelectTab,
+  onOpenCard,
   showInbox,
   onToggleInbox,
   filterMemberId,
@@ -69,9 +72,15 @@ export default function ProjectHeader({
   const filterMember = members.find(m => m.id === filterMemberId);
   const inboxCount = board.inboxCards?.length || 0;
 
-  const tabs: Array<{ id: ViewMode; label: string }> = isRoadmap
-    ? [{ id: 'roadmap', label: 'Roadmap' }, { id: 'calendar', label: 'Calendar' }]
-    : [{ id: 'board', label: 'Board' }, { id: 'calendar', label: 'Calendar' }];
+  const tabs: Array<{ id: ProjectTab; label: string }> = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'milestones', label: 'Milestones' },
+    { id: 'tasks', label: isRoadmap ? 'Roadmap' : 'Tasks' },
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'files', label: 'Files' },
+    { id: 'activity', label: 'Activity' },
+  ];
+  const workView = tab === 'tasks' || tab === 'calendar';
 
   const commitName = () => {
     rename(board, name);
@@ -180,6 +189,8 @@ export default function ProjectHeader({
         </div>
       </div>
 
+      {!workView && <MilestoneStepper board={board} onOpenCard={onOpenCard} />}
+
       <div className="wp-tabs-row">
         <div className="wp-tabs" role="tablist">
           {tabs.map(t => (
@@ -187,17 +198,17 @@ export default function ProjectHeader({
               key={t.id}
               type="button"
               role="tab"
-              aria-selected={viewMode === t.id}
-              className={`wp-tab${viewMode === t.id ? ' active' : ''}`}
-              onClick={() => onSelectView(t.id)}
+              aria-selected={tab === t.id}
+              className={`wp-tab${tab === t.id ? ' active' : ''}`}
+              onClick={() => onSelectTab(t.id)}
             >
               {t.label}
             </button>
           ))}
-          {!isRoadmap && (
+          {!isRoadmap && tab === 'tasks' && (
             <button
               type="button"
-              className={`wp-tab${showInbox ? ' active' : ''}`}
+              className={`wp-tab wp-tab-toggle${showInbox ? ' active' : ''}`}
               onClick={onToggleInbox}
               title="Backlog inbox"
             >
@@ -207,7 +218,7 @@ export default function ProjectHeader({
           )}
         </div>
 
-        <div ref={filterRef} style={{ position: 'relative' }}>
+        <div ref={filterRef} style={{ position: 'relative', visibility: workView ? undefined : 'hidden' }}>
           {filterMember ? (
             <span className="wp-filter-chip">
               <MemberAvatar member={filterMember} size={18} ring={false} />

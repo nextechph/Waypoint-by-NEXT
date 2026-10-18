@@ -168,3 +168,61 @@ export function priorityScore(item: CardMeta): number {
   if (/urgent|progress|doing|active/i.test(item.columnName)) score += 120;
   return score;
 }
+
+/* ── Milestones ─────────────────────────────────────────── */
+export type StepStatus = 'completed' | 'current' | 'upcoming';
+
+export interface Milestone {
+  id: string;
+  title: string;
+  date: string | null;
+  status: StepStatus;
+  progress: number;
+  /** Set when the milestone is a task (rather than a workflow stage). */
+  cardId?: string;
+  taskCount?: number;
+}
+
+/**
+ * The project's journey. Tasks flagged as milestones form the path; projects
+ * without any fall back to their workflow columns as stages.
+ */
+export function projectMilestones(board: Board): { items: Milestone[]; fromTasks: boolean } {
+  const flagged: Milestone[] = [];
+  (board.columns || []).forEach(col => (col.cards || []).forEach(card => {
+    if (!card.isMilestone) return;
+    const subs = card.subtasks || [];
+    const progress = card.completed ? 100 : subs.length ? Math.round((subs.filter(s => s.done).length / subs.length) * 100) : 0;
+    flagged.push({ id: card.id, cardId: card.id, title: card.title, date: card.dueDate || card.startDate || null, status: card.completed ? 'completed' : 'upcoming', progress });
+  }));
+
+  let items: Milestone[];
+  const fromTasks = flagged.length > 0;
+  if (fromTasks) {
+    items = flagged.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+  } else {
+    items = (board.columns || []).map(col => {
+      const total = col.cards?.length || 0;
+      const done = (col.cards || []).filter(c => c.completed).length;
+      const dates = (col.cards || []).map(c => c.dueDate).filter(Boolean) as string[];
+      return {
+        id: col.id,
+        title: col.name,
+        date: dates.sort().slice(-1)[0] || null,
+        status: (total > 0 && done === total ? 'completed' : 'upcoming') as StepStatus,
+        progress: total ? Math.round((done / total) * 100) : 0,
+        taskCount: total,
+      };
+    });
+  }
+  const firstOpen = items.findIndex(m => m.status !== 'completed');
+  if (firstOpen >= 0) items[firstOpen] = { ...items[firstOpen], status: 'current' };
+  return { items, fromTasks };
+}
+
+export function projectHealth(board: Board): 'Complete' | 'At risk' | 'On track' | 'Not started' {
+  const s = projectStats(board);
+  if (s.total === 0) return 'Not started';
+  if (s.progress === 100) return 'Complete';
+  return s.overdue > 0 ? 'At risk' : 'On track';
+}

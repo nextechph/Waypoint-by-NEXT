@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import BoardArea from './components/BoardArea';
 import CardModal from './components/CardModal';
+import TaskSheet from './components/TaskSheet';
 import MembersModal from './components/MembersModal';
 import EmailNotifModal from './components/EmailNotifModal';
 import LoginPage from './components/LoginPage';
@@ -15,6 +16,7 @@ import ProjectsPage from './components/pages/ProjectsPage';
 import TimelinePage from './components/pages/TimelinePage';
 import InboxPage from './components/pages/InboxPage';
 import ProjectHeader from './components/ProjectHeader';
+import { OverviewTab, MilestonesTab, FilesTab, ActivityTab, type ProjectTab } from './components/ProjectViews';
 import QuickTaskModal from './components/modals/QuickTaskModal';
 import CreateBoardModal from './components/modals/CreateBoardModal';
 import CreateRoadmapModal from './components/modals/CreateRoadmapModal';
@@ -37,7 +39,7 @@ import { useSettingsStore } from './store/useSettingsStore';
 import { supabaseService } from './services/supabaseService';
 import { formatDueDate, uid, useIsMobile } from './utils';
 import type { MemberRole } from './types';
-import { SHELL_PAGES, getInboxSeen, markInboxSeen, useMyNotifications, type AppPage } from './lib/workspace';
+import { SHELL_PAGES, canEditBoard, getInboxSeen, markInboxSeen, useMyNotifications, type AppPage } from './lib/workspace';
 
 const CHECK_INTERVAL_MS = 10_000;
 
@@ -302,6 +304,11 @@ export default function App() {
   const isMobile = useIsMobile(860);
   const [page, setPage] = useState<AppPage>(initialRouting.page);
   const [quickTask, setQuickTask] = useState<{ boardId?: string | null } | null>(null);
+  const [scheduleEditorOpen, setScheduleEditorOpen] = useState(false);
+  const [projectTab, setProjectTab] = useState<ProjectTab>(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return v === 'calendar' ? 'calendar' : v ? 'tasks' : 'overview';
+  });
   const myNotifications = useMyNotifications();
   const [inboxSeen, setInboxSeen] = useState(() => getInboxSeen());
   const inboxUnread = page !== 'inbox' && myNotifications.some(n => new Date(n.time).getTime() > inboxSeen);
@@ -460,6 +467,7 @@ export default function App() {
 
   const handleSelectBoard = useCallback((boardId: string, view?: 'board' | 'roadmap' | 'calendar') => {
     switchBoard(boardId);
+    setProjectTab(view === 'calendar' ? 'calendar' : view ? 'tasks' : 'overview');
     setShowBoardSelector(false);
     const storeBoards = useWorkStore.getState().boards;
     const targetBoard = visibleBoards.find(b => b.id === boardId) || storeBoards.find(b => b.id === boardId);
@@ -724,12 +732,20 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
         return <TimelinePage onOpenCard={handleOpenCard} onSelectBoard={id => handleSelectBoard(id)} />;
       case 'inbox':
         return <InboxPage onOpenCard={handleOpenCard} />;
-      default:
+      default: {
+        const activeProject = visibleBoards.find(b => b.id === activeBoardId) || null;
+        const showWork = projectTab === 'tasks' || projectTab === 'calendar';
+        const selectProjectTab = (t: ProjectTab) => {
+          setProjectTab(t);
+          if (t === 'tasks') setViewMode(activeProject?.type === 'roadmap' ? 'roadmap' : 'board');
+          if (t === 'calendar') setViewMode('calendar');
+        };
         return (
           <>
             <ProjectHeader
-              viewMode={viewMode}
-              onSelectView={setViewMode}
+              tab={projectTab}
+              onSelectTab={selectProjectTab}
+              onOpenCard={cardId => handleOpenCard(cardId)}
               showInbox={showInbox}
               onToggleInbox={() => setShowInbox(s => !s)}
               filterMemberId={filterMemberId}
@@ -740,19 +756,41 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
               onLeftProject={() => handleNavigate('projects')}
               onOpenProjectSwitcher={() => setShowBoardSelector(true)}
             />
-            <BoardArea
-              viewMode={viewMode}
-              onSelectView={setViewMode}
-              filterMemberId={filterMemberId}
-              onClearFilter={() => setFilterMemberId(null)}
-              onOpenCard={cardId => handleOpenCard(cardId)}
-              onAddColumn={() => setShowAddColumn(true)}
-              onCreateBoard={() => setShowCreateBoard(true)}
-              showInbox={showInbox}
-              onToggleInbox={() => setShowInbox(s => !s)}
-            />
+            {showWork ? (
+              <BoardArea
+                viewMode={viewMode}
+                onSelectView={setViewMode}
+                filterMemberId={filterMemberId}
+                onClearFilter={() => setFilterMemberId(null)}
+                onOpenCard={cardId => handleOpenCard(cardId)}
+                onAddColumn={() => setShowAddColumn(true)}
+                onCreateBoard={() => setShowCreateBoard(true)}
+                showInbox={showInbox}
+                onToggleInbox={() => setShowInbox(s => !s)}
+              />
+            ) : activeProject && (
+              <div className="wp-page">
+                <div className="wp-project-tabpage">
+                  {projectTab === 'overview' && (
+                    <OverviewTab
+                      board={activeProject}
+                      editable={canEditBoard(activeProject, currentUser?.email)}
+                      onOpenCard={cardId => handleOpenCard(cardId)}
+                      onAddTask={() => setQuickTask({ boardId: activeBoardId })}
+                      onShowTab={selectProjectTab}
+                      onInvite={() => setShowMembers(true)}
+                      onOpenTimeline={() => handleNavigate('timeline')}
+                    />
+                  )}
+                  {projectTab === 'milestones' && <MilestonesTab board={activeProject} onOpenCard={cardId => handleOpenCard(cardId)} />}
+                  {projectTab === 'files' && <FilesTab board={activeProject} onOpenCard={cardId => handleOpenCard(cardId)} />}
+                  {projectTab === 'activity' && <ActivityTab board={activeProject} onOpenCard={cardId => handleOpenCard(cardId)} />}
+                </div>
+              </div>
+            )}
           </>
         );
+      }
     }
   };
 
@@ -871,11 +909,19 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       {showEmail && <EmailNotifModal onClose={() => setShowEmail(false)} />}
 
       {/* Card Detail */}
-      {openCardId && (
-        <CardModal
+      {openCardId && !scheduleEditorOpen && (
+        <TaskSheet
           cardId={openCardId}
           boardId={openCardBoardId}
           onClose={() => { setOpenCardId(null); setOpenCardBoardId(null); }}
+          onOpenScheduleEditor={() => setScheduleEditorOpen(true)}
+        />
+      )}
+      {openCardId && scheduleEditorOpen && (
+        <CardModal
+          cardId={openCardId}
+          boardId={openCardBoardId}
+          onClose={() => setScheduleEditorOpen(false)}
         />
       )}
 

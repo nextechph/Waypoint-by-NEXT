@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { Board, Column, Card, Comment, Attachment, Member, MemberRole, Notification, Sprint } from '../types';
+import type { Board, Column, Card, Comment, Attachment, Member, MemberRole, Notification, Sprint, Subtask } from '../types';
 import { uid, sortMembersWithOwnerFirst } from '../utils';
 
 // Active WebSocket channel reference for instant peer broadcasting
@@ -239,6 +239,7 @@ export const supabaseService = {
           let workSuspensions: any[] = [];
           let workedDays: string[] = [];
           let linkedRoadmapId: string | null = null;
+          let subtasks: Subtask[] = [];
 
           // Parse embedded roadmap metadata from card description
           const rMatch = desc.match(/<!--[a-z]+_roadmap:([\s\S]*?)-->/);
@@ -255,6 +256,7 @@ export const supabaseService = {
               if (meta.workSuspensions !== undefined) workSuspensions = meta.workSuspensions;
               if (meta.workedDays !== undefined) workedDays = meta.workedDays;
               if (meta.linkedRoadmapId !== undefined) linkedRoadmapId = meta.linkedRoadmapId;
+              if (Array.isArray(meta.subtasks)) subtasks = meta.subtasks;
               desc = desc.replace(rMatch[0], '').trimEnd();
             } catch {}
           }
@@ -289,6 +291,7 @@ export const supabaseService = {
             workSuspensions,
             workedDays,
             linkedRoadmapId,
+            subtasks,
             coverAttachmentId: card.cover_attachment_id,
             createdAt: card.created_at,
             isInbox: !!card.is_inbox,
@@ -474,7 +477,8 @@ export const supabaseService = {
             (item.card.dependencies && item.card.dependencies.length > 0) ||
             (item.card.workSuspensions && item.card.workSuspensions.length > 0) ||
             (item.card.workedDays && item.card.workedDays.length > 0) ||
-            item.card.linkedRoadmapId
+            item.card.linkedRoadmapId ||
+            (item.card.subtasks && item.card.subtasks.length > 0)
           );
 
           let encodedDescription = item.card.description || '';
@@ -497,6 +501,7 @@ export const supabaseService = {
             if (item.card.workSuspensions?.length) rMeta.workSuspensions = item.card.workSuspensions;
             if (item.card.workedDays?.length) rMeta.workedDays = item.card.workedDays;
             if (item.card.linkedRoadmapId) rMeta.linkedRoadmapId = item.card.linkedRoadmapId;
+            if (item.card.subtasks?.length) rMeta.subtasks = item.card.subtasks;
             encodedDescription = `${encodedDescription}\n<!--waypoint_roadmap:${JSON.stringify(rMeta)}-->`.trim();
           }
 
@@ -1060,6 +1065,7 @@ export const supabaseService = {
         let workSuspensions: any[] = [];
         let workedDays: string[] = [];
         let linkedRoadmapId: string | null = null;
+        let subtasks: Subtask[] = [];
 
         // Parse embedded roadmap metadata from card description
         const rMatch = desc.match(/<!--[a-z]+_roadmap:([\s\S]*?)-->/);
@@ -1076,6 +1082,7 @@ export const supabaseService = {
             if (meta.workSuspensions !== undefined) workSuspensions = meta.workSuspensions;
             if (meta.workedDays !== undefined) workedDays = meta.workedDays;
             if (meta.linkedRoadmapId !== undefined) linkedRoadmapId = meta.linkedRoadmapId;
+            if (Array.isArray(meta.subtasks)) subtasks = meta.subtasks;
             desc = desc.replace(rMatch[0], '').trimEnd();
           } catch {}
         }
@@ -1104,6 +1111,7 @@ export const supabaseService = {
           workSuspensions,
           workedDays,
           linkedRoadmapId,
+          subtasks,
           coverAttachmentId: card.cover_attachment_id,
           createdAt: card.created_at,
           isInbox: !!card.is_inbox,
