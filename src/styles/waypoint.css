@@ -1379,3 +1379,8 @@ li.current .wp-ms-status { color: var(--wp-ink); }
 .lg-ms { width: 8px; height: 8px; background: hsl(var(--foreground)); transform: rotate(45deg); }
 .lg-task { width: 16px; height: 8px; border-radius: 2px; background: hsl(var(--foreground) / 0.2); border: 1px solid hsl(var(--foreground) / 0.35); }
 .lg-today { width: 1px; height: 12px; background: hsl(var(--foreground)); }
+@media (max-width: 860px) {
+  textarea.wp-sheet-title { font-size: 24px !important; }
+  textarea.wp-sheet-desc { font-size: 16px !important; }
+  .wp-composer-row textarea { font-size: 16px !important; }
+}
