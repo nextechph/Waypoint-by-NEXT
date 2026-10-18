@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Check, Code2, Plus, Sparkles, Trash2, X, Briefcase
-} from 'lucide-react';
+} from './glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BORDER_PRESETS, type BorderPreset, type CustomBorderDef } from '../../types';
 import {

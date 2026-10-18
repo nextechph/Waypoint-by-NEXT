@@ -3,7 +3,7 @@ import {
   Plus, Edit3, Trash2, Layout, X, Inbox,
   Calendar, CheckSquare, Square, Filter, ChevronRight, ChevronLeft, User, Eye,
   Milestone
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -206,96 +206,7 @@ export default function BoardArea({
   const activeMember = board.members?.find((m: Member) => m.id === filterMemberId);
 
   return (
-    <div className="board-view-container" style={{ perspective: 1200, position: 'relative' }}>
-      {/* Board View Subheader with Inbox Toggle & Badges (Standard Boards Only) */}
-      {board.type !== 'roadmap' && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: isMobile ? '6px 12px' : '8px 18px',
-            background: 'hsl(var(--card) / 0.6)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid hsl(var(--border) / 0.5)',
-            gap: 12,
-            flexWrap: 'wrap',
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Inbox Toggle Button */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              className={`btn ${showInbox ? 'btn-primary' : 'btn-secondary'}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
-                padding: '5px 12px',
-                borderRadius: 8,
-                boxShadow: showInbox ? 'var(--neu-shadow-pressed)' : 'var(--neu-shadow-raised-sm)',
-              }}
-              onClick={toggleInbox}
-              title="Toggle Inbox Drawer"
-            >
-              <Inbox size={14} />
-              <span>Inbox</span>
-              {(board.inboxCards?.length || 0) > 0 && (
-                <span
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    padding: '1px 6px',
-                    borderRadius: 10,
-                    backgroundColor: showInbox ? 'rgba(255,255,255,0.25)' : 'hsl(var(--primary) / 0.18)',
-                    color: showInbox ? '#fff' : 'hsl(var(--primary))',
-                  }}
-                >
-                  {board.inboxCards?.length}
-                </span>
-              )}
-            </motion.button>
-
-
-            {/* Observer Role Indicator */}
-            {isObserver && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  padding: '4px 10px',
-                  borderRadius: 8,
-                  background: 'hsl(38 92% 50% / 0.15)',
-                  color: '#d97706',
-                  border: '1px solid hsl(38 92% 50% / 0.3)',
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                }}
-              >
-                <Eye size={13} />
-                <span>Observer Mode (View Only)</span>
-              </div>
-            )}
-          </div>
-
-          {/* Filter Info if active */}
-          {activeMember && (
-            <div className="board-filter-banner" style={{ margin: 0, padding: '4px 10px' }}>
-              <div className="board-filter-left">
-                <Filter size={12} color="hsl(var(--primary))" />
-                <span style={{ fontSize: 12 }}>Showing tasks for <strong>{activeMember.name}</strong></span>
-              </div>
-              <button onClick={onClearFilter} className="filter-clear-btn-pill" style={{ padding: '2px 8px', fontSize: 11 }}>
-                <X size={11} /> Clear
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
+    <div className="board-view-container" style={{ position: 'relative' }}>
       <AnimatePresence mode="wait">
         {board.type === 'roadmap' && viewMode !== 'calendar' && (
           <motion.div

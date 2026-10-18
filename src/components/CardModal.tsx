@@ -7,7 +7,7 @@ import {
   Edit3, Crown, Shield, Save, Loader2, Globe, Server, Cpu, Briefcase,
   Link2, ExternalLink, ArrowRightLeft, Inbox,
   Milestone, Layers, Activity, CalendarCheck, Clock
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -925,18 +925,14 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
 
   return (
     <>
-    <div className="modal-overlay" style={{ perspective: 1200 }} onClick={handleSafeClose}>
+    <div className="modal-overlay" onClick={handleSafeClose}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -60 }}
-        animate={
-          isDeleting
-            ? { opacity: 0, scale: 0.72, filter: 'blur(10px)', rotateX: 20, y: 30 }
-            : { opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }
-        }
-        exit={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -60 }}
-        transition={{ duration: 0.22, ease: 'easeOut' }}
-        className="modal large-modal"
-        style={{ transformStyle: 'preserve-3d', overflow: 'hidden' }}
+        initial={{ opacity: 0, x: 56 }}
+        animate={isDeleting ? { opacity: 0, x: 80 } : { opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 56 }}
+        transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+        className="modal large-modal wp-card-modal"
+        style={{ overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Cover Image Banner (Trello style) */}
@@ -1030,10 +1026,10 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
 
         {/* Header */}
         <div className="modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              in column:
-            </span>
+          <div className="wp-card-crumbs">
+            <span className="wp-project-dot" style={{ backgroundColor: board.color }} />
+            <span className="wp-card-crumb">{board.name}</span>
+            <span className="wp-crumb-sep">/</span>
             <Select
               size="sm"
               value={isInbox ? 'inbox' : (column?.id || '')}
@@ -1057,11 +1053,14 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                 }
               }}
             />
+            <span className={`wp-status-pill${card.completed ? ' done' : ''}`}>
+              {card.completed ? 'Completed' : isInbox ? 'Backlog' : 'In motion'}
+            </span>
           </div>
           {!coverAttachment && (
-            <motion.button whileTap={{ scale: 0.92 }} className="icon-btn" onClick={handleSafeClose}>
-              <X size={15} />
-            </motion.button>
+            <button type="button" className="wp-icon-ghost bordered" onClick={handleSafeClose} aria-label="Close">
+              <X size={16} />
+            </button>
           )}
         </div>
 
@@ -1085,27 +1084,9 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0, width: '100%', overflow: 'visible' }}>
             {/* Title Field */}
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="field-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 6px 0' }}>
-                <Edit3 size={13} /> Card Title
-              </label>
               <textarea
-                className="textarea-input"
-                style={{
-                  fontSize: 15,
-                  fontWeight: 600,
-                  resize: 'none',
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius)',
-                  backgroundColor: 'hsl(var(--card))',
-                  boxShadow: 'var(--neu-shadow-input)',
-                  border: '1px solid hsl(var(--border) / 0.6)',
-                  color: 'hsl(var(--foreground))',
-                  outline: 'none',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  lineHeight: 1.4,
-                  minHeight: 44,
-                }}
+                className="wp-card-title-input"
+                aria-label="Card title"
                 value={localTitle}
                 rows={1}
                 onChange={e => setLocalTitle(e.target.value)}
@@ -3488,14 +3469,12 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                                   textAlign: 'left',
                                   boxSizing: 'border-box',
                                   border: isAssigned
-                                    ? '1.5px solid #f59e0b'
-                                    : '1px solid hsl(var(--border) / 0.55)',
+                                    ? '1px solid hsl(var(--foreground) / 0.55)'
+                                    : '1px solid hsl(var(--border))',
                                   backgroundColor: isAssigned
-                                    ? 'rgba(245, 158, 11, 0.12)'
+                                    ? 'hsl(var(--foreground) / 0.05)'
                                     : 'hsl(var(--card))',
-                                  boxShadow: isAssigned
-                                    ? '0 2px 8px rgba(245, 158, 11, 0.22), var(--neu-shadow-raised-sm)'
-                                    : 'var(--neu-shadow-raised-sm)',
+                                  boxShadow: 'none',
                                   color: isAssigned
                                     ? 'hsl(var(--foreground))'
                                     : 'hsl(var(--muted-foreground))',
@@ -3570,9 +3549,8 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                                     fontWeight: 700,
                                     padding: '2.5px 7px',
                                     borderRadius: 6,
-                                    backgroundColor: '#f59e0b',
-                                    color: '#ffffff',
-                                    boxShadow: '0 1px 4px rgba(245, 158, 11, 0.4)',
+                                    backgroundColor: 'hsl(var(--primary))',
+                                    color: 'hsl(var(--primary-foreground))',
                                     flexShrink: 0,
                                     whiteSpace: 'nowrap'
                                   }}>
@@ -3614,7 +3592,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.05em',
-                                    color: '#d97706',
+                                    color: 'hsl(var(--foreground))',
                                     padding: '2px 4px'
                                   }}>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

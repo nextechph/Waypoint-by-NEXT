@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Info, X } from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToastStore } from '../store/useToastStore';
 import type { ToastType } from '../store/useToastStore';

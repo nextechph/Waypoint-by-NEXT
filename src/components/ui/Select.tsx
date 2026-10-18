@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from './glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface SelectOption<T extends string = string> {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { KanbanSquare, Plus, X, Check, ArrowRight } from 'lucide-react';
+import { KanbanSquare, Plus, X, Check, ArrowRight } from '../ui/glyphs';
 import type { Board } from '../../types';
 
 interface MobileBoardSelectorProps {

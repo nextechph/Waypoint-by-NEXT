@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   X, Check, Sparkles
-} from 'lucide-react';
+} from './glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -318,22 +318,6 @@ export default function DatePicker({
         onClick={handleToggleOpen}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1, overflow: 'hidden' }}>
-          <div
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              backgroundColor: formatted ? 'hsl(var(--primary) / 0.12)' : 'hsl(var(--secondary) / 0.8)',
-              color: formatted ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: 'var(--neu-shadow-raised-sm)',
-            }}
-          >
-            <CalendarIcon size={12} strokeWidth={2} />
-          </div>
 
           {formatted ? (
             <span

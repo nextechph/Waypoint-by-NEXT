@@ -185,36 +185,29 @@ export const BORDER_PRESETS: BorderPreset[] = [
 // ── Constants ──────────────────────────────────────────────────────────
 
 export const BOARD_COLORS = [
-  { name: 'Indigo',  value: '#6366f1' },
-  { name: 'Purple',  value: '#a855f7' },
-  { name: 'Pink',    value: '#ec4899' },
-  { name: 'Rose',    value: '#f43f5e' },
-  { name: 'Orange',  value: '#f97316' },
-  { name: 'Amber',   value: '#f59e0b' },
-  { name: 'Emerald', value: '#10b981' },
-  { name: 'Teal',    value: '#14b8a6' },
-  { name: 'Sky',     value: '#0ea5e9' },
-  { name: 'Blue',    value: '#3b82f6' },
-  { name: 'Slate',   value: '#64748b' },
-  { name: 'Zinc',    value: '#71717a' },
+  { name: 'Ink',      value: '#8A8F98' },
+  { name: 'Graphite', value: '#6B7280' },
+  { name: 'Slate',    value: '#6B7280' },
+  { name: 'Ash',      value: '#9CA3AF' },
+  { name: 'Mist',     value: '#A1A6AE' },
+  { name: 'White',    value: '#B4B8BF' },
 ] as const;
 
 export const AVATAR_COLORS = [
-  '#6366f1','#a855f7','#ec4899','#f43f5e',
-  '#f97316','#10b981','#14b8a6','#0ea5e9','#3b82f6',
+  '#6B7280','#7A7F88','#80858E','#6B7280','#80858E','#4A4F57',
 ] as const;
 
 export const LABELS = [
-  { id: 'general',  name: 'General',  color: '#64748b' },
-  { id: 'task',     name: 'Task',     color: '#3b82f6' },
-  { id: 'planning', name: 'Planning', color: '#8b5cf6' },
-  { id: 'research', name: 'Research', color: '#06b6d4' },
-  { id: 'review',   name: 'Review',   color: '#f59e0b' },
-  { id: 'urgent',   name: 'Urgent',   color: '#ef4444' },
-  { id: 'done',     name: 'Done',     color: '#10b981' },
-  { id: 'design',   name: 'Design',   color: '#ec4899' },
-  { id: 'feature',  name: 'Feature',  color: '#6366f1' },
-  { id: 'bug',      name: 'Bug',      color: '#dc2626' },
-  { id: 'backend',  name: 'Backend',  color: '#f97316' },
-  { id: 'frontend', name: 'Frontend', color: '#0ea5e9' },
+  { id: 'general',  name: 'General',  color: '#6B7280' },
+  { id: 'task',     name: 'Task',     color: '#80858E' },
+  { id: 'planning', name: 'Planning', color: '#80858E' },
+  { id: 'research', name: 'Research', color: '#9CA3AF' },
+  { id: 'review',   name: 'Review',   color: '#6B7280' },
+  { id: 'urgent',   name: 'Urgent',   color: '#8A8F98' },
+  { id: 'done',     name: 'Done',     color: '#9CA3AF' },
+  { id: 'design',   name: 'Design',   color: '#80858E' },
+  { id: 'feature',  name: 'Feature',  color: '#6B7280' },
+  { id: 'bug',      name: 'Bug',      color: '#8A8F98' },
+  { id: 'backend',  name: 'Backend',  color: '#7A7F88' },
+  { id: 'frontend', name: 'Frontend', color: '#80858E' },
 ] as const;

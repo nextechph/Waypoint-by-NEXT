@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   ArrowRight, Eye, EyeOff, Sun, Moon, Loader2, Mail, KeyRound, CheckCircle2, RotateCcw, ArrowLeft
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';

@@ -5,7 +5,7 @@ import {
   Lock, Smartphone, Settings, Code, Paintbrush,
   Zap, BookOpen, Globe, Database, ShieldCheck, Layers,
   ArrowRightLeft, Milestone
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LABELS, type Card as CardType, type Member } from '../types';
 import { getDueStatus, formatDueDate, avatarInitials, getColDotColor, getScheduleHealth } from '../utils';
@@ -307,285 +307,110 @@ export default function Card({
         </div>
       )}
 
-      {/* Title + Icon */}
-      <div className="card-header-row">
-        <span className="card-type-icon">{icon}</span>
-        <div className="card-title">{card.title}</div>
+      {/* Reference + priority */}
+      <div className="wpc-top">
+        <span className="wpc-ref">{getDisplayId(card)}</span>
+        <span className={`wpc-priority p-${priority.label.toLowerCase()}`} title={`Priority: ${priority.label}`}>{priority.label}</span>
       </div>
 
-      {/* Badges / Labels row */}
-      <div className="card-meta-row">
-        <div className="card-labels">
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              padding: '2px 7px',
-              borderRadius: 6,
-              backgroundColor: `${priority.color}18`,
-              color: priority.color,
-              boxShadow: 'var(--neu-shadow-raised-sm)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4
-            }}
-            title={`Priority: ${priority.label}`}
-          >
-            <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: priority.color }} />
-            {priority.label}
-          </span>
+      <div className="card-title">{card.title}</div>
 
-          {/* Schedule Health Pill (Roadmap/Gantt-aware — shown only on Roadmap boards) */}
-          {isRoadmapBoard && scheduleHealth && !card.completed && (
+      {(labelHtml.length > 0 || linkedRoadmap) && (
+        <div className="wpc-labels">
+          {linkedRoadmap && (
             <span
-              style={{
-                fontSize: 10,
-                fontWeight: 600,
-                padding: '2px 7px',
-                borderRadius: 6,
-                backgroundColor: scheduleHealth.bg,
-                color: scheduleHealth.color,
-                boxShadow: 'var(--neu-shadow-raised-sm)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4
-              }}
-              title={`Timeline: ${scheduleHealth.label}`}
-            >
-              <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: scheduleHealth.color }} />
-              {scheduleHealth.label}
-            </span>
-          )}
-
-          {/* Linked Project Roadmap Badge — shown on standard boards only when linked */}
-          {!isRoadmapBoard && linkedRoadmap && (
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                padding: '2px 7px',
-                borderRadius: 6,
-                backgroundColor: 'hsl(var(--primary) / 0.15)',
-                color: 'hsl(var(--primary))',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                cursor: 'pointer',
-              }}
-              title={`Project Roadmap: ${linkedRoadmap.name}. Click to open.`}
+              className="wpc-label link"
+              title={`Linked roadmap: ${linkedRoadmap.name}`}
               onClick={(e) => {
                 e.stopPropagation();
                 useWorkStore.getState().switchBoard(linkedRoadmap.id);
-                localStorage.setItem('waypoint_current_page_v1', 'board');
+                localStorage.setItem('waypoint_current_page_v1', 'roadmap');
                 localStorage.setItem('waypoint_current_board_id_v1', linkedRoadmap.id);
                 localStorage.setItem('waypoint_current_view_mode_v1', 'roadmap');
                 window.dispatchEvent(new Event('storage'));
               }}
             >
-              <Milestone size={11} color="hsl(var(--primary))" />
-              <span>{linkedRoadmap.name}</span>
+              ↗ {linkedRoadmap.name}
             </span>
           )}
           {labelHtml.map(lbl => lbl && (
-            labelMode === 'dot' ? (
-              <span
-                key={lbl.id}
-                className="card-label-dot"
-                style={{ backgroundColor: lbl.color }}
-                title={lbl.name}
-              />
-            ) : (
-              <span
-                key={lbl.id}
-                className="card-label-badge"
-                style={{
-                  backgroundColor: `${lbl.color}15`,
-                  color: lbl.color
-                }}
-              >
-                {lbl.name}
-              </span>
-            )
+            <span key={lbl.id} className="wpc-label">{lbl.name}</span>
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Footer: Due date + counters + Assignees */}
-      <div className="card-footer">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {card.dueDate && (
-            <span
-              className={`card-due-tag ${dueStatus === 'overdue' ? 'overdue' : dueStatus === 'due-soon' ? 'due-soon' : ''}`}
-            >
-              <Calendar size={11} />
-              <span>{formatDueDate(card.dueDate)}</span>
-            </span>
-          )}
-          {card.comments?.length > 0 && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>
-              <MessageSquare size={11} /> {card.comments.length}
-            </span>
-          )}
-          {card.attachments?.length > 0 && (
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 3,
-                fontSize: 10.5,
-                fontWeight: 700,
-                padding: '1px 6px',
-                borderRadius: 5,
-                background: 'hsl(var(--primary) / 0.12)',
-                color: 'hsl(var(--primary))',
-                border: '1px solid hsl(var(--primary) / 0.25)',
-              }}
-              title="Task Guide / Attachment"
-            >
-              <Paperclip size={10.5} /> {card.attachments.length} {card.attachments.length === 1 ? 'Guide' : 'Guides'}
-            </span>
-          )}
-        </div>
+      {/* Footer: due · notes · files ··· people, move, done */}
+      <div className="wpc-foot">
+        {card.dueDate && (
+          <span className={`wpc-due${dueStatus === 'overdue' && !card.completed ? ' overdue' : dueStatus === 'due-soon' && !card.completed ? ' soon' : ''}`}>
+            {dueStatus === 'overdue' && !card.completed ? 'Overdue · ' : ''}{formatDueDate(card.dueDate)}
+          </span>
+        )}
+        {card.comments?.length > 0 && <span className="wpc-count">{card.comments.length} {card.comments.length === 1 ? 'note' : 'notes'}</span>}
+        {card.attachments?.length > 0 && <span className="wpc-count">{card.attachments.length} {card.attachments.length === 1 ? 'file' : 'files'}</span>}
+        <span className="wpc-spacer" />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-          {assignees.length > 0 && (
-            <div className="card-assignees">
-              {assignees.slice(0, 3).map(m => m && (
-                <AvatarBorder key={m.id} borderStyle={m.borderStyle} size={22} title={m.name}>
-                  {m.avatarUrl ? (
-                    <img src={m.avatarUrl} alt={m.name} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: m.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700 }}>
-                      {avatarInitials(m.name)}
-                    </div>
-                  )}
-                </AvatarBorder>
-              ))}
-              {assignees.length > 3 && (
-                <span
-                  style={{
-                    fontSize: 9.5,
-                    fontWeight: 700,
-                    padding: '2px 4px',
-                    borderRadius: 6,
-                    backgroundColor: 'hsl(var(--secondary))',
-                    color: 'hsl(var(--muted-foreground))',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  title={`${assignees.length - 3} more assignees`}
+        {assignees.length > 0 && (
+          <span className="wpc-people">
+            {assignees.slice(0, 3).map(m => m && (
+              m.avatarUrl
+                ? <img key={m.id} src={m.avatarUrl} alt={m.name} title={m.name} className="wpc-avatar" />
+                : <span key={m.id} className="wpc-avatar" title={m.name}>{avatarInitials(m.name)}</span>
+            ))}
+            {assignees.length > 3 && <span className="wpc-avatar more">+{assignees.length - 3}</span>}
+          </span>
+        )}
+
+        {!isObserver && otherColumns.length > 0 && (
+          <span style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className={`wpc-text-btn${showMoveMenu ? ' active' : ''}`}
+              title="Move to another column"
+              onClick={(e) => { e.stopPropagation(); setShowMoveMenu(s => !s); }}
+            >
+              Move
+            </button>
+            <AnimatePresence>
+              {showMoveMenu && (
+                <motion.div
+                  className="wp-menu"
+                  style={{ bottom: 'calc(100% + 6px)', right: 0, width: 180 }}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.12 }}
+                  onClick={e => e.stopPropagation()}
                 >
-                  +{assignees.length - 3}
-                </span>
+                  <div className="wp-menu-head"><span className="wp-eyebrow">Move to</span></div>
+                  {otherColumns.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="wp-menu-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMoveMenu(false);
+                        moveCard(card.id, colId, c.id);
+                        showToast(`Moved to "${c.name}"`, 'success', 4500, { label: 'Undo', onClick: undoLastMove });
+                      }}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </motion.div>
               )}
-            </div>
-          )}
-          {/* Quick Move Popover Button */}
-          {!isObserver && otherColumns.length > 0 && (
-            <div style={{ position: 'relative' }}>
-              <button
-                type="button"
-                className="icon-btn"
-                style={{
-                  width: 22,
-                  height: 22,
-                  background: 'transparent',
-                  boxShadow: 'none',
-                  color: showMoveMenu ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                }}
-                title="Move card to column"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMoveMenu(s => !s);
-                }}
-              >
-                <ArrowRightLeft size={13} />
-              </button>
+            </AnimatePresence>
+          </span>
+        )}
 
-              <AnimatePresence>
-                {showMoveMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.92, y: -4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.92, y: -4 }}
-                    transition={{ duration: 0.12 }}
-                    style={{
-                      position: 'absolute',
-                      bottom: '100%',
-                      right: 0,
-                      marginBottom: 6,
-                      backgroundColor: 'hsl(var(--popover))',
-                      borderRadius: 'var(--radius)',
-                      boxShadow: 'var(--neu-shadow-floating)',
-                      border: '1px solid hsl(var(--border) / 0.8)',
-                      padding: 6,
-                      zIndex: 80,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                      minWidth: 155,
-                    }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <div style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 8px 4px', color: 'hsl(var(--muted-foreground))', borderBottom: '1px solid hsl(var(--border) / 0.5)' }}>
-                      Move to column:
-                    </div>
-                    {otherColumns.map(c => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className="sidebar-nav-item"
-                        style={{
-                          width: '100%',
-                          fontSize: 12,
-                          padding: '5px 8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          borderRadius: 6,
-                          textAlign: 'left'
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowMoveMenu(false);
-                          moveCard(card.id, colId, c.id);
-                          showToast(`Moved to "${c.name}"`, 'success', 4500, {
-                            label: 'Undo',
-                            onClick: undoLastMove
-                          });
-                        }}
-                      >
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: getColDotColor(c.name), flexShrink: 0 }} />
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-
-          <button
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: card.completed ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              display: 'flex',
-              alignItems: 'center',
-              padding: 2
-            }}
-            onClick={onToggleComplete}
-            title={card.completed ? 'Mark as incomplete' : 'Mark as complete'}
-          >
-            {card.completed ? <CheckSquare size={14} /> : <Square size={14} />}
-          </button>
-        </div>
+        <button
+          type="button"
+          className={`wpc-done${card.completed ? ' checked' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleComplete(e); }}
+          title={card.completed ? 'Mark as not done' : 'Mark as done'}
+          aria-pressed={card.completed}
+        />
       </div>
 
       {/* Mini Timeline Bar (bottom edge of card — Roadmap boards only) */}

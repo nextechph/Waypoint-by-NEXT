@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { X, Plus, Trash2, Upload, FileText, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, Plus, Trash2, Upload, FileText, Loader2, CheckCircle2 } from '../ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useToastStore } from '../../store/useToastStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { BOARD_COLORS } from '../../types';
+import { useEscape } from '../../lib/useEscape';
 
 interface Props {
   onClose: (createdRoadmapId?: string) => void;
@@ -69,6 +70,7 @@ async function parseFile(file: File): Promise<PhaseItem[]> {
 // ── component ──────────────────────────────────────────────────────────────
 
 export default function CreateRoadmapModal({ onClose, initialName = '' }: Props) {
+  useEscape(() => onClose());
   const createRoadmap = useWorkStore(s => s.createRoadmap);
   const showToast     = useToastStore(s => s.showToast);
   const user          = useAuthStore(s => s.user);

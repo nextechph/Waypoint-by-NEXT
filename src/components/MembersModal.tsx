@@ -3,7 +3,7 @@ import {
   X, UserPlus, Camera, Trash2, LogOut, Shield, User, Eye,
   Crown, Info, Lock, Search, Link2, Copy, Check, Sparkles,
   UserCheck, Loader2, Mail, Palette, Globe, Server, Cpu, Users, Plus, Briefcase
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -18,6 +18,7 @@ import ProfileBorderPicker from './ui/ProfileBorderPicker';
 import { Member, MemberRole, BORDER_PRESETS } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import AvatarCropperModal from './modals/AvatarCropperModal';
+import { useEscape } from '../lib/useEscape';
 
 interface Props {
   onClose: () => void;
@@ -44,6 +45,7 @@ const ADMIN_ROLE_OPTIONS: SelectOption<AssignableRole>[] = [
 ];
 
 export default function MembersModal({ onClose }: Props) {
+  useEscape(() => onClose());
   const board = useWorkStore(s => s.boards.find(b => b.id === s.activeBoardId));
   const addMember = useWorkStore(s => s.addMember);
   const updateMember = useWorkStore(s => s.updateMember);

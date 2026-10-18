@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Inbox, Plus, X, Search, ChevronLeft,
   MessageSquare, Paperclip, Calendar, Trash2
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card as CardType, Board, LABELS } from '../types';
 import { useWorkStore } from '../store/useWorkStore';

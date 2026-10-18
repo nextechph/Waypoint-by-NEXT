@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Search, X, Calendar, ArrowRight, Layout, Users, CheckSquare,
   Columns, User, CheckCircle2, ChevronRight, Tag
-} from 'lucide-react';
+} from '../ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useAuthStore } from '../../store/useAuthStore';

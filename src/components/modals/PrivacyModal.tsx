@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Shield, X, Download, Upload, Trash2, Database, HardDrive, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Shield, X, Download, Upload, Trash2, Database, HardDrive, CheckCircle2, AlertTriangle } from '../ui/glyphs';
 import { motion } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useNotifStore } from '../../store/useNotifStore';
@@ -7,12 +7,14 @@ import { useEmailStore } from '../../store/useEmailStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { useConfirmStore } from '../../store/useConfirmStore';
+import { useEscape } from '../../lib/useEscape';
 
 interface Props {
   onClose: () => void;
 }
 
 export default function PrivacyModal({ onClose }: Props) {
+  useEscape(() => onClose());
   const getVisibleBoards = useWorkStore(s => s.getVisibleBoards);
   const notifications = useNotifStore(s => s.notifications);
   const clearNotifications = useNotifStore(s => s.clearAll);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, User, Eye, Crown, Users, CheckCircle2, ArrowRight,
   Sparkles, Lock, Mail, AlertCircle, LogIn, Loader2
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useWorkStore } from '../store/useWorkStore';

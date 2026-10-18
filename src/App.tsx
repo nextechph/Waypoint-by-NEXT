@@ -9,7 +9,13 @@ import EmailNotifModal from './components/EmailNotifModal';
 import LoginPage from './components/LoginPage';
 import NotifPanel from './components/NotifPanel';
 import Toast from './components/Toast';
-import Dashboard from './components/Dashboard';
+import TodayPage from './components/pages/TodayPage';
+import MyWorkPage from './components/pages/MyWorkPage';
+import ProjectsPage from './components/pages/ProjectsPage';
+import TimelinePage from './components/pages/TimelinePage';
+import InboxPage from './components/pages/InboxPage';
+import ProjectHeader from './components/ProjectHeader';
+import QuickTaskModal from './components/modals/QuickTaskModal';
 import CreateBoardModal from './components/modals/CreateBoardModal';
 import CreateRoadmapModal from './components/modals/CreateRoadmapModal';
 import AddColumnModal from './components/modals/AddColumnModal';
@@ -31,13 +37,14 @@ import { useSettingsStore } from './store/useSettingsStore';
 import { supabaseService } from './services/supabaseService';
 import { formatDueDate, uid, useIsMobile } from './utils';
 import type { MemberRole } from './types';
+import { SHELL_PAGES, getInboxSeen, markInboxSeen, useMyNotifications, type AppPage } from './lib/workspace';
 
 const CHECK_INTERVAL_MS = 10_000;
 
-const page3DVariants: Variants = {
-  initial: { opacity: 0, scale: 0.96, rotateY: -8, translateZ: -40 },
-  animate: { opacity: 1, scale: 1, rotateY: 0, translateZ: 0, transition: { duration: 0.28, ease: 'easeOut' } },
-  exit: { opacity: 0, scale: 0.96, rotateY: 8, translateZ: -40, transition: { duration: 0.18 } }
+const pageVariants: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.26, ease: [0.25, 1, 0.5, 1] } },
+  exit: { opacity: 0, transition: { duration: 0.12 } }
 };
 
 const pageMobileVariants: Variants = {
@@ -243,12 +250,16 @@ export default function App() {
       const urlView = params.get('view') as 'board' | 'roadmap' | 'calendar' | null;
       const urlCard = params.get('card') || params.get('c');
 
-      const savedPage = localStorage.getItem('waypoint_current_page_v1') as 'dashboard' | 'board' | 'roadmap' | null;
+      const savedPage = localStorage.getItem('waypoint_current_page_v1') as AppPage | null;
       const savedView = localStorage.getItem('waypoint_current_view_mode_v1') as 'board' | 'roadmap' | 'calendar' | null;
       const savedCard = localStorage.getItem('waypoint_current_card_v1');
 
-      let initialPage: 'dashboard' | 'board' | 'roadmap' = 'dashboard';
-      if (urlPage === 'roadmap') {
+      let initialPage: AppPage = 'dashboard';
+      if (SHELL_PAGES.includes(urlPage as AppPage)) {
+        initialPage = urlPage as AppPage;
+      } else if (!urlPage && !urlBoard && SHELL_PAGES.includes(savedPage as AppPage)) {
+        initialPage = savedPage as AppPage;
+      } else if (urlPage === 'roadmap') {
         initialPage = 'roadmap';
       } else if (urlPage === 'board') {
         initialPage = 'board';
@@ -277,7 +288,7 @@ export default function App() {
       };
     } catch {
       return {
-        page: 'dashboard' as const,
+        page: 'dashboard' as AppPage,
         boardId: null,
         viewMode: 'board' as const,
         cardId: null,
@@ -289,7 +300,11 @@ export default function App() {
 
   // Page routing: dashboard (home), board (active board view), or roadmap (dedicated roadmap view)
   const isMobile = useIsMobile(860);
-  const [page, setPage] = useState<'dashboard' | 'board' | 'roadmap'>(initialRouting.page);
+  const [page, setPage] = useState<AppPage>(initialRouting.page);
+  const [quickTask, setQuickTask] = useState<{ boardId?: string | null } | null>(null);
+  const myNotifications = useMyNotifications();
+  const [inboxSeen, setInboxSeen] = useState(() => getInboxSeen());
+  const inboxUnread = page !== 'inbox' && myNotifications.some(n => new Date(n.time).getTime() > inboxSeen);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -352,9 +367,10 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       // Preserve invite and password reset flows if active
       if (!params.has('joinBoard') && !params.has('invite') && !params.has('reset')) {
-        if (page === 'dashboard') {
+        if (SHELL_PAGES.includes(page)) {
           // Dashboard is the default root view - keep URL clean without ugly ?page=dashboard
-          params.delete('page');
+          if (page === 'dashboard') params.delete('page');
+          else params.set('page', page);
           params.delete('board');
           params.delete('b');
           params.delete('card');
@@ -388,7 +404,7 @@ export default function App() {
 
   // Synchronize page type if active board changes or loads
   useEffect(() => {
-    if (activeBoardId && page !== 'dashboard') {
+    if (activeBoardId && (page === 'board' || page === 'roadmap')) {
       const active = visibleBoards.find(b => b.id === activeBoardId);
       if (active) {
         const expectedPage = active.type === 'roadmap' ? 'roadmap' : 'board';
@@ -472,14 +488,20 @@ export default function App() {
     } catch {}
   }, [switchBoard, boards, viewMode]);
 
-  const handleGoToDashboard = useCallback(() => {
-    setPage('dashboard');
+  const handleNavigate = useCallback((next: AppPage) => {
+    setPage(next);
+    setFilterMemberId(null);
+    if (next === 'inbox' || page === 'inbox') {
+      markInboxSeen();
+      setInboxSeen(Date.now());
+    }
     try {
-      localStorage.setItem('waypoint_current_page_v1', 'dashboard');
-      localStorage.removeItem('waypoint_current_board_id_v1');
-      localStorage.removeItem('waypoint_current_card_v1');
+      localStorage.setItem('waypoint_current_page_v1', next);
+      if (SHELL_PAGES.includes(next)) localStorage.removeItem('waypoint_current_card_v1');
     } catch {}
-  }, []);
+  }, [page]);
+
+  const handleGoToDashboard = useCallback(() => handleNavigate('dashboard'), [handleNavigate]);
 
   // Global Keyboard Shortcut: Cmd+K / Ctrl+K for search
   useEffect(() => {
@@ -674,8 +696,68 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
     );
   }
 
+  const inProject = page === 'board' || page === 'roadmap';
+
+  const renderPage = () => {
+    switch (page) {
+      case 'dashboard':
+        return (
+          <TodayPage
+            onOpenCard={handleOpenCard}
+            onSelectBoard={id => handleSelectBoard(id)}
+            onNewTask={() => setQuickTask({})}
+            onCreateBoard={() => setShowCreateBoard(true)}
+            onNavigate={handleNavigate}
+          />
+        );
+      case 'mywork':
+        return <MyWorkPage onOpenCard={handleOpenCard} onNewTask={() => setQuickTask({})} />;
+      case 'projects':
+        return (
+          <ProjectsPage
+            onSelectBoard={id => handleSelectBoard(id)}
+            onCreateBoard={() => setShowCreateBoard(true)}
+            onCreateRoadmap={() => setShowCreateRoadmap(true)}
+          />
+        );
+      case 'timeline':
+        return <TimelinePage onOpenCard={handleOpenCard} onSelectBoard={id => handleSelectBoard(id)} />;
+      case 'inbox':
+        return <InboxPage onOpenCard={handleOpenCard} />;
+      default:
+        return (
+          <>
+            <ProjectHeader
+              viewMode={viewMode}
+              onSelectView={setViewMode}
+              showInbox={showInbox}
+              onToggleInbox={() => setShowInbox(s => !s)}
+              filterMemberId={filterMemberId}
+              onFilterMember={setFilterMemberId}
+              onManageMembers={() => setShowMembers(true)}
+              onManageEmail={() => handleOpenSettings('email')}
+              onNewTask={() => setQuickTask({ boardId: activeBoardId })}
+              onLeftProject={() => handleNavigate('projects')}
+              onOpenProjectSwitcher={() => setShowBoardSelector(true)}
+            />
+            <BoardArea
+              viewMode={viewMode}
+              onSelectView={setViewMode}
+              filterMemberId={filterMemberId}
+              onClearFilter={() => setFilterMemberId(null)}
+              onOpenCard={cardId => handleOpenCard(cardId)}
+              onAddColumn={() => setShowAddColumn(true)}
+              onCreateBoard={() => setShowCreateBoard(true)}
+              showInbox={showInbox}
+              onToggleInbox={() => setShowInbox(s => !s)}
+            />
+          </>
+        );
+    }
+  };
+
   return (
-    <div className="app-layout" style={isMobile ? { overflowX: 'hidden' } : { perspective: 1400 }}>
+    <div className="app-layout">
       {/* Mobile Sidebar Backdrop Overlay */}
       <div
         className={`sidebar-backdrop${mobileMenuOpen ? ' open' : ''}`}
@@ -686,102 +768,45 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       <div className={`app-window${(!isMobile && sidebarCollapsed) ? ' sidebar-collapsed-layout' : ''}`}>
         <Sidebar
           page={page}
-          activeView={viewMode}
-          onSelectView={setViewMode}
-          onOpenInbox={() => setShowInbox(s => !s)}
-          isInboxOpen={showInbox}
-          filterMemberId={filterMemberId}
-          onFilterMember={setFilterMemberId}
-          onManageMembers={() => setShowMembers(true)}
-          onOpenSettings={handleOpenSettings}
+          onNavigate={handleNavigate}
+          onSelectBoard={id => handleSelectBoard(id)}
           onCreateBoard={() => setShowCreateBoard(true)}
           onCreateRoadmap={() => setShowCreateRoadmap(true)}
-          onGoToDashboard={handleGoToDashboard}
-          onSelectBoard={handleSelectBoard}
+          onManageMembers={() => setShowMembers(true)}
+          onOpenSettings={handleOpenSettings}
+          inboxUnread={inboxUnread}
           collapsed={!isMobile && sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(c => !c)}
           isMobileOpen={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
 
-        <div className="app-main-content" style={isMobile ? { overflowX: 'hidden' } : { transformStyle: 'preserve-3d' }}>
+        <div className="app-main-content">
+          <Topbar
+            page={page}
+            onNavigate={handleNavigate}
+            onOpenSearch={() => setShowSearch(true)}
+            onOpenSettings={handleOpenSettings}
+            onToggleNotif={() => setNotifOpen(o => !o)}
+            notifOpen={notifOpen}
+            onToggleMobileMenu={() => setMobileMenuOpen(o => !o)}
+          />
           <AnimatePresence mode="wait">
-            {page === 'dashboard' ? (
-              <motion.div
-                key="page-dashboard"
-                variants={isMobile ? pageMobileVariants : page3DVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '100%' }}
-              >
-                <Topbar
-                  page="dashboard"
-                  onOpenSearch={() => setShowSearch(true)}
-                  onOpenInbox={() => setShowInbox(s => !s)}
-                  onManageMembers={() => setShowMembers(true)}
-                  onManageEmail={() => handleOpenSettings('email')}
-                  onOpenPrivacy={() => handleOpenSettings('privacy')}
-                  onOpenSettings={handleOpenSettings}
-                  onToggleNotif={() => setNotifOpen(o => !o)}
-                  notifOpen={notifOpen}
-                />
-                <Dashboard
-                  onSelectBoard={handleSelectBoard}
-                  onCreateBoard={() => setShowCreateBoard(true)}
-                  onCreateRoadmap={() => setShowCreateRoadmap(true)}
-                  onOpenCard={handleOpenCard}
-                />
-                {!isMobile && (
-                  <InboxDrawer
-                    isOpen={showInbox}
-                    onClose={() => setShowInbox(false)}
-                    board={currentBoard}
-                    onOpenCard={cardId => handleOpenCard(cardId)}
-                  />
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key={`page-${page}`}
-                variants={isMobile ? pageMobileVariants : page3DVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '100%' }}
-              >
-                <Topbar
-                  page={page}
-                  onOpenSearch={() => setShowSearch(true)}
-                  onOpenInbox={() => setShowInbox(s => !s)}
-                  onManageMembers={() => setShowMembers(true)}
-                  onManageEmail={() => handleOpenSettings('email')}
-                  onOpenPrivacy={() => handleOpenSettings('privacy')}
-                  onOpenSettings={handleOpenSettings}
-                  onToggleNotif={() => setNotifOpen(o => !o)}
-                  notifOpen={notifOpen}
-                  onToggleMobileMenu={() => setMobileMenuOpen(o => !o)}
-                  onOpenBoardSelector={() => setShowBoardSelector(true)}
-                />
-
-                <BoardArea
-                  viewMode={viewMode}
-                  onSelectView={setViewMode}
-                  filterMemberId={filterMemberId}
-                  onClearFilter={() => setFilterMemberId(null)}
-                  onOpenCard={cardId => handleOpenCard(cardId)}
-                  onAddColumn={() => setShowAddColumn(true)}
-                  onCreateBoard={() => setShowCreateBoard(true)}
-                  showInbox={showInbox}
-                  onToggleInbox={() => setShowInbox(s => !s)}
-                />
-              </motion.div>
-            )}
+            <motion.div
+              key={inProject ? `project-${activeBoardId}` : `page-${page}`}
+              variants={isMobile ? pageMobileVariants : pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className={`wp-page-frame${inProject ? ' project' : ''}`}
+            >
+              {renderPage()}
+            </motion.div>
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Modals with 3D Depth Entrance */}
+      {/* Modals */}
       {showSearch && (
         <SearchModal
           onClose={() => setShowSearch(false)}
@@ -794,8 +819,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
             setFilterMemberId(memberId);
             setShowSearch(false);
           }}
-          scope={page !== 'dashboard' ? 'board' : 'global'}
-          activeBoardId={page !== 'dashboard' ? activeBoardId : null}
+          scope={inProject ? 'board' : 'global'}
+          activeBoardId={inProject ? activeBoardId : null}
         />
       )}
       {showSettings && (
@@ -832,6 +857,14 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
         <AddColumnModal
           onClose={() => setShowAddColumn(false)}
           mode="column"
+        />
+      )}
+      {quickTask && (
+        <QuickTaskModal
+          boardId={quickTask.boardId}
+          onClose={() => setQuickTask(null)}
+          onCreated={(cardId, boardId) => handleOpenCard(cardId, boardId)}
+          onCreateProject={() => setShowCreateBoard(true)}
         />
       )}
       {showMembers && <MembersModal onClose={() => setShowMembers(false)} />}
@@ -872,39 +905,16 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       {/* Mobile Quick Bottom Navigation Bar */}
       <MobileBottomNav
         page={page}
-        viewMode={viewMode}
-        showInbox={showInbox}
-        onGoHome={() => {
-          handleGoToDashboard();
+        inboxUnread={inboxUnread}
+        onNavigate={p => {
+          handleNavigate(p);
           setMobileMenuOpen(false);
           setShowBoardSelector(false);
         }}
-        onSelectBoardView={(mode) => {
-          const active = boards.find(b => b.id === activeBoardId);
-          const isRoadmap = active?.type === 'roadmap';
-          setPage(isRoadmap ? 'roadmap' : 'board');
-          const finalMode = isRoadmap
-            ? (mode === 'board' ? 'roadmap' : mode)
-            : (mode === 'roadmap' ? 'board' : mode);
-          setViewMode(finalMode);
-          setMobileMenuOpen(false);
+        onNewTask={() => {
+          setQuickTask(inProject ? { boardId: activeBoardId } : {});
           setShowBoardSelector(false);
-        }}
-        onOpenBoardSelector={() => {
-          setShowBoardSelector(true);
-          setShowInbox(false);
           setMobileMenuOpen(false);
-        }}
-        onCreateBoard={() => {
-          setShowCreateBoard(true);
-          setShowBoardSelector(false);
-          setShowInbox(false);
-          setMobileMenuOpen(false);
-        }}
-        onToggleInbox={() => {
-          setShowInbox(s => !s);
-          setMobileMenuOpen(false);
-          setShowBoardSelector(false);
         }}
       />
 

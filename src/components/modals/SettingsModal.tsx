@@ -3,7 +3,7 @@ import {
   X, Sun, Moon, Bell, Shield, Sliders, Mail, Tag, Plus, Trash2, Check,
   AlertTriangle, Upload, Download, RefreshCw, Send, CheckCircle2, User, Camera, Image, Sparkles,
   Globe, AlertCircle, Loader2, Crop
-} from 'lucide-react';
+} from '../ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeStore } from '../../store/useThemeStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
@@ -16,6 +16,7 @@ import { useConfirmStore } from '../../store/useConfirmStore';
 import { avatarInitials } from '../../utils';
 import ProfileBorderPicker from '../ui/ProfileBorderPicker';
 import AvatarCropperModal from './AvatarCropperModal';
+import { useEscape } from '../../lib/useEscape';
 
 type TabKey = 'profile' | 'appearance' | 'notifications' | 'email' | 'privacy' | 'labels';
 
@@ -36,6 +37,7 @@ const PRESET_AVATARS = [
 ];
 
 export default function SettingsModal({ initialTab = 'profile', onClose }: Props) {
+  useEscape(() => onClose());
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
   // Stores

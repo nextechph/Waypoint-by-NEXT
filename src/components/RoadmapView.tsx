@@ -4,7 +4,7 @@ import {
   CheckSquare, Square,
   ChevronDown, ChevronUp, Plus,
   X, Trash2, Layers,
-} from 'lucide-react';
+} from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Board, Card as CardType, Member, Sprint, WorkSuspension } from '../types';
 import { LABELS } from '../types';
@@ -1374,43 +1374,6 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
   return (
     <div className={`roadmap-view-container roadmap-mobile-mode-${mobileTab}`}>
 
-      {/* ── Project Roadmap Header (When viewing a Roadmap) ── */}
-      {board.type === 'roadmap' && (
-        <div style={{
-          padding: '4px 6px 0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 8,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <h1 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'hsl(var(--foreground))' }}>
-                  {board.name}
-                </h1>
-                <span style={{
-                  fontSize: 9.5,
-                  fontWeight: 700,
-                  padding: '1px 5px',
-                  borderRadius: 4,
-                  background: 'hsl(var(--primary) / 0.15)',
-                  color: 'hsl(var(--primary))',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                }}>
-                  Project Roadmap
-                </span>
-              </div>
-              <p style={{ margin: '1px 0 0', fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>
-                {board.description || 'Track deliverables, scheduled milestones, and actual start/completion dates.'}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Top Summary Cards ── */}
       <div style={{
         display: 'flex',
@@ -1420,24 +1383,13 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
         alignItems: 'stretch',
       }}>
         {[
-          { value: totalCount, label: board.type === 'roadmap' ? 'Deliverables & Phases' : 'Total Tasks', color: 'hsl(var(--foreground))', accent: 'hsl(var(--primary) / 0.12)' },
-          { value: completedCount, label: 'Completed', color: '#10b981', accent: 'rgba(16,185,129,0.1)' },
-          { value: overdueCount, label: 'Overdue', color: '#ef4444', accent: 'rgba(239,68,68,0.1)' },
+          { value: totalCount, label: board.type === 'roadmap' ? 'Deliverables' : 'Total tasks', color: 'hsl(var(--foreground))' },
+          { value: completedCount, label: 'Completed', color: 'hsl(var(--foreground))' },
+          { value: overdueCount, label: 'Overdue', color: overdueCount > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))' },
         ].map(card => (
-          <div key={card.label} style={{
-            flex: '1 1 80px',
-            minWidth: 75,
-            maxWidth: 135,
-            background: card.accent,
-            border: `1px solid ${card.color}30`,
-            borderRadius: 8,
-            padding: '5px 10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1,
-          }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: card.color, lineHeight: 1.1 }}>{card.value}</span>
-            <span style={{ fontSize: 10.5, color: 'hsl(var(--muted-foreground))', fontWeight: 600 }}>{card.label}</span>
+          <div key={card.label} className="wp-stat">
+            <span className="wp-stat-value" style={{ color: card.color }}>{card.value}</span>
+            <span className="wp-eyebrow">{card.label}</span>
           </div>
         ))}
 

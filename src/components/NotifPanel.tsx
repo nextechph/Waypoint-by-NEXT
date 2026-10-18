@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Bell, Clock, AlertTriangle, CheckCircle2, X, Trash2 } from 'lucide-react';
+import { Bell, Clock, AlertTriangle, CheckCircle2, X, Trash2 } from './ui/glyphs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifStore } from '../store/useNotifStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -8,7 +8,7 @@ import { formatTime } from '../utils';
 const iconMap: Record<string, React.ReactNode> = {
   clock: <Clock size={14} color="#f59e0b" />,
   alert: <AlertTriangle size={14} color="#ef4444" />,
-  bell:  <Bell size={14} color="#3b82f6" />,
+  bell:  <Bell size={14} color="hsl(var(--foreground))" />,
   check: <CheckCircle2 size={14} color="#10b981" />,
 };
 
