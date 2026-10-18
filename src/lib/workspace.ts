@@ -5,10 +5,10 @@ import { useNotifStore } from '../store/useNotifStore';
 import type { Board, Card, Member } from '../types';
 
 /** Top-level pages of the Waypoint shell. */
-export type AppPage = 'dashboard' | 'mywork' | 'projects' | 'timeline' | 'inbox' | 'board' | 'roadmap';
+export type AppPage = 'dashboard' | 'mywork' | 'projects' | 'timeline' | 'calendar' | 'inbox' | 'board' | 'roadmap';
 export type ViewMode = 'board' | 'roadmap' | 'calendar';
 
-export const SHELL_PAGES: AppPage[] = ['dashboard', 'mywork', 'projects', 'timeline', 'inbox'];
+export const SHELL_PAGES: AppPage[] = ['dashboard', 'mywork', 'projects', 'timeline', 'calendar', 'inbox'];
 
 export interface CardMeta {
   card: Card;

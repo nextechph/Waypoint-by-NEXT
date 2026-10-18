@@ -26,6 +26,7 @@ const PAGE_LABEL: Partial<Record<AppPage, string>> = {
   mywork: 'My Work',
   projects: 'Projects',
   timeline: 'Timeline',
+  calendar: 'Calendar',
   inbox: 'Inbox',
 };
 

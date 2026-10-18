@@ -15,13 +15,15 @@ import MyWorkPage from './components/pages/MyWorkPage';
 import ProjectsPage from './components/pages/ProjectsPage';
 import TimelinePage from './components/pages/TimelinePage';
 import InboxPage from './components/pages/InboxPage';
+import CalendarPage from './components/pages/CalendarPage';
 import ProjectHeader from './components/ProjectHeader';
 import { OverviewTab, MilestonesTab, FilesTab, ActivityTab, type ProjectTab } from './components/ProjectViews';
 import QuickTaskModal from './components/modals/QuickTaskModal';
 import CreateBoardModal from './components/modals/CreateBoardModal';
 import CreateRoadmapModal from './components/modals/CreateRoadmapModal';
 import AddColumnModal from './components/modals/AddColumnModal';
-import SearchModal from './components/modals/SearchModal';
+import CommandPalette from './components/CommandPalette';
+import { pushRecent } from './lib/recent';
 import PrivacyModal from './components/modals/PrivacyModal';
 import SettingsModal from './components/modals/SettingsModal';
 import ConfirmModal from './components/modals/ConfirmModal';
@@ -467,6 +469,7 @@ export default function App() {
 
   const handleSelectBoard = useCallback((boardId: string, view?: 'board' | 'roadmap' | 'calendar') => {
     switchBoard(boardId);
+    pushRecent({ type: 'project', id: boardId, boardId });
     setProjectTab(view === 'calendar' ? 'calendar' : view ? 'tasks' : 'overview');
     setShowBoardSelector(false);
     const storeBoards = useWorkStore.getState().boards;
@@ -650,6 +653,9 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
   const handleOpenCard = (cardId: string, boardId?: string) => {
     setOpenCardId(cardId);
     setOpenCardBoardId(boardId || activeBoardId);
+    setScheduleEditorOpen(false);
+    const owningBoard = boardId || useWorkStore.getState().findCard(cardId)?.board.id;
+    if (owningBoard) pushRecent({ type: 'task', id: cardId, boardId: owningBoard });
   };
 
   // ── Dedicated Board Invite Landing Page ──
@@ -730,6 +736,8 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
         );
       case 'timeline':
         return <TimelinePage onOpenCard={handleOpenCard} onSelectBoard={id => handleSelectBoard(id)} />;
+      case 'calendar':
+        return <CalendarPage onOpenCard={handleOpenCard} />;
       case 'inbox':
         return <InboxPage onOpenCard={handleOpenCard} />;
       default: {
@@ -846,19 +854,20 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
 
       {/* Modals */}
       {showSearch && (
-        <SearchModal
+        <CommandPalette
           onClose={() => setShowSearch(false)}
           onOpenCard={(cardId, boardId) => handleOpenCard(cardId, boardId)}
-          onSelectBoard={boardId => {
-            handleSelectBoard(boardId);
-            setShowSearch(false);
-          }}
-          onFilterMember={memberId => {
+          onSelectBoard={boardId => handleSelectBoard(boardId)}
+          onSelectPerson={(boardId, memberId) => {
+            handleSelectBoard(boardId, 'board');
             setFilterMemberId(memberId);
-            setShowSearch(false);
           }}
-          scope={inProject ? 'board' : 'global'}
-          activeBoardId={inProject ? activeBoardId : null}
+          onNavigate={handleNavigate}
+          onNewTask={() => setQuickTask(inProject ? { boardId: activeBoardId } : {})}
+          onCreateBoard={() => setShowCreateBoard(true)}
+          onCreateRoadmap={() => setShowCreateRoadmap(true)}
+          onInvite={inProject ? () => setShowMembers(true) : undefined}
+          onOpenSettings={() => handleOpenSettings()}
         />
       )}
       {showSettings && (

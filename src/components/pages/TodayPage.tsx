@@ -4,9 +4,10 @@ import { useWorkStore } from '../../store/useWorkStore';
 import { deriveCardProgress, sortMembersWithOwnerFirst } from '../../utils';
 import {
   useWorkspace, useMyNotifications, projectStats, priorityScore, toDate, hasTime, dayDiff,
-  formatShortDate, formatTime, timeAgo, type CardMeta,
+  formatShortDate, formatTime, timeAgo, projectMilestones, type CardMeta, type Milestone,
 } from '../../lib/workspace';
 import { AvatarStack, Eyebrow, ProgressBar, ProjectGlyph, Tag, EmptyState } from '../wp/primitives';
+import heroImg from '../../assets/login-hero.jpg';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -77,6 +78,22 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
       .slice(0, 5);
   }, [boards]);
 
+  const upcomingMilestones = useMemo(() => {
+    const list: Array<{ m: Milestone; board: typeof boards[number] }> = [];
+    boards.forEach(b => {
+      const { items, fromTasks } = projectMilestones(b);
+      if (fromTasks) items.filter(m => m.status !== 'completed').forEach(m => list.push({ m, board: b }));
+    });
+    return list.sort((a, z) => (a.m.date || '9999').localeCompare(z.m.date || '9999'));
+  }, [boards]);
+
+  const nextMilestone = useMemo(() => {
+    const first = upcomingMilestones[0];
+    if (first) return { title: first.m.title, board: first.board, date: first.m.date, progress: first.m.progress, cardId: first.m.cardId };
+    const project = inMotion.find(x => x.stats.progress < 100 && x.stats.total > 0);
+    return project ? { title: project.board.name, board: project.board, date: project.stats.due, progress: project.stats.progress, cardId: undefined } : null;
+  }, [upcomingMilestones, inMotion]);
+
   const dueToday = pool.filter(c => c.card.dueDate && dayDiff(toDate(c.card.dueDate), new Date()) === 0).length;
   const overdue = pool.filter(c => c.card.dueDate && dayDiff(toDate(c.card.dueDate), new Date()) < 0).length;
   const firstName = user?.name?.split(' ')[0];
@@ -109,6 +126,29 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
             New task
           </button>
         </motion.header>
+
+        {/* Next milestone */}
+        {nextMilestone && (
+          <motion.section className="wp-milestone-hero" variants={fade} initial="hidden" animate="show" custom={0.5}>
+            <img src={heroImg} alt="" aria-hidden />
+            <div className="wp-milestone-hero-body">
+              <Eyebrow style={{ color: 'rgba(255,255,255,0.6)' }}>Your next milestone</Eyebrow>
+              <h2>{nextMilestone.title}</h2>
+              <p>{nextMilestone.cardId ? nextMilestone.board.name : (nextMilestone.board.description ? plainText(nextMilestone.board.description) : 'Keep the momentum — this project is next on your path.')}</p>
+              <div className="wp-milestone-hero-progress">
+                <ProgressBar value={nextMilestone.progress} />
+                <span>{nextMilestone.progress}%</span>
+                {nextMilestone.date && <span>Due {formatShortDate(nextMilestone.date)}</span>}
+              </div>
+              <div className="wp-milestone-hero-actions">
+                {nextMilestone.cardId && (
+                  <button type="button" className="wp-btn wp-btn-light" onClick={() => onOpenCard(nextMilestone.cardId!, nextMilestone.board.id)}>Open milestone →</button>
+                )}
+                <button type="button" className="wp-btn wp-btn-glass" onClick={() => onSelectBoard(nextMilestone.board.id)}>View project →</button>
+              </div>
+            </div>
+          </motion.section>
+        )}
 
         {/* Direction + Up next */}
         <div className="wp-today-grid">
@@ -151,6 +191,30 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
             )}
           </motion.aside>
         </div>
+
+        {/* Upcoming milestones */}
+        {upcomingMilestones.length > 0 && (
+          <motion.section className="wp-section" variants={fade} initial="hidden" animate="show" custom={2.5}>
+            <div className="wp-section-head">
+              <div>
+                <Eyebrow>Milestones, not just tasks</Eyebrow>
+                <h2 className="wp-h2">Upcoming milestones</h2>
+              </div>
+            </div>
+            <ul className="wp-milestone-rows">
+              {upcomingMilestones.slice(0, 5).map(({ m, board }) => (
+                <li key={m.id} className={m.status}>
+                  <button type="button" onClick={() => m.cardId && onOpenCard(m.cardId, board.id)}>
+                    <span className={`wp-ms-mark ${m.status}`} />
+                    <span className="wp-ms-title">{m.title} <em>· {board.name}</em></span>
+                    <span className="wp-ms-date">{m.date ? formatShortDate(m.date) : '—'}</span>
+                    <span className="wp-ms-status">{m.progress}%</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.section>
+        )}
 
         {/* In motion */}
         <motion.section className="wp-section" variants={fade} initial="hidden" animate="show" custom={3}>

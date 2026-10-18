@@ -339,14 +339,14 @@ export default function LoginPage() {
             </span>
           </h2>
           <p style={{ fontSize: 15.5, color: 'rgba(255,255,255,0.68)', lineHeight: 1.65 }}>
-            Plan your tasks. Track your progress.<br />Reach what’s next.
+            Plan. Build. Deliver.<br />Everything you need to move your work forward.
           </p>
         </motion.div>
 
         {/* Footer Note */}
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
           <span>© {new Date().getFullYear()} Waypoint by Next Technology</span>
-          <span style={{ letterSpacing: '0.04em' }}>Modern · Minimal · Focused</span>
+          <span style={{ letterSpacing: '0.04em' }}>Journey-based project planning</span>
         </div>
       </div>
 
@@ -467,7 +467,7 @@ export default function LoginPage() {
                       margin: 0,
                     }}
                   >
-                    {mode === 'signin' ? 'Welcome to Waypoint' : 'Create your account'}
+                    {mode === 'signin' ? 'Welcome back' : 'Create your account'}
                   </motion.h1>
                   <p
                     style={{
@@ -479,7 +479,7 @@ export default function LoginPage() {
                     }}
                   >
                     {mode === 'signin'
-                      ? 'Sign in to access your agile boards, tasks & team workspace'
+                      ? 'Sign in to continue to your workspace.'
                       : 'Sign up to start organizing projects and sprints'}
                   </p>
                 </div>

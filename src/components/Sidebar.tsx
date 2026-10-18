@@ -38,6 +38,7 @@ const NAV: Array<{ page: AppPage; label: string; icon: React.ElementType }> = [
   { page: 'mywork', label: 'My Work', icon: CheckSquare },
   { page: 'projects', label: 'Projects', icon: FolderClosed },
   { page: 'timeline', label: 'Timeline', icon: CalendarRange },
+  { page: 'calendar', label: 'Calendar', icon: CalendarRange },
   { page: 'inbox', label: 'Inbox', icon: Mail },
 ];
 

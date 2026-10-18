@@ -3,13 +3,13 @@ import { useIsMobile } from '../../utils';
 import { useWorkspace, toDate, startOfDay, dayDiff, formatShortDate, type CardMeta } from '../../lib/workspace';
 import type { Board } from '../../types';
 import { EmptyState } from '../wp/primitives';
+import { Select } from '../ui/Select';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
   onSelectBoard: (boardId: string) => void;
 }
 
-const DAYS = 84;
 
 interface Span { start: Date; end: Date }
 
@@ -25,19 +25,22 @@ function spanOf(item: CardMeta): Span | null {
 export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
   const { boards, cards } = useWorkspace();
   const isMobile = useIsMobile(860);
-  const dayW = isMobile ? 10 : 15;
+  const [zoom, setZoom] = useState<'weeks' | 'months'>('weeks');
+  const [projectFilter, setProjectFilter] = useState<string>('all');
+  const DAYS = zoom === 'weeks' ? 84 : 182;
+  const dayW = zoom === 'weeks' ? (isMobile ? 10 : 15) : (isMobile ? 4 : 6.5);
 
   const [offset, setOffset] = useState(0);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const today = startOfDay(new Date());
   const windowStart = useMemo(() => {
     const d = new Date(today);
-    d.setDate(d.getDate() - 14 + offset * 28);
+    d.setDate(d.getDate() - 14 + offset * (zoom === 'weeks' ? 28 : 91));
     // align to Monday
     const dow = (d.getDay() + 6) % 7;
     d.setDate(d.getDate() - dow);
     return d;
-  }, [offset, today.getTime()]);
+  }, [offset, zoom, today.getTime()]);
 
   const rows = useMemo(() => {
     const byBoard = new Map<string, { board: Board; tasks: Array<{ item: CardMeta; span: Span }> }>();
@@ -48,7 +51,7 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
       byBoard.get(item.board.id)!.tasks.push({ item, span });
     });
     return boards
-      .filter(b => byBoard.has(b.id))
+      .filter(b => byBoard.has(b.id) && (projectFilter === 'all' || b.id === projectFilter))
       .map(b => {
         const entry = byBoard.get(b.id)!;
         entry.tasks.sort((a, z) => a.span.start.getTime() - z.span.start.getTime());
@@ -56,7 +59,7 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
         const end = entry.tasks.reduce((m, t) => (t.span.end > m ? t.span.end : m), entry.tasks[0].span.end);
         return { ...entry, span: { start, end } };
       });
-  }, [boards, cards]);
+  }, [boards, cards, projectFilter]);
 
   const weeks = Array.from({ length: DAYS / 7 }, (_, i) => {
     const d = new Date(windowStart);
@@ -92,6 +95,26 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
           </div>
         </header>
 
+        <div className="wp-toolbar">
+          <div className="wp-toolbar-right" style={{ paddingTop: 0 }}>
+            <Select
+              size="sm"
+              value={projectFilter}
+              onChange={setProjectFilter}
+              options={[{ value: 'all', label: 'All projects' }, ...boards.map(b => ({ value: b.id, label: b.name }))]}
+            />
+            <div className="wp-segmented">
+              <button type="button" className={zoom === 'weeks' ? 'active' : ''} onClick={() => { setZoom('weeks'); setOffset(0); }}>Weeks</button>
+              <button type="button" className={zoom === 'months' ? 'active' : ''} onClick={() => { setZoom('months'); setOffset(0); }}>Months</button>
+            </div>
+          </div>
+          <div className="wp-gantt-legend">
+            <span><i className="lg-ms" /> Milestone</span>
+            <span><i className="lg-task" /> Task</span>
+            <span><i className="lg-today" /> Today</span>
+          </div>
+        </div>
+
         {rows.length === 0 ? (
           <EmptyState title="Nothing scheduled yet" body="Give tasks a start or due date and they’ll appear on the timeline." />
         ) : (
@@ -104,7 +127,7 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
                   <div className="wp-gantt-track" style={{ width: DAYS * dayW }}>
                     {weeks.map((w, i) => (
                       <div key={i} className="wp-gantt-week" style={{ left: i * 7 * dayW, width: 7 * dayW }}>
-                        {w.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        {zoom === 'weeks' || i % 2 === 0 ? w.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
                       </div>
                     ))}
                   </div>
@@ -163,12 +186,14 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
                               {p && (
                                 <button
                                   type="button"
-                                  className={`wp-gantt-bar task${item.card.completed ? ' done' : ''}${p.single ? ' single' : ''}`}
-                                  style={{ left: p.left, width: p.single ? undefined : p.width }}
+                                  className={`wp-gantt-bar task${item.card.completed ? ' done' : ''}${p.single || item.card.isMilestone ? ' single' : ''}`}
+                                  style={item.card.isMilestone && item.card.dueDate
+                                    ? { left: Math.max(0, dayDiff(startOfDay(toDate(item.card.dueDate)), windowStart)) * dayW }
+                                    : { left: p.left, width: p.single ? undefined : p.width }}
                                   onClick={() => onOpenCard(item.card.id, board.id)}
                                   title={`${item.card.title} · ${item.columnName}`}
                                 >
-                                  {!p.single && !isMobile && p.width > 80 && <span className="wp-gantt-bar-label">{item.card.title}</span>}
+                                  {!p.single && !item.card.isMilestone && !isMobile && p.width > 80 && <span className="wp-gantt-bar-label">{item.card.title}</span>}
                                 </button>
                               )}
                               <div className="wp-gantt-today" style={{ left: todayX }} />
