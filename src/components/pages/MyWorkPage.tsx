@@ -6,6 +6,7 @@ import { LABELS } from '../../types';
 import { useWorkspace, toDate, dayDiff, type CardMeta } from '../../lib/workspace';
 import { Eyebrow, EmptyState, MemberAvatar } from '../wp/primitives';
 import { relativeDay } from './TodayPage';
+import { Plus } from '../ui/icons';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -67,7 +68,7 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
             <p className="wp-lede">Everything on your plate across every project, ordered by when it’s due.</p>
           </div>
           <button type="button" className="wp-btn wp-btn-outline lg" onClick={onNewTask}>
-            New task
+            <Plus size={16} weight="bold" /> New task
           </button>
         </header>
 
@@ -90,7 +91,7 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
           <EmptyState
             title={filter === 'completed' ? 'Nothing completed yet' : 'You’re all caught up'}
             body={scope === 'mine' ? 'Tasks assigned to you will appear here.' : 'Tasks from every project will appear here.'}
-            action={filter === 'open' ? <button type="button" className="wp-btn wp-btn-primary" onClick={onNewTask}>New task</button> : undefined}
+            action={filter === 'open' ? <button type="button" className="wp-btn wp-btn-primary" onClick={onNewTask}><Plus size={15} weight="bold" /> New task</button> : undefined}
           />
         ) : (
           groups.map((g, gi) => (

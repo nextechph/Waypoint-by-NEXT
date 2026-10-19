@@ -5,6 +5,7 @@ import { useWorkspace, projectStats, canEditBoard, isBoardOwner, formatShortDate
 import type { Board } from '../../types';
 import { AvatarStack, EmptyState, ProgressBar, SummitCover } from '../wp/primitives';
 import { useProjectActions } from '../wp/useProjectActions';
+import { Plus, KanbanSquare, Milestone, Search, MoreHorizontal, Pencil, Trash2, LogOut, CheckSquare, X } from '../ui/icons';
 
 interface Props {
   onSelectBoard: (boardId: string) => void;
@@ -64,7 +65,7 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
           </div>
           <div ref={createRef} style={{ position: 'relative' }}>
             <button type="button" className="wp-btn wp-btn-outline lg" onClick={() => setCreateOpen(o => !o)}>
-              New project
+              <Plus size={16} weight="bold" /> New project
             </button>
             <AnimatePresence>
               {createOpen && (
@@ -77,10 +78,12 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
                   transition={{ duration: 0.12 }}
                 >
                   <button type="button" className="wp-menu-item tall" onClick={() => { setCreateOpen(false); onCreateBoard(); }}>
-                                        <span><strong>Task board</strong><small>Kanban columns for day-to-day work</small></span>
+                    <span className="wp-menu-icon"><KanbanSquare size={18} /></span>
+                    <span><strong>Task board</strong><small>Kanban columns for day-to-day work</small></span>
                   </button>
                   <button type="button" className="wp-menu-item tall" onClick={() => { setCreateOpen(false); onCreateRoadmap(); }}>
-                                        <span><strong>Roadmap</strong><small>Phases and a Gantt timeline</small></span>
+                    <span className="wp-menu-icon"><Milestone size={18} /></span>
+                    <span><strong>Roadmap</strong><small>Phases and a Gantt timeline</small></span>
                   </button>
                 </motion.div>
               )}
@@ -98,7 +101,8 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
           </div>
           <div className="wp-toolbar-right">
             <label className="wp-search-field">
-                            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search projects…" />
+              <Search size={15} className="wp-search-icon" />
+              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search projects…" />
             </label>
             {selecting ? (
               <>
@@ -115,14 +119,14 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
                   disabled={!selected.size}
                   onClick={() => removeMany(boards.filter(b => selected.has(b.id)), exitSelect)}
                 >
-                  Delete {selected.size || ''}
+                  <Trash2 size={15} /> Delete {selected.size || ''}
                 </button>
-                <button type="button" className="wp-icon-ghost bordered" onClick={exitSelect} aria-label="Cancel selection">Cancel</button>
+                <button type="button" className="wp-icon-ghost bordered" onClick={exitSelect} aria-label="Cancel selection"><X size={16} /></button>
               </>
             ) : (
               boards.length > 0 && (
                 <button type="button" className="wp-btn wp-btn-ghost" onClick={() => setSelecting(true)}>
-                  Select
+                  <CheckSquare size={15} /> Select
                 </button>
               )
             )}
@@ -135,8 +139,8 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
             body="A task board keeps daily work moving; a roadmap plans the bigger route."
             action={
               <div style={{ display: 'flex', gap: 10 }}>
-                <button type="button" className="wp-btn wp-btn-primary" onClick={onCreateBoard}>Task board</button>
-                <button type="button" className="wp-btn wp-btn-outline" onClick={onCreateRoadmap}>Roadmap</button>
+                <button type="button" className="wp-btn wp-btn-primary" onClick={onCreateBoard}><KanbanSquare size={15} /> Task board</button>
+                <button type="button" className="wp-btn wp-btn-outline" onClick={onCreateRoadmap}><Milestone size={15} /> Roadmap</button>
               </div>
             }
           />
@@ -162,7 +166,8 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
             ))}
             {!selecting && (
               <button type="button" className="wp-project-card create" onClick={onCreateBoard}>
-                                <strong>Create new project</strong>
+                <span className="wp-create-icon"><Plus size={22} /></span>
+                <strong>Create new project</strong>
                 <span>Start a board and bring your team together.</span>
               </button>
             )}
@@ -239,7 +244,7 @@ function ProjectCard({
           {!selecting && (
             <div ref={menuRef} style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
               <button type="button" className="wp-icon-ghost sm" onClick={() => setMenuOpen(o => !o)} aria-label="Project options">
-                ···
+                <MoreHorizontal size={18} weight="bold" />
               </button>
               <AnimatePresence>
                 {menuOpen && (
@@ -254,14 +259,14 @@ function ProjectCard({
                     {editable && (
                       <>
                         <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); setName(board.name); setEditing(true); }}>
-                          Rename
+                          <Pencil size={16} /> Rename
                         </button>
 
                         <div className="wp-menu-sep" />
                       </>
                     )}
                     <button type="button" className="wp-menu-item danger" onClick={() => { setMenuOpen(false); onRemove(); }}>
-                      {owner ? 'Delete' : 'Leave'}
+                      {owner ? <Trash2 size={16} /> : <LogOut size={16} />} {owner ? 'Delete' : 'Leave'}
                     </button>
                   </motion.div>
                 )}

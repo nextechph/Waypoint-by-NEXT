@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Plus, Edit3, Trash2 } from './ui/glyphs';
+import { MoreHorizontal, Plus, Edit3, Trash2 } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';

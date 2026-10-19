@@ -4,7 +4,7 @@ import {
   CheckSquare, Square,
   ChevronDown, ChevronUp, Plus,
   X, Trash2, Layers,
-} from './ui/glyphs';
+} from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Board, Card as CardType, Member, Sprint, WorkSuspension } from '../types';
 import { LABELS } from '../types';

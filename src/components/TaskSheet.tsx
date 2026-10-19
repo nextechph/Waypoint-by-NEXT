@@ -12,6 +12,7 @@ import { useEscape } from '../lib/useEscape';
 import { Select } from './ui/Select';
 import DatePicker from './ui/DatePicker';
 import { MemberAvatar } from './wp/primitives';
+import { ArrowLeft, CalendarRange, Trash2, X, Plus, Upload, Reply, AlignLeft, MessageSquare, Paperclip, Activity, Send } from './ui/icons';
 
 interface Props {
   cardId: string;
@@ -166,7 +167,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
         onClick={e => e.stopPropagation()}
       >
         <header className="wp-sheet-head">
-          <button type="button" className="wp-text-link" onClick={onClose}>← Back</button>
+          <button type="button" className="wp-text-link" onClick={onClose}><ArrowLeft size={14} /> Back</button>
           <div className="wp-sheet-crumbs">
             <span>{board.name}</span>
             <span className="wp-crumb-sep">/</span>
@@ -174,10 +175,10 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
           </div>
           <div className="wp-sheet-head-actions">
             {isRoadmap && onOpenScheduleEditor && (
-              <button type="button" className="wp-text-link" onClick={onOpenScheduleEditor}>Schedule editor</button>
+              <button type="button" className="wp-text-link" onClick={onOpenScheduleEditor}><CalendarRange size={14} /> Schedule editor</button>
             )}
-            {editable && <button type="button" className="wp-text-link" onClick={confirmDeleteTask}>Delete</button>}
-            <button type="button" className="wp-text-link" onClick={onClose}>Close</button>
+            {editable && <button type="button" className="wp-text-link" onClick={confirmDeleteTask} title="Delete task" aria-label="Delete task"><Trash2 size={16} /></button>}
+            <button type="button" className="wp-icon-btn" onClick={onClose} title="Close" aria-label="Close"><X size={18} /></button>
           </div>
         </header>
 
@@ -231,12 +232,13 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
 
           <nav className="wp-tabs wp-sheet-tabs" role="tablist">
             {([
-              ['details', 'Details'],
-              ['comments', `Comments (${card.comments?.length || 0})`],
-              ['files', `Files (${card.attachments?.length || 0})`],
-              ['activity', 'Activity'],
-            ] as const).map(([id, label]) => (
+              ['details', 'Details', AlignLeft],
+              ['comments', `Comments (${card.comments?.length || 0})`, MessageSquare],
+              ['files', `Files (${card.attachments?.length || 0})`, Paperclip],
+              ['activity', 'Activity', Activity],
+            ] as const).map(([id, label, TabIcon]) => (
               <button key={id} type="button" role="tab" aria-selected={tab === id} className={`wp-tab${tab === id ? ' active' : ''}`} onClick={() => setTab(id)}>
+                <TabIcon size={15} weight={tab === id ? 'fill' : 'regular'} />
                 {label}
               </button>
             ))}
@@ -262,7 +264,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
                       />
                       <span className="wp-subtask-title">{st.title}</span>
                       {editable && (
-                        <button type="button" className="wp-text-link" onClick={() => setSubtasks(subtasks.filter(x => x.id !== st.id))} aria-label="Remove subtask">×</button>
+                        <button type="button" className="wp-text-link" onClick={() => setSubtasks(subtasks.filter(x => x.id !== st.id))} aria-label="Remove subtask"><X size={13} /></button>
                       )}
                     </li>
                   ))}
@@ -275,7 +277,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
                       onChange={e => setNewSubtask(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') addSubtask(); }}
                     />
-                    <button type="button" className="wp-text-link" onClick={addSubtask} disabled={!newSubtask.trim()}>Add</button>
+                    <button type="button" className="wp-text-link" onClick={addSubtask} disabled={!newSubtask.trim()}><Plus size={13} weight="bold" /> Add</button>
                   </div>
                 )}
               </div>
@@ -391,14 +393,14 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
                         {card.coverAttachmentId === a.id ? 'Remove cover' : 'Set cover'}
                       </button>
                     )}
-                    {editable && <button type="button" className="wp-text-link" onClick={() => removeAttachment(card.id, a.id)}>Remove</button>}
+                    {editable && <button type="button" className="wp-text-link" onClick={() => removeAttachment(card.id, a.id)} aria-label="Remove file" title="Remove file"><Trash2 size={14} /></button>}
                   </li>
                 ))}
               </ul>
               {editable && (
                 <>
                   <input ref={fileRef} type="file" multiple hidden onChange={e => handleFiles(e.target.files)} />
-                  <button type="button" className="wp-btn wp-btn-ghost" onClick={() => fileRef.current?.click()}>Upload files</button>
+                  <button type="button" className="wp-btn wp-btn-ghost" onClick={() => fileRef.current?.click()}><Upload size={15} /> Upload files</button>
                 </>
               )}
             </div>
@@ -434,7 +436,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
                 onChange={e => setComment(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) postComment(); }}
               />
-              <button type="button" className="wp-btn wp-btn-primary" onClick={postComment} disabled={!comment.trim()}>Post</button>
+              <button type="button" className="wp-btn wp-btn-primary" onClick={postComment} disabled={!comment.trim()}><Send size={14} /> Post</button>
             </div>
           </footer>
         )}
@@ -457,8 +459,8 @@ function CommentItem({ c, canDelete, onReply, onDelete }: { c: Comment; canDelet
           isImageFile(a.name) ? <img key={a.id} src={a.dataUrl} alt={a.name} className="wp-comment-img" /> : <a key={a.id} href={a.dataUrl} download={a.name} className="wp-file-name">{a.name}</a>
         ))}
         <div className="wp-comment-actions">
-          {onReply && <button type="button" className="wp-text-link" onClick={onReply}>Reply</button>}
-          {canDelete && <button type="button" className="wp-text-link" onClick={onDelete}>Delete</button>}
+          {onReply && <button type="button" className="wp-text-link" onClick={onReply}><Reply size={13} /> Reply</button>}
+          {canDelete && <button type="button" className="wp-text-link" onClick={onDelete}><Trash2 size={13} /> Delete</button>}
         </div>
       </div>
     </div>

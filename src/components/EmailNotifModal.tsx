@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, X, Send, Trash2, ExternalLink, CheckCircle2, ShieldCheck, Loader2, Users } from './ui/glyphs';
+import { Mail, X, Send, Trash2, ExternalLink, CheckCircle2, ShieldCheck, Loader2, Users } from './ui/icons';
 import { motion } from 'framer-motion';
 import { Select } from './ui/Select';
 import { useEmailStore } from '../store/useEmailStore';

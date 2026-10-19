@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, LogOut, AlertTriangle, Info, X } from '../ui/glyphs';
+import { Trash2, LogOut, AlertTriangle, Info, X } from '../ui/icons';
 import { useConfirmStore } from '../../store/useConfirmStore';
 
 export default function ConfirmModal() {

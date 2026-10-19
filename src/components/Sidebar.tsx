@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronRight } from './ui/glyphs';
+import { ChevronRight, Plus, X, User, Sun, Moon, LogOut, KanbanSquare, Milestone } from './ui/icons';
 import {
   House, CheckSquareOffset, Folders, Path, CalendarBlank, Tray, GearSix, Users, SidebarSimple,
   type Icon as PhosphorIcon,
@@ -119,16 +119,17 @@ export default function Sidebar({
         )}
         {isCollapsed ? null : onCloseMobile && isMobileOpen ? (
           <button type="button" className="wp-icon-ghost" onClick={close} aria-label="Close navigation">
-            Close
+            <X size={18} />
           </button>
         ) : (
           <button
             type="button"
-            className="wp-text-link wp-collapse-btn hide-on-mobile"
+            className="wp-icon-btn wp-collapse-btn hide-on-mobile"
             onClick={onToggleCollapse}
             title="Collapse sidebar"
+            aria-label="Collapse sidebar"
           >
-            «
+            <SidebarSimple size={18} />
           </button>
         )}
       </div>
@@ -158,7 +159,7 @@ export default function Sidebar({
               <span className="wp-eyebrow">Projects</span>
               <div ref={createRef} style={{ position: 'relative' }}>
                 <button type="button" className="wp-text-link" onClick={() => setCreateOpen(o => !o)} title="New project">
-                  New
+                  <Plus size={12} weight="bold" /> New
                 </button>
                 <AnimatePresence>
                   {createOpen && (
@@ -171,10 +172,10 @@ export default function Sidebar({
                       transition={{ duration: 0.12 }}
                     >
                       <button type="button" className="wp-menu-item" onClick={() => { setCreateOpen(false); onCreateBoard(); close(); }}>
-                        New task board
+                        <KanbanSquare size={16} /> New task board
                       </button>
                       <button type="button" className="wp-menu-item" onClick={() => { setCreateOpen(false); onCreateRoadmap(); close(); }}>
-                        New roadmap
+                        <Milestone size={16} /> New roadmap
                       </button>
                     </motion.div>
                   )}
@@ -191,8 +192,8 @@ export default function Sidebar({
                   onClick={() => { onSelectBoard(b.id); close(); }}
                   title={b.name}
                 >
+                  {b.type === 'roadmap' ? <Milestone size={15} className="wp-project-icon" /> : <KanbanSquare size={15} className="wp-project-icon" />}
                   <span className="wp-project-name">{b.name}</span>
-                  {b.type === 'roadmap' && <span className="wp-project-kind">Map</span>}
                 </button>
               ))}
             </div>
@@ -244,14 +245,14 @@ export default function Sidebar({
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >
                 <button type="button" className="wp-menu-item" onClick={() => { setUserMenuOpen(false); onOpenSettings('profile'); close(); }}>
-                  Profile & avatar
+                  <User size={16} /> Profile & avatar
                 </button>
                 <button type="button" className="wp-menu-item" onClick={() => toggleTheme()}>
-                  {isDark ? 'Switch to light' : 'Switch to dark'}
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />} {isDark ? 'Switch to light' : 'Switch to dark'}
                 </button>
                 <div className="wp-menu-sep" />
                 <button type="button" className="wp-menu-item danger" onClick={() => { setUserMenuOpen(false); logout(); }}>
-                  Sign out
+                  <LogOut size={16} /> Sign out
                 </button>
               </motion.div>
             )}
@@ -270,7 +271,7 @@ export default function Sidebar({
               onClick={() => toggleTheme()}
               title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
             >
-              {isDark ? 'Dark' : 'Light'}
+              {isDark ? <Moon size={14} /> : <Sun size={14} />}
             </button>
           )}
         </div>

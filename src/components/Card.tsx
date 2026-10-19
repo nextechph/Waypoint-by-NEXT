@@ -5,7 +5,7 @@ import {
   Lock, Smartphone, Settings, Code, Paintbrush,
   Zap, BookOpen, Globe, Database, ShieldCheck, Layers,
   ArrowRightLeft, Milestone
-} from './ui/glyphs';
+} from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LABELS, type Card as CardType, type Member } from '../types';
 import { getDueStatus, formatDueDate, avatarInitials, getColDotColor, getScheduleHealth } from '../utils';

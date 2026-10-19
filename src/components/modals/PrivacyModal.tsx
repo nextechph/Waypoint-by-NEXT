@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Shield, X, Download, Upload, Trash2, Database, HardDrive, CheckCircle2, AlertTriangle } from '../ui/glyphs';
+import { Shield, X, Download, Upload, Trash2, Database, HardDrive, CheckCircle2, AlertTriangle } from '../ui/icons';
 import { motion } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useNotifStore } from '../../store/useNotifStore';

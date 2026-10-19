@@ -7,7 +7,7 @@ import {
   Edit3, Crown, Shield, Save, Loader2, Globe, Server, Cpu, Briefcase,
   Link2, ExternalLink, ArrowRightLeft, Inbox,
   Milestone, Layers, Activity, CalendarCheck, Clock
-} from './ui/glyphs';
+} from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';

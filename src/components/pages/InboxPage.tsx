@@ -4,16 +4,17 @@ import { useNotifStore } from '../../store/useNotifStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useWorkspace, useMyNotifications, markInboxSeen, timeAgo, dayDiff } from '../../lib/workspace';
 import { EmptyState, Eyebrow } from '../wp/primitives';
+import { Clock, AlertTriangle, CheckCircle2, Bell, X, Check } from '../ui/icons';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
 }
 
-const KIND: Record<string, string> = {
-  clock: 'Due soon',
-  alert: 'Overdue',
-  check: 'Update',
-  bell: 'Activity',
+const KIND: Record<string, { label: string; icon: typeof Bell }> = {
+  clock: { label: 'Due soon', icon: Clock },
+  alert: { label: 'Overdue', icon: AlertTriangle },
+  check: { label: 'Update', icon: CheckCircle2 },
+  bell: { label: 'Activity', icon: Bell },
 };
 
 export default function InboxPage({ onOpenCard }: Props) {
@@ -49,7 +50,7 @@ export default function InboxPage({ onOpenCard }: Props) {
           </div>
           {notifications.length > 0 && (
             <button type="button" className="wp-btn wp-btn-ghost" onClick={() => clearAll(user?.email)}>
-              Clear all
+              <Check size={15} /> Clear all
             </button>
           )}
         </header>
@@ -71,7 +72,16 @@ export default function InboxPage({ onOpenCard }: Props) {
                   const board = boards.find(b => b.id === n.boardId);
                   return (
                     <div key={n.id} className={`wp-inbox-item tone-${n.icon}`}>
-                      <span className="wp-inbox-kind">{KIND[n.icon] || 'Update'}</span>
+                      {(() => {
+                        const kind = KIND[n.icon] || KIND.check;
+                        const KindIcon = kind.icon;
+                        return (
+                          <span className="wp-inbox-kind">
+                            <span className="wp-inbox-kind-icon"><KindIcon size={16} weight={n.icon === 'alert' ? 'fill' : 'regular'} /></span>
+                            {kind.label}
+                          </span>
+                        );
+                      })()}
                       <button
                         type="button"
                         className="wp-inbox-main"
@@ -85,8 +95,8 @@ export default function InboxPage({ onOpenCard }: Props) {
                           {timeAgo(n.time)}
                         </span>
                       </button>
-                      <button type="button" className="wp-text-link" onClick={() => removeNotification(n.id)} aria-label="Dismiss">
-                        Dismiss
+                      <button type="button" className="wp-text-link" onClick={() => removeNotification(n.id)} aria-label="Dismiss" title="Dismiss">
+                        <X size={14} />
                       </button>
                     </div>
                   );

@@ -8,6 +8,7 @@ import {
 } from '../../lib/workspace';
 import { AvatarStack, Eyebrow, ProgressBar, ProjectGlyph, Tag, EmptyState } from '../wp/primitives';
 import heroImg from '../../assets/login-hero.jpg';
+import { Plus, ArrowRight, Check, Crosshair, ArrowUpRight } from '../ui/icons';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -128,7 +129,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
             </div>
           </div>
           <button type="button" className="wp-btn wp-btn-outline lg" onClick={onNewTask}>
-            New task
+            <Plus size={16} weight="bold" /> New task
           </button>
         </motion.header>
 
@@ -147,9 +148,9 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
               </div>
               <div className="wp-milestone-hero-actions">
                 {nextMilestone.cardId && (
-                  <button type="button" className="wp-btn wp-btn-light" onClick={() => onOpenCard(nextMilestone.cardId!, nextMilestone.board.id)}>Open milestone →</button>
+                  <button type="button" className="wp-btn wp-btn-light" onClick={() => onOpenCard(nextMilestone.cardId!, nextMilestone.board.id)}>Open milestone <ArrowRight size={15} /></button>
                 )}
-                <button type="button" className="wp-btn wp-btn-glass" onClick={() => onSelectBoard(nextMilestone.board.id)}>View project →</button>
+                <button type="button" className="wp-btn wp-btn-glass" onClick={() => onSelectBoard(nextMilestone.board.id)}>View project <ArrowUpRight size={15} /></button>
               </div>
             </div>
           </motion.section>
@@ -171,7 +172,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
               <EmptyState
                 title="Nothing on your path yet"
                 body="Add a task to set today’s direction."
-                action={<button type="button" className="wp-btn wp-btn-primary" onClick={onNewTask}>New task</button>}
+                action={<button type="button" className="wp-btn wp-btn-primary" onClick={onNewTask}><Plus size={15} weight="bold" /> New task</button>}
               />
             )}
           </motion.section>
@@ -230,14 +231,15 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
             </div>
             {boards.length > 0 && (
               <button type="button" className="wp-link" onClick={() => onNavigate('projects')}>
-                All projects               </button>
+                All projects <ArrowRight size={14} />
+              </button>
             )}
           </div>
           {inMotion.length === 0 ? (
             <EmptyState
               title="No projects yet"
               body="Projects hold your boards and roadmaps. Start one to see it move here."
-              action={<button type="button" className="wp-btn wp-btn-primary" onClick={onCreateBoard}>New project</button>}
+              action={<button type="button" className="wp-btn wp-btn-primary" onClick={onCreateBoard}><Plus size={15} weight="bold" /> New project</button>}
             />
           ) : (
             <div className="wp-motion-list">
@@ -265,7 +267,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
                   <span className="wp-motion-due hide-on-mobile">
                                         {stats.due ? `Due ${formatShortDate(stats.due)}` : stats.total && stats.progress === 100 ? 'Complete' : 'No due date'}
                   </span>
-                  <span className="wp-motion-chevron">→</span>
+                  <ArrowRight size={16} className="wp-motion-chevron" />
                 </button>
               ))}
             </div>
@@ -277,7 +279,8 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
           <div className="wp-signals-head">
             <Eyebrow>Recent signals</Eyebrow>
             <button type="button" className="wp-link sm" onClick={() => onNavigate('inbox')}>
-              View all activity             </button>
+              View all activity <ArrowRight size={13} />
+            </button>
           </div>
           {notifications.length === 0 ? (
             <p className="wp-muted">Quiet for now — comments, assignments and deadlines will show up here.</p>
@@ -349,10 +352,11 @@ function PriorityCard({ item, onFocus, onOpenProject, onComplete }: {
           </div>
           <div className="wp-priority-actions">
             <button type="button" className="wp-btn wp-btn-ghost" onClick={onComplete} title="Mark as done">
-              Done
+              <Check size={15} weight="bold" /> Done
             </button>
             <button type="button" className="wp-btn wp-btn-primary" onClick={onFocus}>
-              Focus this task             </button>
+              <Crosshair size={15} /> Focus this task
+            </button>
           </div>
         </div>
       </div>

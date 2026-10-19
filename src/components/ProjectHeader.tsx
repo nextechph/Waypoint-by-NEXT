@@ -7,6 +7,7 @@ import { canEditBoard, isBoardOwner, projectStats } from '../lib/workspace';
 import { MilestoneStepper, type ProjectTab } from './ProjectViews';
 import { AvatarStack, MemberAvatar, ProgressBar } from './wp/primitives';
 import { useProjectActions } from './wp/useProjectActions';
+import { Plus, MoreHorizontal, Users, Mail, Pencil, Trash2, LogOut, Filter, X, Inbox, SquaresFour, Flag, Kanban, Calendar, FileText, Activity, Milestone } from './ui/icons';
 
 interface Props {
   tab: ProjectTab;
@@ -72,13 +73,13 @@ export default function ProjectHeader({
   const filterMember = members.find(m => m.id === filterMemberId);
   const inboxCount = board.inboxCards?.length || 0;
 
-  const tabs: Array<{ id: ProjectTab; label: string }> = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'milestones', label: 'Milestones' },
-    { id: 'tasks', label: isRoadmap ? 'Roadmap' : 'Tasks' },
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'files', label: 'Files' },
-    { id: 'activity', label: 'Activity' },
+  const tabs: Array<{ id: ProjectTab; label: string; icon: typeof Flag }> = [
+    { id: 'overview', label: 'Overview', icon: SquaresFour },
+    { id: 'milestones', label: 'Milestones', icon: Flag },
+    { id: 'tasks', label: isRoadmap ? 'Roadmap' : 'Tasks', icon: isRoadmap ? Milestone : Kanban },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'files', label: 'Files', icon: FileText },
+    { id: 'activity', label: 'Activity', icon: Activity },
   ];
   const workView = tab === 'tasks' || tab === 'calendar';
 
@@ -144,12 +145,12 @@ export default function ProjectHeader({
           </div>
           {!isObserver && (
             <button type="button" className="wp-btn wp-btn-outline" onClick={onNewTask}>
-              New task
+              <Plus size={15} weight="bold" /> New task
             </button>
           )}
           <div ref={menuRef} style={{ position: 'relative' }}>
-            <button type="button" className="wp-icon-ghost bordered" onClick={() => setMenuOpen(o => !o)} title="Project options">
-              ···
+            <button type="button" className="wp-icon-ghost bordered" onClick={() => setMenuOpen(o => !o)} title="Project options" aria-label="Project options">
+              <MoreHorizontal size={18} weight="bold" />
             </button>
             <AnimatePresence>
               {menuOpen && (
@@ -162,15 +163,15 @@ export default function ProjectHeader({
                   transition={{ duration: 0.12 }}
                 >
                   <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onManageMembers(); }}>
-                    Members & invites
+                    <Users size={16} /> Members & invites
                   </button>
                   <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onManageEmail(); }}>
-                    Email updates
+                    <Mail size={16} /> Email updates
                   </button>
                   {editable && (
                     <>
                       <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); setName(board.name); setEditing(true); }}>
-                        Rename
+                        <Pencil size={16} /> Rename
                       </button>
                     </>
                   )}
@@ -180,6 +181,7 @@ export default function ProjectHeader({
                     className="wp-menu-item danger"
                     onClick={() => { setMenuOpen(false); removeOrLeave(board, onLeftProject); }}
                   >
+                    {owner ? <Trash2 size={16} /> : <LogOut size={16} />}
                     {owner ? 'Delete project' : 'Leave project'}
                   </button>
                 </motion.div>
@@ -202,6 +204,7 @@ export default function ProjectHeader({
               className={`wp-tab${tab === t.id ? ' active' : ''}`}
               onClick={() => onSelectTab(t.id)}
             >
+              <t.icon size={16} weight={tab === t.id ? 'fill' : 'regular'} />
               {t.label}
             </button>
           ))}
@@ -212,6 +215,7 @@ export default function ProjectHeader({
               onClick={onToggleInbox}
               title="Backlog inbox"
             >
+              <Inbox size={16} />
               Inbox
               {inboxCount > 0 && <span className="wp-count">{inboxCount}</span>}
             </button>
@@ -223,11 +227,11 @@ export default function ProjectHeader({
             <span className="wp-filter-chip">
               <MemberAvatar member={filterMember} size={18} ring={false} />
               {filterMember.name}
-              <button type="button" onClick={() => onFilterMember(null)} aria-label="Clear filter">×</button>
+              <button type="button" onClick={() => onFilterMember(null)} aria-label="Clear filter"><X size={12} weight="bold" /></button>
             </span>
           ) : (
             <button type="button" className="wp-filter-btn" onClick={() => setFilterOpen(o => !o)}>
-              Filter<span className="hide-on-mobile-inline">&nbsp;by member</span>
+              <Filter size={15} /> Filter<span className="hide-on-mobile-inline">&nbsp;by member</span>
             </button>
           )}
           <AnimatePresence>

@@ -5,6 +5,15 @@ import { useWorkspace, timeAgo, type AppPage } from '../lib/workspace';
 import { getRecent } from '../lib/recent';
 import { MemberAvatar } from './wp/primitives';
 import type { Member } from '../types';
+import {
+  Plus, KanbanSquare, Milestone, Calendar, Path, UserPlus, Sun, Settings, CheckSquare, Square, Search, ArrowRight, Clock,
+} from './ui/icons';
+
+const ACTION_ICON: Record<string, typeof Plus> = {
+  'a-task': Plus, 'a-board': KanbanSquare, 'a-roadmap': Milestone, 'a-cal': Calendar,
+  'a-time': Path, 'a-invite': UserPlus, 'a-theme': Sun, 'a-settings': Settings,
+};
+const KIND_ICON: Record<string, typeof Plus> = { Project: KanbanSquare, Roadmap: Milestone, Task: Square, Done: CheckSquare };
 
 interface Props {
   onClose: () => void;
@@ -140,6 +149,7 @@ export default function CommandPalette(props: Props) {
         aria-label="Command palette"
       >
         <div className="wp-palette-input">
+          <Search size={18} className="wp-search-icon" />
           <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Search projects, tasks, people — or type a command" />
           <kbd className="wp-kbd">Esc</kbd>
         </div>
@@ -167,7 +177,10 @@ export default function CommandPalette(props: Props) {
                   onMouseMove={() => setCursor(i)}
                   onClick={row.run}
                 >
-                  {row.avatar ? <MemberAvatar member={row.avatar} size={22} ring={false} /> : <span className="wp-palette-kind">{row.kind}</span>}
+                  {row.avatar ? <MemberAvatar member={row.avatar} size={22} ring={false} /> : (() => {
+                    const RowIcon = ACTION_ICON[row.key] || (row.group === 'Recent' && row.kind === 'Task' ? Clock : KIND_ICON[row.kind]) || ArrowRight;
+                    return <span className="wp-palette-icon" title={row.kind}><RowIcon size={17} /></span>;
+                  })()}
                   <span className="wp-palette-title">{row.title}</span>
                   {row.meta && <span className="wp-palette-meta">{row.meta}</span>}
                   <span className="wp-palette-enter">↵</span>

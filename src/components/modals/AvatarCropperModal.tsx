@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ZoomIn, ZoomOut, RotateCw, RotateCcw, Check, X, Move } from '../ui/glyphs';
+import { ZoomIn, ZoomOut, RotateCw, RotateCcw, Check, X, Move } from '../ui/icons';
 
 interface Props {
   isOpen: boolean;

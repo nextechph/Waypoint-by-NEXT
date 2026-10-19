@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X } from '../ui/glyphs';
+import { Check, X } from '../ui/icons';
 import { motion } from 'framer-motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useToastStore } from '../../store/useToastStore';

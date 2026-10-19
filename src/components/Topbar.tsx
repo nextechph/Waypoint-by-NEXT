@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, Search, ChevronDown, Menu, LogOut, User, Sun, Moon, Settings } from './ui/glyphs';
+import { Bell, Search, Menu, LogOut, User, Sun, Moon, Settings } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { avatarInitials, useIsMobile } from '../utils';
-import { useMyNotifications, type AppPage } from '../lib/workspace';
+import { useMyNotifications, getInboxSeen, type AppPage } from '../lib/workspace';
 import AvatarBorder from './ui/AvatarBorder';
 import markDark from '../assets/logo-mark-dark.png';
 import markLight from '../assets/logo-mark-light.png';
@@ -72,7 +72,7 @@ export default function Topbar({
       <div className="wp-topbar-left">
         {onToggleMobileMenu && (
           <button type="button" className="wp-text-link show-on-mobile-flex" onClick={onToggleMobileMenu} aria-label="Open navigation">
-            Menu
+            <Menu size={20} />
           </button>
         )}
         {isMobile && (
@@ -93,12 +93,24 @@ export default function Topbar({
 
       <div className="wp-topbar-right">
         <button type="button" className="wp-search-trigger" onClick={onOpenSearch} title="Search (⌘K)">
-          {isMobile ? <span className="wp-search-word">Search</span> : (
+          <Search size={16} className="wp-search-icon" />
+          {isMobile ? null : (
             <>
               <span className="wp-search-placeholder">{board ? `Search ${board.name}…` : 'Search anything…'}</span>
               <kbd className="wp-kbd">⌘K</kbd>
             </>
           )}
+        </button>
+
+        <button
+          type="button"
+          className={`wp-icon-btn${notifOpen || page === 'inbox' ? ' on' : ''}`}
+          onClick={onToggleNotif}
+          title="Notifications"
+          aria-label="Notifications"
+        >
+          <Bell size={18} weight={notifOpen ? 'fill' : 'regular'} />
+          {page !== 'inbox' && notifications.some(n => new Date(n.time).getTime() > getInboxSeen()) && <span className="wp-bell-dot" />}
         </button>
 
         <span className="wp-topbar-divider hide-on-mobile" />
@@ -131,17 +143,17 @@ export default function Topbar({
                 </div>
                 <div className="wp-menu-sep" />
                 <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onOpenSettings('profile'); }}>
-                  Profile & avatar
+                  <User size={16} /> Profile & avatar
                 </button>
                 <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onOpenSettings(); }}>
-                  Settings
+                  <Settings size={16} /> Settings
                 </button>
                 <button type="button" className="wp-menu-item" onClick={() => toggleTheme()}>
-                  {isDark ? 'Switch to light' : 'Switch to dark'}
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />} {isDark ? 'Switch to light' : 'Switch to dark'}
                 </button>
                 <div className="wp-menu-sep" />
                 <button type="button" className="wp-menu-item danger" onClick={() => { setMenuOpen(false); logout(); }}>
-                  Sign out
+                  <LogOut size={16} /> Sign out
                 </button>
               </motion.div>
             )}
