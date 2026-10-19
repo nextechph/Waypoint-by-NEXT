@@ -992,8 +992,13 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           setMobileMenuOpen(false);
           setShowBoardSelector(false);
         }}
-        onNewTask={() => {
-          setQuickTask(inProject ? { boardId: activeBoardId } : {});
+        onCreateBoard={() => {
+          setShowCreateBoard(true);
+          setShowBoardSelector(false);
+          setMobileMenuOpen(false);
+        }}
+        onCreateRoadmap={() => {
+          setShowCreateRoadmap(true);
           setShowBoardSelector(false);
           setMobileMenuOpen(false);
         }}
