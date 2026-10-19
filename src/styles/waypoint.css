@@ -467,7 +467,6 @@ html.theme-fade-transition *::after {
 .wp-nav-label { flex: 1; }
 .wp-nav-dot { width: 7px; height: 7px; border-radius: 50%; background: hsl(var(--foreground)); flex-shrink: 0; }
 .collapsed .wp-nav-dot { position: absolute; top: 11px; right: 14px; }
-.wp-nav-dot.mobile { position: absolute; top: -1px; right: -3px; }
 
 .wp-side-section { padding: 0 16px; display: flex; flex-direction: column; gap: 6px; }
 .wp-side-section-head { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; }
@@ -998,9 +997,6 @@ html.theme-fade-transition *::after {
   .wp-project-actions { width: 100%; justify-content: flex-end; }
   .wp-project-actions .wp-btn { flex: 1; }
   .wp-quick-grid { grid-template-columns: 1fr; }
-  .mobile-nav-fab { color: hsl(var(--primary-foreground)) !important; background: hsl(var(--primary)) !important; border-color: hsl(var(--background)) !important; }
-  .mobile-bottom-nav { background-color: hsl(var(--background)) !important; }
-  .mobile-nav-tab.active { background: transparent !important; color: hsl(var(--foreground)) !important; }
 }
 
 /* ══ Project workspace: board, columns, cards ═════════════ */
@@ -1143,10 +1139,6 @@ html.theme-fade-transition *::after {
 .wp-search-icon { color: var(--wp-ink-3); }
 .wp-menu-item .wp-icon { color: var(--wp-ink-3); }
 .wp-menu-item:hover .wp-icon { color: var(--wp-ink); }
-.wp-mobile-tab-icon { position: relative; display: inline-flex; }
-.mobile-nav-tab { flex-direction: column; gap: 3px !important; }
-.mobile-nav-tab .wp-mobile-tab-label { font-size: 10.5px; }
-.mobile-nav-tab.active .wp-mobile-tab-label::after { display: none; }
 .wp-btn .wp-icon, .wp-chip .wp-icon { margin-right: -2px; }
 @keyframes wp-spin { to { transform: rotate(360deg); } }
 
@@ -1178,7 +1170,6 @@ html.theme-fade-transition *::after {
 .wp-search-word { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
 .wp-title-caret { font-size: 0.5em; margin-left: 8px; opacity: 0.5; }
 .wp-motion-chevron { font-size: 16px; }
-.wp-mobile-tab-label { position: relative; display: inline-flex; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; }
 .wp-check.checked::after, .wpc-done.checked::after {
   content: '';
   width: 4px;
@@ -1187,9 +1178,6 @@ html.theme-fade-transition *::after {
   border-width: 0 1.5px 1.5px 0;
   transform: translateY(-1px) rotate(45deg);
 }
-.mobile-nav-fab { font-size: 26px; font-weight: 300; line-height: 1; }
-.mobile-nav-tab { gap: 0 !important; padding: 0 !important; height: 100%; }
-.mobile-nav-tab.active .wp-mobile-tab-label::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 2px; background: hsl(var(--foreground)); }
 
 /* ══ Board card (rebuilt) ══════════════════════════════════ */
 .card { gap: 8px; padding: 13px 14px 11px 16px; }
@@ -1602,4 +1590,132 @@ li.current .wp-ms-status { color: var(--wp-ink); }
   .wp-inbox-kind { width: auto; }
   .wp-inbox-kind { font-size: 0; letter-spacing: 0; }
   .wp-inbox-kind-icon { margin-top: 0; }
+}
+
+/* ══ Mobile route bar ══════════════════════════════════════
+   A floating capsule: destinations are stops on a dotted
+   route, and the current one is an inverted marker. */
+.wp-route-dock { display: none; }
+@media (max-width: 860px) {
+  .wp-route-dock {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: calc(12px + var(--sab));
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    pointer-events: none;
+  }
+  .wp-route-dock::before {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(96px + var(--sab));
+    background: linear-gradient(to top, hsl(var(--background)) 35%, hsl(var(--background) / 0));
+    z-index: -1;
+  }
+  .wp-route, .wp-route-new { pointer-events: auto; }
+  .wp-route {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 60px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 30px;
+    background: hsl(var(--card) / 0.92);
+    border: 1px solid var(--wp-hairline);
+    box-shadow: 0 10px 30px hsl(0 0% 0% / 0.22), 0 2px 6px hsl(0 0% 0% / 0.12);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  }
+  .wp-route-line {
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    top: 50%;
+    height: 0;
+    border-top: 1.5px dashed hsl(var(--foreground) / 0.18);
+    pointer-events: none;
+  }
+  .wp-route-stop {
+    position: relative;
+    height: 44px;
+    min-width: 44px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--wp-ink-3);
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wp-route-stop.passed { color: var(--wp-ink-2); }
+  .wp-route-stop.active { color: hsl(var(--background)); }
+  .wp-route-marker {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    background: hsl(var(--foreground));
+    box-shadow: 0 0 0 5px hsl(var(--card));
+  }
+  .wp-route-stop-inner {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+  }
+  .wp-route-stop.active .wp-route-stop-inner { padding: 0 16px 0 13px; }
+  /* Inactive stops sit on a small disc so the dashed route reads as passing through them. */
+  .wp-route-icon {
+    position: relative;
+    display: inline-flex;
+    padding: 4px;
+    border-radius: 50%;
+    background: hsl(var(--card));
+  }
+  .wp-route-stop.active .wp-route-icon { background: transparent; padding: 0; }
+  .wp-route-label {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .wp-route-dot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: hsl(var(--foreground));
+    box-shadow: 0 0 0 2px hsl(var(--card));
+  }
+  .wp-route-new {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+    box-shadow: 0 10px 30px hsl(0 0% 0% / 0.28), 0 2px 6px hsl(0 0% 0% / 0.14);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
