@@ -6,6 +6,8 @@ import { canEditBoard, isMe, useWorkspace } from '../../lib/workspace';
 import { Select } from '../ui/Select';
 import DatePicker from '../ui/DatePicker';
 import { X, KanbanSquare, Milestone } from '../ui/icons';
+import { modalMotion } from '../../lib/motion';
+import { useErrorShake } from '../ui/transitions';
 
 interface Props {
   /** Preselect a project (e.g. when opened from a project header). */
@@ -38,6 +40,7 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
   const resolvedColumnId = columns.some(c => c.id === columnId) ? columnId : defaultColumn?.id || '';
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [assignMe, setAssignMe] = useState(true);
+  const titleErr = useErrorShake();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -49,6 +52,7 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
   const canSubmit = Boolean(title.trim() && project && resolvedColumnId);
 
   const submit = () => {
+    if (!title.trim() && project) { titleErr.showError(); return; }
     if (!canSubmit || !project) return;
     const card = addCard(resolvedColumnId, title.trim());
     const patch: Record<string, unknown> = {};
@@ -63,10 +67,7 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
   return (
     <div className="modal-overlay" onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, y: 16, scale: 0.96, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-        exit={{ opacity: 0, y: 10, scale: 0.96, filter: 'blur(3px)' }}
-        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+        {...modalMotion}
         className="modal small-modal wp-quick-task"
         onClick={e => e.stopPropagation()}
       >
@@ -97,15 +98,20 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
         ) : (
           <>
             <div className="modal-body">
-              <input
-                className="wp-quick-title"
-                placeholder="Task title"
-                value={title}
-                maxLength={140}
-                autoFocus
-                onChange={e => setTitle(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') submit(); }}
-              />
+              <div ref={titleErr.wrapRef} className="t-input-wrap wp-field-err wp-quick-title-wrap">
+                <div ref={titleErr.inputRef} className="t-input">
+                  <input
+                    className="wp-quick-title"
+                    placeholder="Task title"
+                    value={title}
+                    maxLength={140}
+                    autoFocus
+                    onChange={e => { setTitle(e.target.value); titleErr.clear(); }}
+                    onKeyDown={e => { if (e.key === 'Enter') submit(); }}
+                  />
+                </div>
+                <p className="t-error-msg">Give it a title first</p>
+              </div>
               <div className="wp-quick-grid">
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="field-label">Project</label>
@@ -135,7 +141,7 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
             </div>
             <div className="modal-footer">
               <button type="button" className="wp-btn wp-btn-ghost" onClick={onClose}>Cancel</button>
-              <button type="button" className="wp-btn wp-btn-primary" onClick={submit} disabled={!canSubmit}>
+              <button type="button" className="wp-btn wp-btn-primary" onClick={submit} disabled={!project || !resolvedColumnId} aria-disabled={!canSubmit}>
                 Add task
               </button>
             </div>

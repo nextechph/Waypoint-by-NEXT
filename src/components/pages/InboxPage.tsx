@@ -4,6 +4,8 @@ import { useNotifStore } from '../../store/useNotifStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useWorkspace, useMyNotifications, markInboxSeen, timeAgo, dayDiff } from '../../lib/workspace';
 import { EmptyState, Eyebrow } from '../wp/primitives';
+import { revealItem } from '../../lib/motion';
+import { RevealLines } from '../ui/transitions';
 import { Clock, AlertTriangle, CheckCircle2, Bell, X, Check } from '../ui/icons';
 
 interface Props {
@@ -44,10 +46,10 @@ export default function InboxPage({ onOpenCard }: Props) {
     <div className="wp-page">
       <div className="wp-page-inner narrow">
         <header className="wp-hero compact">
-          <div>
+          <RevealLines>
             <h1 className="wp-display md">Inbox.</h1>
             <p className="wp-lede">Assignments, mentions, comments and deadlines — the signals that need you.</p>
-          </div>
+          </RevealLines>
           {notifications.length > 0 && (
             <button type="button" className="wp-btn wp-btn-ghost" onClick={() => clearAll(user?.email)}>
               <Check size={15} /> Clear all
@@ -62,9 +64,7 @@ export default function InboxPage({ onOpenCard }: Props) {
             <motion.section
               key={g.label}
               className="wp-task-group"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: gi * 0.04, duration: 0.3 }}
+              {...revealItem(gi)}
             >
               <div className="wp-task-group-head"><Eyebrow>{g.label}</Eyebrow></div>
               <div className="wp-inbox-list">

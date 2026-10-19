@@ -2,6 +2,9 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KanbanSquare, Plus, X, Check, ArrowRight } from '../ui/icons';
 import type { Board } from '../../types';
+import { overlayMotion, panelMotion } from '../../lib/motion';
+
+const sheetMotion = panelMotion('y', 100);
 
 interface MobileBoardSelectorProps {
   isOpen: boolean;
@@ -26,10 +29,7 @@ export default function MobileBoardSelector({
         <div style={{ position: 'fixed', inset: 0, zIndex: 120 }}>
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            {...overlayMotion}
             onClick={onClose}
             style={{
               position: 'fixed',
@@ -42,10 +42,7 @@ export default function MobileBoardSelector({
 
           {/* Bottom Sheet Modal */}
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+            {...sheetMotion}
             style={{
               position: 'fixed',
               bottom: 0,

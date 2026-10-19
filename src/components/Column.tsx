@@ -6,6 +6,9 @@ import { useToastStore } from '../store/useToastStore';
 import { useConfirmStore } from '../store/useConfirmStore';
 import type { Column as ColType } from '../types';
 import CardComponent from './Card';
+import { dropdownMotion } from '../lib/motion';
+
+const colMenuMotion = dropdownMotion('top-right');
 
 interface DragState {
   cardId: string;
@@ -196,11 +199,9 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
             <AnimatePresence>
               {menuOpen && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.94, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                  transition={{ duration: 0.12 }}
+                  {...colMenuMotion}
                   style={{
+                    ...colMenuMotion.style,
                     position: 'absolute',
                     top: '100%',
                     right: 0,
@@ -286,8 +287,7 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
               isUrgent={isUrgentCol}
               isObserver={isObserver}
               onClick={() => onOpenCard(card.id)}
-              onToggleComplete={e => {
-                e.stopPropagation();
+              onToggleComplete={() => {
                 if (!isObserver) toggleCardComplete(card.id);
               }}
               onDragStart={e => {

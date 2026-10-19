@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import BoardArea from './components/BoardArea';
@@ -24,6 +24,7 @@ import CreateRoadmapModal from './components/modals/CreateRoadmapModal';
 import AddColumnModal from './components/modals/AddColumnModal';
 import CommandPalette from './components/CommandPalette';
 import { pushRecent } from './lib/recent';
+import { pageVariants } from './lib/motion';
 import PrivacyModal from './components/modals/PrivacyModal';
 import SettingsModal from './components/modals/SettingsModal';
 import ConfirmModal from './components/modals/ConfirmModal';
@@ -45,37 +46,8 @@ import { SHELL_PAGES, canEditBoard, getInboxSeen, markInboxSeen, useMyNotificati
 
 const CHECK_INTERVAL_MS = 10_000;
 
-const pageVariants: Variants = {
-  initial: { opacity: 0, y: 12, filter: 'blur(5px)' },
-  animate: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-  },
-  exit: {
-    opacity: 0,
-    y: -8,
-    filter: 'blur(4px)',
-    transition: { duration: 0.16, ease: [0.65, 0, 0.35, 1] }
-  }
-};
-
-const pageMobileVariants: Variants = {
-  initial: { opacity: 0, y: 8, filter: 'blur(3px)' },
-  animate: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] }
-  },
-  exit: {
-    opacity: 0,
-    y: -6,
-    filter: 'blur(2px)',
-    transition: { duration: 0.14, ease: [0.65, 0, 0.35, 1] }
-  }
-};
+// Page side-by-side: moving to a later destination slides forward, an earlier one back.
+const PAGE_ORDER: AppPage[] = ['dashboard', 'mywork', 'projects', 'board', 'roadmap', 'timeline', 'calendar', 'inbox'];
 
 export default function App() {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
@@ -329,6 +301,13 @@ export default function App() {
   // Page routing: dashboard (home), board (active board view), or roadmap (dedicated roadmap view)
   const isMobile = useIsMobile(860);
   const [page, setPage] = useState<AppPage>(initialRouting.page);
+  const pageIndex = PAGE_ORDER.indexOf(page);
+  const prevPageIndex = useRef(pageIndex);
+  const pageDir = useRef(1);
+  if (pageIndex !== prevPageIndex.current) {
+    pageDir.current = pageIndex >= prevPageIndex.current ? 1 : -1;
+    prevPageIndex.current = pageIndex;
+  }
   const [quickTask, setQuickTask] = useState<{ boardId?: string | null } | null>(null);
   const [scheduleEditorOpen, setScheduleEditorOpen] = useState(false);
   const [projectTab, setProjectTab] = useState<ProjectTab>(() => {
@@ -862,10 +841,11 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
             onToggleNotif={() => setNotifOpen(o => !o)}
             notifOpen={notifOpen}
           />
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" custom={pageDir.current}>
             <motion.div
               key={inProject ? `project-${activeBoardId}` : `page-${page}`}
-              variants={isMobile ? pageMobileVariants : pageVariants}
+              custom={pageDir.current}
+              variants={pageVariants}
               initial="initial"
               animate="animate"
               exit="exit"
@@ -877,9 +857,11 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Modals — AnimatePresence lets each one play its close transition before unmounting. */}
+      <AnimatePresence>
       {showSearch && (
         <CommandPalette
+          key="search"
           onClose={() => setShowSearch(false)}
           onOpenCard={(cardId, boardId) => handleOpenCard(cardId, boardId)}
           onSelectBoard={boardId => handleSelectBoard(boardId)}
@@ -897,13 +879,15 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {showSettings && (
         <SettingsModal
+          key="settings"
           initialTab={settingsTab}
           onClose={() => setShowSettings(false)}
         />
       )}
-      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+      {showPrivacy && <PrivacyModal key="privacy" onClose={() => setShowPrivacy(false)} />}
       {showCreateBoard && (
         <CreateBoardModal
+          key="create-board"
           onClose={(createdBoardId?: string) => {
             setShowCreateBoard(false);
             if (createdBoardId) {
@@ -915,6 +899,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {showCreateRoadmap && (
         <CreateRoadmapModal
+          key="create-roadmap"
           onClose={(createdRoadmapId?: string) => {
             setShowCreateRoadmap(false);
             if (createdRoadmapId) {
@@ -927,12 +912,14 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {showAddColumn && (
         <AddColumnModal
+          key="add-column"
           onClose={() => setShowAddColumn(false)}
           mode="column"
         />
       )}
       {quickTask && (
         <QuickTaskModal
+          key="quick-task"
           boardId={quickTask.boardId}
           onClose={() => setQuickTask(null)}
           onCreated={(cardId, boardId) => handleOpenCard(cardId, boardId)}
@@ -940,12 +927,13 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           onCreateRoadmap={() => setShowCreateRoadmap(true)}
         />
       )}
-      {showMembers && <MembersModal onClose={() => setShowMembers(false)} />}
-      {showEmail && <EmailNotifModal onClose={() => setShowEmail(false)} />}
+      {showMembers && <MembersModal key="members" onClose={() => setShowMembers(false)} />}
+      {showEmail && <EmailNotifModal key="email" onClose={() => setShowEmail(false)} />}
 
       {/* Card Detail */}
       {openCardId && !scheduleEditorOpen && (
         <TaskSheet
+          key="task-sheet"
           cardId={openCardId}
           boardId={openCardBoardId}
           onClose={() => { setOpenCardId(null); setOpenCardBoardId(null); }}
@@ -954,11 +942,13 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {openCardId && scheduleEditorOpen && (
         <CardModal
+          key="schedule-editor"
           cardId={openCardId}
           boardId={openCardBoardId}
           onClose={() => setScheduleEditorOpen(false)}
         />
       )}
+      </AnimatePresence>
 
       {/* Notification Panel */}
       <NotifPanel

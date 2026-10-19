@@ -8,7 +8,9 @@ import {
 } from '../../lib/workspace';
 import { AvatarStack, Eyebrow, ProgressBar, ProjectGlyph, Tag, EmptyState } from '../wp/primitives';
 import heroImg from '../../assets/login-hero.jpg';
-import { Plus, ArrowRight, Check, Crosshair, ArrowUpRight } from '../ui/icons';
+import { Plus, Check, Crosshair, ArrowUpRight } from '../ui/icons';
+import { revealItem } from '../../lib/motion';
+import { RevealLines, NumberPop, LearnChevron } from '../ui/transitions';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -17,16 +19,6 @@ interface Props {
   onCreateBoard: () => void;
   onNavigate: (page: 'projects' | 'inbox' | 'mywork') => void;
 }
-
-const fade = {
-  hidden: { opacity: 0, y: 12, filter: 'blur(4px)' },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)', transitionEnd: { filter: 'none' },
-    transition: { delay: i * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] as const }
-  }),
-};
 
 export function plainText(desc: string): string {
   return (desc || '')
@@ -110,32 +102,34 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
     <div className="wp-page">
       <div className="wp-page-inner">
         {/* Hero */}
-        <motion.header className="wp-hero" variants={fade} initial="hidden" animate="show" custom={0}>
+        <header className="wp-hero">
           <div>
-            <h1 className="wp-display">Make progress.</h1>
-            <p className="wp-lede">
-              {greeting}{firstName ? `, ${firstName}` : ''}. Your priorities, projects, and next steps — in one place.
-            </p>
-            <div className="wp-hero-stats">
-              <span><strong>{boards.length}</strong> active {boards.length === 1 ? 'project' : 'projects'}</span>
+            <RevealLines>
+              <h1 className="wp-display">Make progress.</h1>
+              <p className="wp-lede">
+                {greeting}{firstName ? `, ${firstName}` : ''}. Your priorities, projects, and next steps — in one place.
+              </p>
+            </RevealLines>
+            <motion.div className="wp-hero-stats" {...revealItem(2)}>
+              <span><strong><NumberPop value={boards.length} /></strong> active {boards.length === 1 ? 'project' : 'projects'}</span>
               <span className="wp-dot-sep" />
-              <span><strong>{dueToday}</strong> due today</span>
+              <span><strong><NumberPop value={dueToday} /></strong> due today</span>
               {overdue > 0 && (
                 <>
                   <span className="wp-dot-sep" />
-                  <span className="wp-text-danger"><strong>{overdue}</strong> overdue</span>
+                  <span className="wp-text-danger"><strong><NumberPop value={overdue} /></strong> overdue</span>
                 </>
               )}
-            </div>
+            </motion.div>
           </div>
-          <button type="button" className="wp-btn wp-btn-outline lg" onClick={onNewTask}>
+          <motion.button type="button" className="wp-btn wp-btn-outline lg" onClick={onNewTask} {...revealItem(1)}>
             <Plus size={16} weight="bold" /> New task
-          </button>
-        </motion.header>
+          </motion.button>
+        </header>
 
         {/* Next milestone */}
         {nextMilestone && (
-          <motion.section className="wp-milestone-hero" variants={fade} initial="hidden" animate="show" custom={0.5}>
+          <motion.section className="wp-milestone-hero" {...revealItem(0.5)}>
             <img src={heroImg} alt="" aria-hidden />
             <div className="wp-milestone-hero-body">
               <Eyebrow style={{ color: 'rgba(255,255,255,0.6)' }}>Your next milestone</Eyebrow>
@@ -143,12 +137,12 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
               <p>{nextMilestone.cardId ? nextMilestone.board.name : (nextMilestone.board.description ? plainText(nextMilestone.board.description) : 'Keep the momentum — this project is next on your path.')}</p>
               <div className="wp-milestone-hero-progress">
                 <ProgressBar value={nextMilestone.progress} />
-                <span>{nextMilestone.progress}%</span>
+                <span><NumberPop value={nextMilestone.progress} />%</span>
                 {nextMilestone.date && <span>Due {formatShortDate(nextMilestone.date)}</span>}
               </div>
               <div className="wp-milestone-hero-actions">
                 {nextMilestone.cardId && (
-                  <button type="button" className="wp-btn wp-btn-light" onClick={() => onOpenCard(nextMilestone.cardId!, nextMilestone.board.id)}>Open milestone <ArrowRight size={15} /></button>
+                  <button type="button" className="wp-btn wp-btn-light t-learn" onClick={() => onOpenCard(nextMilestone.cardId!, nextMilestone.board.id)}>Open milestone <LearnChevron size={15} /></button>
                 )}
                 <button type="button" className="wp-btn wp-btn-glass" onClick={() => onSelectBoard(nextMilestone.board.id)}>View project <ArrowUpRight size={15} /></button>
               </div>
@@ -158,7 +152,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
 
         {/* Direction + Up next */}
         <div className="wp-today-grid">
-          <motion.section variants={fade} initial="hidden" animate="show" custom={1}>
+          <motion.section {...revealItem(1)}>
             <Eyebrow>Today’s direction</Eyebrow>
             <div className="wp-rule" />
             {priority ? (
@@ -177,7 +171,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
             )}
           </motion.section>
 
-          <motion.aside className="wp-upnext" variants={fade} initial="hidden" animate="show" custom={2}>
+          <motion.aside className="wp-upnext" {...revealItem(2)}>
             <Eyebrow>Up next</Eyebrow>
             <div className="wp-rule" />
             {upNext.length === 0 ? (
@@ -200,7 +194,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
 
         {/* Upcoming milestones */}
         {upcomingMilestones.length > 0 && (
-          <motion.section className="wp-section" variants={fade} initial="hidden" animate="show" custom={2.5}>
+          <motion.section className="wp-section" {...revealItem(2.5)}>
             <div className="wp-section-head">
               <div>
                 <Eyebrow>Milestones, not just tasks</Eyebrow>
@@ -214,7 +208,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
                     <span className={`wp-ms-mark ${m.status}`} />
                     <span className="wp-ms-title">{m.title} <em>· {board.name}</em></span>
                     <span className="wp-ms-date">{m.date ? formatShortDate(m.date) : '—'}</span>
-                    <span className="wp-ms-status">{m.progress}%</span>
+                    <span className="wp-ms-status"><NumberPop value={m.progress} />%</span>
                   </button>
                 </li>
               ))}
@@ -223,15 +217,15 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
         )}
 
         {/* In motion */}
-        <motion.section className="wp-section" variants={fade} initial="hidden" animate="show" custom={3}>
+        <motion.section className="wp-section" {...revealItem(3)}>
           <div className="wp-section-head">
             <div>
               <Eyebrow>Project overview</Eyebrow>
               <h2 className="wp-h2">In motion</h2>
             </div>
             {boards.length > 0 && (
-              <button type="button" className="wp-link" onClick={() => onNavigate('projects')}>
-                All projects <ArrowRight size={14} />
+              <button type="button" className="wp-link t-learn" onClick={() => onNavigate('projects')}>
+                All projects <LearnChevron size={14} />
               </button>
             )}
           </div>
@@ -244,7 +238,7 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
           ) : (
             <div className="wp-motion-list">
               {inMotion.map(({ board, stats }) => (
-                <button key={board.id} type="button" className="wp-motion-row" onClick={() => onSelectBoard(board.id)}>
+                <button key={board.id} type="button" className="wp-motion-row t-learn" onClick={() => onSelectBoard(board.id)}>
                   <ProjectGlyph id={board.id} />
                   <span className="wp-motion-main">
                     <span className="wp-motion-title">{board.name}</span>
@@ -261,13 +255,13 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
                     <Eyebrow>Progress</Eyebrow>
                     <span className="wp-motion-progress-row">
                       <ProgressBar value={stats.progress} />
-                      <span className="wp-num">{stats.progress}%</span>
+                      <span className="wp-num"><NumberPop value={stats.progress} />%</span>
                     </span>
                   </span>
                   <span className="wp-motion-due hide-on-mobile">
                                         {stats.due ? `Due ${formatShortDate(stats.due)}` : stats.total && stats.progress === 100 ? 'Complete' : 'No due date'}
                   </span>
-                  <ArrowRight size={16} className="wp-motion-chevron" />
+                  <span className="wp-motion-chevron"><LearnChevron size={16} /></span>
                 </button>
               ))}
             </div>
@@ -275,11 +269,11 @@ export default function TodayPage({ onOpenCard, onSelectBoard, onNewTask, onCrea
         </motion.section>
 
         {/* Recent signals */}
-        <motion.section className="wp-signals" variants={fade} initial="hidden" animate="show" custom={4}>
+        <motion.section className="wp-signals" {...revealItem(4)}>
           <div className="wp-signals-head">
             <Eyebrow>Recent signals</Eyebrow>
-            <button type="button" className="wp-link sm" onClick={() => onNavigate('inbox')}>
-              View all activity <ArrowRight size={13} />
+            <button type="button" className="wp-link sm t-learn" onClick={() => onNavigate('inbox')}>
+              View all activity <LearnChevron size={13} />
             </button>
           </div>
           {notifications.length === 0 ? (
@@ -347,7 +341,7 @@ function PriorityCard({ item, onFocus, onOpenProject, onComplete }: {
             </button>
             <div className="wp-priority-progress">
               <ProgressBar value={progress} />
-              <span className="wp-muted-sm">{progress}% · {columnName}</span>
+              <span className="wp-muted-sm"><NumberPop value={progress} />% · {columnName}</span>
             </div>
           </div>
           <div className="wp-priority-actions">

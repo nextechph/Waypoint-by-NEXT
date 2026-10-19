@@ -7,6 +7,8 @@ import { canEditBoard, isBoardOwner, projectStats } from '../lib/workspace';
 import { MilestoneStepper, type ProjectTab } from './ProjectViews';
 import { AvatarStack, MemberAvatar, ProgressBar } from './wp/primitives';
 import { useProjectActions } from './wp/useProjectActions';
+import { dropdownMotion } from '../lib/motion';
+import { NumberPop, useSlidingPill } from './ui/transitions';
 import { Plus, MoreHorizontal, Users, Mail, Pencil, Trash2, LogOut, Filter, X, Inbox, SquaresFour, Flag, Kanban, Calendar, FileText, Activity, Milestone } from './ui/icons';
 
 interface Props {
@@ -51,6 +53,11 @@ export default function ProjectHeader({
   const [filterOpen, setFilterOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
+  // Only role="tab" buttons carry aria-selected, so the Inbox toggle's .active never steals the bar.
+  // Keyed on the board too: the bar mounts only once a board is loaded, and tab widths change per board.
+  const tabBar = useSlidingPill<HTMLDivElement>(`${board?.id}:${tab}`, '[aria-selected="true"]');
+  const menuMotion = dropdownMotion('top-right');
+  const filterMotion = dropdownMotion('top-right');
 
   useEffect(() => {
     if (!menuOpen && !filterOpen) return;
@@ -95,7 +102,7 @@ export default function ProjectHeader({
           <div className="wp-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>{isRoadmap ? 'Roadmap' : 'Task board'}</span>
             <span className="wp-dot-sep" />
-            <span>{stats.done}/{stats.total} complete</span>
+            <span><NumberPop value={stats.done} />/<NumberPop value={stats.total} /> complete</span>
             {isObserver && (
               <>
                 <span className="wp-dot-sep" />
@@ -136,7 +143,7 @@ export default function ProjectHeader({
             <div className="wp-eyebrow">Progress</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 120 }}><ProgressBar value={stats.progress} /></div>
-              <span className="wp-num">{stats.progress}%</span>
+              <span className="wp-num"><NumberPop value={stats.progress} />%</span>
             </div>
           </div>
           <div className="hide-on-mobile">
@@ -156,11 +163,8 @@ export default function ProjectHeader({
               {menuOpen && (
                 <motion.div
                   className="wp-menu"
-                  style={{ right: 0, top: 'calc(100% + 8px)', width: 220 }}
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.12 }}
+                  {...menuMotion}
+                  style={{ right: 0, top: 'calc(100% + 8px)', width: 220, ...menuMotion.style }}
                 >
                   <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onManageMembers(); }}>
                     <Users size={16} /> Members & invites
@@ -194,7 +198,8 @@ export default function ProjectHeader({
       {!workView && <MilestoneStepper board={board} onOpenCard={onOpenCard} />}
 
       <div className="wp-tabs-row">
-        <div className="wp-tabs" role="tablist">
+        <div ref={tabBar.barRef} className="wp-tabs has-pill" role="tablist">
+          {tabBar.pill}
           {tabs.map(t => (
             <button
               key={t.id}
@@ -217,7 +222,7 @@ export default function ProjectHeader({
             >
               <Inbox size={16} />
               Inbox
-              {inboxCount > 0 && <span className="wp-count">{inboxCount}</span>}
+              {inboxCount > 0 && <span className="wp-count"><NumberPop value={inboxCount} /></span>}
             </button>
           )}
         </div>
@@ -238,11 +243,8 @@ export default function ProjectHeader({
             {filterOpen && (
               <motion.div
                 className="wp-menu"
-                style={{ right: 0, top: 'calc(100% + 8px)', width: 240, maxHeight: 320, overflowY: 'auto' }}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.12 }}
+                {...filterMotion}
+                style={{ right: 0, top: 'calc(100% + 8px)', width: 240, maxHeight: 320, overflowY: 'auto', ...filterMotion.style }}
               >
                 {members.map(m => (
                   <button key={m.id} type="button" className="wp-menu-item" onClick={() => { onFilterMember(m.id); setFilterOpen(false); }}>

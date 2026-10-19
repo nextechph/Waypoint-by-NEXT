@@ -13,6 +13,8 @@ import { useWorkStore } from '../store/useWorkStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useToastStore } from '../store/useToastStore';
 import AvatarBorder from './ui/AvatarBorder';
+import { CheckBox } from './ui/transitions';
+import { dropdownMotion, revealItem } from '../lib/motion';
 
 interface Props {
   card: CardType;
@@ -23,7 +25,7 @@ interface Props {
   cardDelay?: number;
   isObserver?: boolean;
   onClick: () => void;
-  onToggleComplete: (e: React.MouseEvent) => void;
+  onToggleComplete: () => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
 }
@@ -69,6 +71,8 @@ function getPriority(card: CardType): { label: string; color: string } {
   }
   return { label: 'Low', color: '#64748b' };
 }
+
+const moveMenuMotion = dropdownMotion('bottom-right');
 
 export default function Card({
   card, cardIndex, colId, accentColor, isUrgent, isObserver,
@@ -267,8 +271,7 @@ export default function Card({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.96, y: 8, filter: 'blur(3px)' }}
-      animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+      {...revealItem(Math.min(cardIndex, 8))}
       exit={{ opacity: 0, scale: 0.88, y: 12, filter: 'blur(6px)', transition: { duration: 0.2, ease: [0.65, 0, 0.35, 1] } }}
       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       className={`card ${card.completed ? 'completed' : ''}${isTouchDragging ? ' touch-dragging' : ''}`}
@@ -375,11 +378,8 @@ export default function Card({
               {showMoveMenu && (
                 <motion.div
                   className="wp-menu"
-                  style={{ bottom: 'calc(100% + 6px)', right: 0, width: 180 }}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  transition={{ duration: 0.12 }}
+                  {...moveMenuMotion}
+                  style={{ ...moveMenuMotion.style, bottom: 'calc(100% + 6px)', right: 0, width: 180 }}
                   onClick={e => e.stopPropagation()}
                 >
                   <div className="wp-menu-head"><span className="wp-eyebrow">Move to</span></div>
@@ -404,12 +404,12 @@ export default function Card({
           </span>
         )}
 
-        <button
-          type="button"
-          className={`wpc-done${card.completed ? ' checked' : ''}`}
-          onClick={(e) => { e.stopPropagation(); onToggleComplete(e); }}
-          title={card.completed ? 'Mark as not done' : 'Mark as done'}
-          aria-pressed={card.completed}
+        <CheckBox
+          className="wpc-done"
+          checked={card.completed}
+          onToggle={onToggleComplete}
+          label={card.completed ? 'Mark as not done' : 'Mark as done'}
+          stopPropagation
         />
       </div>
 

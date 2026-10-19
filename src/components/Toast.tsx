@@ -1,11 +1,13 @@
 import React from 'react';
-import { CheckCircle2, XCircle, AlertTriangle, Info, X } from './ui/icons';
+import { XCircle, AlertTriangle, Info, X } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToastStore } from '../store/useToastStore';
 import type { ToastType } from '../store/useToastStore';
+import { toastMotion } from '../lib/motion';
+import { SuccessCheck } from './ui/transitions';
 
 const iconMap: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle2 size={16} color="#10b981" />,
+  success: <span style={{ display: 'inline-flex', color: 'hsl(var(--foreground))' }}><SuccessCheck size={16} /></span>,
   error:   <XCircle size={16} color="#ef4444" />,
   warning: <AlertTriangle size={16} color="#f59e0b" />,
   info:    <Info size={16} color="#3b82f6" />,
@@ -21,10 +23,7 @@ export default function Toast() {
         {toasts.map(t => (
           <motion.div
             key={t.id}
-            initial={{ opacity: 0, y: 16, scale: 0.95, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-            exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(3px)' }}
-            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            {...toastMotion}
             className={`toast ${t.type}`}
           >
             <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>

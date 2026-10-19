@@ -12,6 +12,8 @@ import { useEscape } from '../lib/useEscape';
 import { Select } from './ui/Select';
 import DatePicker from './ui/DatePicker';
 import { MemberAvatar } from './wp/primitives';
+import { CheckBox, useSlidingPill } from './ui/transitions';
+import { overlayMotion, panelMotion } from '../lib/motion';
 import { ArrowLeft, CalendarRange, Trash2, X, Plus, Upload, Reply, AlignLeft, MessageSquare, Paperclip, Activity, Send } from './ui/icons';
 
 interface Props {
@@ -54,6 +56,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
   const [comment, setComment] = useState('');
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { barRef: tabsRef, pill: tabsPill } = useSlidingPill<HTMLElement>(tab);
 
   useEscape(onClose);
 
@@ -150,20 +153,14 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
   return (
     <motion.div
       className="wp-sheet-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.24 }}
+      {...overlayMotion}
       onClick={onClose}
     >
       <motion.aside
         className="wp-sheet"
         role="dialog"
         aria-label={card.title}
-        initial={{ opacity: 0, x: 60, filter: 'blur(6px)' }}
-        animate={{ opacity: 1, x: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-        exit={{ opacity: 0, x: 60, filter: 'blur(4px)' }}
-        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+        {...panelMotion('x', 40)}
         onClick={e => e.stopPropagation()}
       >
         <header className="wp-sheet-head">
@@ -184,12 +181,12 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
 
         <div className="wp-sheet-body">
           <div className="wp-sheet-title-row">
-            <button
-              type="button"
-              className={`wpc-done lg${card.completed ? ' checked' : ''}`}
-              onClick={() => editable && toggleCardComplete(card.id)}
+            <CheckBox
+              className="wpc-done lg"
+              checked={card.completed}
+              onToggle={() => editable && toggleCardComplete(card.id)}
               disabled={!editable}
-              aria-label={card.completed ? 'Mark as not done' : 'Mark as done'}
+              label={card.completed ? 'Mark as not done' : 'Mark as done'}
             />
             <textarea
               className="wp-sheet-title"
@@ -230,7 +227,8 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
             <span className={`wp-status-pill${card.completed ? ' done' : ''}`}>{card.completed ? 'Completed' : isInbox ? 'Backlog' : column?.name}</span>
           </div>
 
-          <nav className="wp-tabs wp-sheet-tabs" role="tablist">
+          <nav ref={tabsRef} className="wp-tabs wp-sheet-tabs has-pill" role="tablist">
+            {tabsPill}
             {([
               ['details', 'Details', AlignLeft],
               ['comments', `Comments (${card.comments?.length || 0})`, MessageSquare],
@@ -255,12 +253,12 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
                 <ul className="wp-subtasks">
                   {subtasks.map(st => (
                     <li key={st.id} className={st.done ? 'done' : undefined}>
-                      <button
-                        type="button"
-                        className={`wp-check${st.done ? ' checked' : ''}`}
+                      <CheckBox
+                        className="wp-check"
+                        checked={st.done}
                         disabled={!editable}
-                        onClick={() => setSubtasks(subtasks.map(x => (x.id === st.id ? { ...x, done: !x.done } : x)))}
-                        aria-label={st.done ? 'Mark subtask as not done' : 'Mark subtask as done'}
+                        onToggle={() => setSubtasks(subtasks.map(x => (x.id === st.id ? { ...x, done: !x.done } : x)))}
+                        label={st.done ? 'Mark subtask as not done' : 'Mark subtask as done'}
                       />
                       <span className="wp-subtask-title">{st.title}</span>
                       {editable && (
@@ -298,10 +296,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
 
                 <dt>Priority</dt>
                 <dd>
-                  <div className="wp-segmented sm">
-                    <button type="button" disabled={!editable} className={!highPriority ? 'active' : ''} onClick={() => highPriority && toggleCardLabel(card.id, 'urgent')}>Normal</button>
-                    <button type="button" disabled={!editable} className={highPriority ? 'active' : ''} onClick={() => !highPriority && toggleCardLabel(card.id, 'urgent')}>High</button>
-                  </div>
+                  <PrioritySegment high={highPriority} disabled={!editable} onSet={high => high !== highPriority && toggleCardLabel(card.id, 'urgent')} />
                 </dd>
 
                 {/* Roadmaps schedule a start and end; task boards track a single deadline. */}
@@ -442,6 +437,17 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
         )}
       </motion.aside>
     </motion.div>
+  );
+}
+
+function PrioritySegment({ high, disabled, onSet }: { high: boolean; disabled: boolean; onSet: (high: boolean) => void }) {
+  const { barRef, pill } = useSlidingPill<HTMLDivElement>(high);
+  return (
+    <div ref={barRef} className="wp-segmented sm has-pill">
+      {pill}
+      <button type="button" disabled={disabled} className={!high ? 'active' : ''} onClick={() => onSet(false)}>Normal</button>
+      <button type="button" disabled={disabled} className={high ? 'active' : ''} onClick={() => onSet(true)}>High</button>
+    </div>
   );
 }
 

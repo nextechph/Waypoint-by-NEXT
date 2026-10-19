@@ -5,6 +5,8 @@ import {
   type Icon as PhosphorIcon,
 } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dropdownMotion } from '../lib/motion';
+import { Badge, IconSwap, TextSwap, useTooltipGroup } from './ui/transitions';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -85,6 +87,9 @@ export default function Sidebar({
   const go = (p: AppPage) => { onNavigate(p); close(); };
   const isNavActive = (p: AppPage) => page === p || (p === 'projects' && inProject);
   const isCollapsed = collapsed && !isMobileOpen;
+  const { groupRef, groupProps, trigger, tip } = useTooltipGroup(isCollapsed);
+  const createMotion = dropdownMotion('top-right');
+  const userMotion = dropdownMotion('bottom-left');
 
   const avatar = (size: number) => (
     <AvatarBorder borderStyle={user?.borderStyle} size={size}>
@@ -136,20 +141,22 @@ export default function Sidebar({
 
       <div className="wp-sidebar-scroll">
         {/* Primary navigation */}
-        <nav className="wp-nav" aria-label="Primary">
+        <nav ref={groupRef} {...groupProps} className="wp-nav" aria-label="Primary">
           {NAV.map(({ page: p, label, icon: NavIcon }) => (
             <button
               key={p}
               type="button"
               className={`wp-nav-item${isNavActive(p) ? ' active' : ''}`}
               onClick={() => go(p)}
-              title={isCollapsed ? label : undefined}
+              aria-label={isCollapsed ? label : undefined}
+              {...trigger(label)}
             >
               <NavIcon size={isCollapsed ? 21 : 19} weight={isNavActive(p) ? 'fill' : 'regular'} aria-hidden />
               {!isCollapsed && <span className="wp-nav-label">{label}</span>}
-              {p === 'inbox' && inboxUnread && <span className="wp-nav-dot" aria-label="Unread" />}
+              {p === 'inbox' && <Badge open={inboxUnread} className="wp-dot-badge" />}
             </button>
           ))}
+          {tip}
         </nav>
 
         {/* Projects quick list */}
@@ -165,11 +172,8 @@ export default function Sidebar({
                   {createOpen && (
                     <motion.div
                       className="wp-menu"
-                      style={{ right: 0, top: 30, width: 200 }}
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.12 }}
+                      {...createMotion}
+                      style={{ right: 0, top: 30, width: 200, ...createMotion.style }}
                     >
                       <button type="button" className="wp-menu-item" onClick={() => { setCreateOpen(false); onCreateBoard(); close(); }}>
                         <KanbanSquare size={16} /> New task board
@@ -238,17 +242,14 @@ export default function Sidebar({
             {userMenuOpen && (
               <motion.div
                 className="wp-menu"
-                style={{ left: 0, bottom: 'calc(100% + 8px)', width: 232 }}
-                initial={{ opacity: 0, y: 6, scale: 0.96, filter: 'blur(3px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-                exit={{ opacity: 0, y: 4, scale: 0.96, filter: 'blur(2px)' }}
-                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                {...userMotion}
+                style={{ left: 0, bottom: 'calc(100% + 8px)', width: 232, ...userMotion.style }}
               >
                 <button type="button" className="wp-menu-item" onClick={() => { setUserMenuOpen(false); onOpenSettings('profile'); close(); }}>
                   <User size={16} /> Profile & avatar
                 </button>
                 <button type="button" className="wp-menu-item" onClick={() => toggleTheme()}>
-                  {isDark ? <Sun size={16} /> : <Moon size={16} />} {isDark ? 'Switch to light' : 'Switch to dark'}
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />} <TextSwap text={isDark ? 'Switch to light' : 'Switch to dark'} />
                 </button>
                 <div className="wp-menu-sep" />
                 <button type="button" className="wp-menu-item danger" onClick={() => { setUserMenuOpen(false); logout(); }}>
@@ -271,7 +272,7 @@ export default function Sidebar({
               onClick={() => toggleTheme()}
               title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
             >
-              {isDark ? <Moon size={14} /> : <Sun size={14} />}
+              <IconSwap state={isDark ? 'b' : 'a'} a={<Sun size={14} />} b={<Moon size={14} />} />
             </button>
           )}
         </div>

@@ -10,6 +10,8 @@ import heroImg from '../assets/login-hero.jpg';
 import wordmarkDark from '../assets/wordmark-dark.png';
 import wordmarkLight from '../assets/wordmark-light.png';
 import OAuthButtons from './ui/OAuthButtons';
+import { useErrorShake } from './ui/transitions';
+import { revealItem } from '../lib/motion';
 
 export default function LoginPage() {
   const signInWithEmail = useAuthStore(s => s.signInWithEmail);
@@ -32,11 +34,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const emailErr = useErrorShake();
+  const passwordErr = useErrorShake();
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const flagEmail = (msg: string) => { setEmailError(msg); emailErr.showError(); };
+  const flagPassword = (msg: string) => { setPasswordError(msg); passwordErr.showError(); };
 
   // 1. Handle Submit for Sign In / Sign Up
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
+      if (!email.trim()) flagEmail('Enter your email address');
+      if (!password.trim()) flagPassword('Enter your password');
       showToast('Please enter your email and password', 'warning');
       return;
     }
@@ -51,6 +61,7 @@ export default function LoginPage() {
       if (mode === 'signin') {
         const res = await signInWithEmail(email.trim(), password);
         if (!res.success) {
+          flagPassword(res.error || 'Sign in failed');
           showToast(res.error || 'Sign in failed', 'error');
           setIsLoading(false);
           return;
@@ -59,6 +70,7 @@ export default function LoginPage() {
       } else {
         const res = await signUpWithEmail(name.trim(), email.trim(), password);
         if (!res.success) {
+          flagPassword(res.error || 'Sign up failed');
           showToast(res.error || 'Sign up failed', 'error');
           setIsLoading(false);
           return;
@@ -297,9 +309,7 @@ export default function LoginPage() {
 
         {/* Hero Narrative Copy */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
+          {...revealItem(1)}
           style={{ position: 'relative', maxWidth: 520 }}
         >
           <h2
@@ -597,16 +607,21 @@ export default function LoginPage() {
                     <label style={{ fontSize: 12, fontWeight: 600, color: 'hsl(var(--foreground))' }}>
                       Email Address
                     </label>
-                    <input
-                      type="email"
-                      placeholder="alex@company.com"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      onFocus={() => setFocusedField('email')}
-                      onBlur={() => setFocusedField(null)}
-                      required
-                      style={getInputStyle('email')}
-                    />
+                    <div ref={emailErr.wrapRef} className="t-input-wrap wp-field-err">
+                      <div ref={emailErr.inputRef} className="t-input">
+                        <input
+                          type="email"
+                          placeholder="alex@company.com"
+                          value={email}
+                          onChange={e => { setEmail(e.target.value); emailErr.clear(); passwordErr.clear(); }}
+                          onFocus={() => setFocusedField('email')}
+                          onBlur={() => setFocusedField(null)}
+                          required
+                          style={getInputStyle('email')}
+                        />
+                      </div>
+                      <p className="t-error-msg" role="alert">{emailError}</p>
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -634,12 +649,13 @@ export default function LoginPage() {
                         </motion.button>
                       )}
                     </div>
-                    <div style={{ position: 'relative' }}>
+                    <div ref={passwordErr.wrapRef} className="t-input-wrap wp-field-err">
+                    <div ref={passwordErr.inputRef} className="t-input" style={{ position: 'relative' }}>
                       <input
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         value={password}
-                        onChange={e => setPassword(e.target.value)}
+                        onChange={e => { setPassword(e.target.value); passwordErr.clear(); }}
                         onFocus={() => setFocusedField('password')}
                         onBlur={() => setFocusedField(null)}
                         required
@@ -664,6 +680,8 @@ export default function LoginPage() {
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
+                    </div>
+                    <p className="t-error-msg" role="alert">{passwordError}</p>
                     </div>
                   </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { modalMotion } from '../../lib/motion';
 import { ZoomIn, ZoomOut, RotateCw, RotateCcw, Check, X, Move } from '../ui/icons';
 
 interface Props {
@@ -220,7 +221,6 @@ export default function AvatarCropperModal({
       <div
         className="modal-overlay"
         style={{
-          perspective: 1200,
           zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
@@ -229,10 +229,7 @@ export default function AvatarCropperModal({
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.93, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.93, y: 15 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
+          {...modalMotion}
           className="modal"
           style={{
             maxWidth: 440,

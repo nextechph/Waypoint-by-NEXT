@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Bell, Clock, AlertTriangle, CheckCircle2, X, Trash2 } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dropdownMotion } from '../lib/motion';
 import { useNotifStore } from '../store/useNotifStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { formatTime } from '../utils';
@@ -31,6 +32,7 @@ export default function NotifPanel({ open, onClose, onOpenCard }: Props) {
   }, [rawNotifications, user?.email]);
 
   if (!open) return null;
+  const panelPop = dropdownMotion('top-right');
 
   return (
     <AnimatePresence>
@@ -44,11 +46,9 @@ export default function NotifPanel({ open, onClose, onOpenCard }: Props) {
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -8 }}
-          transition={{ duration: 0.15 }}
+          {...panelPop}
           style={{
+            ...panelPop.style,
             position: 'absolute',
             top: 56,
             right: 20,

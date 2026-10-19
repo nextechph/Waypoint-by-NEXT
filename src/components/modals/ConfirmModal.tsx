@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { modalMotion } from '../../lib/motion';
 import { Trash2, LogOut, AlertTriangle, Info, X } from '../ui/icons';
 import { useConfirmStore } from '../../store/useConfirmStore';
 
@@ -127,10 +128,7 @@ export default function ConfirmModal() {
         }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.94, y: 14, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-          exit={{ opacity: 0, scale: 0.94, y: 12, filter: 'blur(3px)' }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          {...modalMotion}
           className="modal"
           style={{
             maxWidth: 420,

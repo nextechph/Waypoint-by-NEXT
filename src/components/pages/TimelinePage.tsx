@@ -4,7 +4,8 @@ import { useWorkspace, toDate, startOfDay, dayDiff, formatShortDate, type CardMe
 import type { Board } from '../../types';
 import { EmptyState } from '../wp/primitives';
 import { Select } from '../ui/Select';
-import { ChevronLeft, ChevronRight, ChevronDown } from '../ui/icons';
+import { ChevronLeft, ChevronRight } from '../ui/icons';
+import { AccordionChevron, AccordionPanel, RevealLines, useSlidingPill } from '../ui/transitions';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -33,6 +34,7 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
 
   const [offset, setOffset] = useState(0);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const zoomTabs = useSlidingPill<HTMLDivElement>(zoom);
   const today = startOfDay(new Date());
   const windowStart = useMemo(() => {
     const d = new Date(today);
@@ -84,10 +86,10 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
     <div className="wp-page">
       <div className="wp-page-inner wide">
         <header className="wp-hero compact">
-          <div>
+          <RevealLines>
             <h1 className="wp-display md">Timeline.</h1>
             <p className="wp-lede">See every project’s route at a glance — what’s scheduled, what overlaps, and what’s next.</p>
-          </div>
+          </RevealLines>
           <div className="wp-timeline-nav">
             <button type="button" className="wp-icon-ghost bordered" onClick={() => setOffset(o => o - 1)} aria-label="Earlier"><ChevronLeft size={16} /></button>
             <button type="button" className="wp-btn wp-btn-ghost" onClick={() => setOffset(0)}>Today</button>
@@ -104,7 +106,8 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
               onChange={setProjectFilter}
               options={[{ value: 'all', label: 'All projects' }, ...boards.map(b => ({ value: b.id, label: b.name }))]}
             />
-            <div className="wp-segmented">
+            <div ref={zoomTabs.barRef} className="wp-segmented has-pill">
+              {zoomTabs.pill}
               <button type="button" className={zoom === 'weeks' ? 'active' : ''} onClick={() => { setZoom('weeks'); setOffset(0); }}>Weeks</button>
               <button type="button" className={zoom === 'months' ? 'active' : ''} onClick={() => { setZoom('months'); setOffset(0); }}>Months</button>
             </div>
@@ -151,7 +154,7 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
                             })}
                             aria-label={open ? 'Collapse' : 'Expand'}
                           >
-                            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            <AccordionChevron open={open} />
                           </button>
                           <button type="button" className="wp-gantt-project" onClick={() => onSelectBoard(board.id)}>
                             <span className="wp-project-dot" style={{ backgroundColor: board.color }} />
@@ -173,35 +176,39 @@ export default function TimelinePage({ onOpenCard, onSelectBoard }: Props) {
                           <div className="wp-gantt-today" style={{ left: todayX }} />
                         </div>
                       </div>
-                      {open && tasks.map(({ item, span: s }) => {
-                        const p = place(s);
-                        return (
-                          <div key={item.card.id} className="wp-gantt-row task">
-                            <div className="wp-gantt-label">
-                              <button type="button" className="wp-gantt-task" onClick={() => onOpenCard(item.card.id, board.id)} title={item.card.title}>
-                                {item.card.title}
-                              </button>
-                            </div>
-                            <div className="wp-gantt-track" style={{ width: DAYS * dayW }}>
-                              <GridLines dayW={dayW} />
-                              {p && (
-                                <button
-                                  type="button"
-                                  className={`wp-gantt-bar task${item.card.completed ? ' done' : ''}${p.single || item.card.isMilestone ? ' single' : ''}`}
-                                  style={item.card.isMilestone && item.card.dueDate
-                                    ? { left: Math.max(0, dayDiff(startOfDay(toDate(item.card.dueDate)), windowStart)) * dayW }
-                                    : { left: p.left, width: p.single ? undefined : p.width }}
-                                  onClick={() => onOpenCard(item.card.id, board.id)}
-                                  title={`${item.card.title} · ${item.columnName}`}
-                                >
-                                  {!p.single && !item.card.isMilestone && !isMobile && p.width > 80 && <span className="wp-gantt-bar-label">{item.card.title}</span>}
-                                </button>
-                              )}
-                              <div className="wp-gantt-today" style={{ left: todayX }} />
-                            </div>
-                          </div>
-                        );
-                      })}
+                      <AccordionPanel open={open}>
+                        <div className="wp-gantt-acc-rows" inert={!open}>
+                          {tasks.map(({ item, span: s }) => {
+                            const p = place(s);
+                            return (
+                              <div key={item.card.id} className="wp-gantt-row task">
+                                <div className="wp-gantt-label">
+                                  <button type="button" className="wp-gantt-task" onClick={() => onOpenCard(item.card.id, board.id)} title={item.card.title}>
+                                    {item.card.title}
+                                  </button>
+                                </div>
+                                <div className="wp-gantt-track" style={{ width: DAYS * dayW }}>
+                                  <GridLines dayW={dayW} />
+                                  {p && (
+                                    <button
+                                      type="button"
+                                      className={`wp-gantt-bar task${item.card.completed ? ' done' : ''}${p.single || item.card.isMilestone ? ' single' : ''}`}
+                                      style={item.card.isMilestone && item.card.dueDate
+                                        ? { left: Math.max(0, dayDiff(startOfDay(toDate(item.card.dueDate)), windowStart)) * dayW }
+                                        : { left: p.left, width: p.single ? undefined : p.width }}
+                                      onClick={() => onOpenCard(item.card.id, board.id)}
+                                      title={`${item.card.title} · ${item.columnName}`}
+                                    >
+                                      {!p.single && !item.card.isMilestone && !isMobile && p.width > 80 && <span className="wp-gantt-bar-label">{item.card.title}</span>}
+                                    </button>
+                                  )}
+                                  <div className="wp-gantt-today" style={{ left: todayX }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </AccordionPanel>
                     </React.Fragment>
                   );
                 })}

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bell, Search, LogOut, User, Sun, Moon, Settings } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dropdownMotion } from '../lib/motion';
+import { Badge, TextSwap } from './ui/transitions';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -62,6 +64,9 @@ export default function Topbar({
   const board = inProject ? boards.find(b => b.id === activeBoardId) : undefined;
   const today = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 
+  const menuMotion = dropdownMotion('top-right');
+  const bellUnread = page !== 'inbox' && notifications.some(n => new Date(n.time).getTime() > getInboxSeen());
+
   const rootLabel = inProject ? 'Projects' : 'Workspace';
   const leafLabel = inProject ? board?.name ?? 'Project' : page === 'dashboard' ? today : PAGE_LABEL[page] ?? '';
 
@@ -103,7 +108,7 @@ export default function Topbar({
           aria-label="Notifications"
         >
           <Bell size={18} weight={notifOpen ? 'fill' : 'regular'} />
-          {page !== 'inbox' && notifications.some(n => new Date(n.time).getTime() > getInboxSeen()) && <span className="wp-bell-dot" />}
+          <Badge open={bellUnread} className="wp-dot-badge" />
         </button>
 
         <span className="wp-topbar-divider hide-on-mobile" />
@@ -124,11 +129,8 @@ export default function Topbar({
             {menuOpen && (
               <motion.div
                 className="wp-menu"
-                style={{ right: 0, top: 'calc(100% + 10px)', width: 248 }}
-                initial={{ opacity: 0, y: -6, scale: 0.96, filter: 'blur(3px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-                exit={{ opacity: 0, y: -4, scale: 0.96, filter: 'blur(2px)' }}
-                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                {...menuMotion}
+                style={{ right: 0, top: 'calc(100% + 10px)', width: 248, ...menuMotion.style }}
               >
                 <div className="wp-menu-head">
                   <div className="wp-menu-name">{user?.name || 'User'}</div>
@@ -142,7 +144,7 @@ export default function Topbar({
                   <Settings size={16} /> Settings
                 </button>
                 <button type="button" className="wp-menu-item" onClick={() => toggleTheme()}>
-                  {isDark ? <Sun size={16} /> : <Moon size={16} />} {isDark ? 'Switch to light' : 'Switch to dark'}
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />} <TextSwap text={isDark ? 'Switch to light' : 'Switch to dark'} />
                 </button>
                 <div className="wp-menu-sep" />
                 <button type="button" className="wp-menu-item danger" onClick={() => { setMenuOpen(false); logout(); }}>

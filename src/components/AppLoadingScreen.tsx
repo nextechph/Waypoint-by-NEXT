@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
+import { MatrixLoader, Shimmer } from "./ui/transitions";
 import wordmarkDark from "../assets/wordmark-dark.png";
 import wordmarkLight from "../assets/wordmark-light.png";
 
@@ -8,21 +9,6 @@ interface AppLoadingScreenProps {
 }
 
 export default function AppLoadingScreen({ isDark = true }: AppLoadingScreenProps) {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const steps = [
-      { target: 30, delay: 0 },
-      { target: 55, delay: 300 },
-      { target: 75, delay: 700 },
-      { target: 85, delay: 1300 },
-    ];
-    const timers: number[] = steps.map(({ target, delay }) =>
-      window.setTimeout(() => setProgress(target), delay)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
   const ink = isDark ? "#FFFFFF" : "#0F1115";
   const sub = "#6B7280";
   const logoSrc = isDark ? wordmarkDark : wordmarkLight;
@@ -54,6 +40,11 @@ export default function AppLoadingScreen({ isDark = true }: AppLoadingScreenProp
           flexDirection: "column",
           alignItems: "center",
           gap: 14,
+          // The loader renders before the theme class settles, so its tokens follow isDark.
+          ["--matrix-base" as string]: isDark ? "rgba(255,255,255,0.14)" : "rgba(15,17,21,0.14)",
+          ["--matrix-active" as string]: ink,
+          ["--shimmer-base" as string]: sub,
+          ["--shimmer-highlight" as string]: ink,
         }}
       >
         <motion.img
@@ -82,28 +73,10 @@ export default function AppLoadingScreen({ isDark = true }: AppLoadingScreenProp
           By Next Technology
         </div>
 
-        <div
-          style={{
-            width: 200,
-            height: 2,
-            borderRadius: 99,
-            background: isDark ? "rgba(255,255,255,0.08)" : "rgba(15,17,21,0.08)",
-            overflow: "hidden",
-          }}
-        >
-          <motion.div
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            style={{
-              height: "100%",
-              borderRadius: 99,
-              background: `linear-gradient(90deg, ${sub}, ${ink})`,
-            }}
-          />
-        </div>
+        <MatrixLoader variant="orbit" className="wp-matrix-lg" />
 
         <div style={{ fontSize: 12.5, color: sub, fontWeight: 500, letterSpacing: "0.02em" }}>
-          Syncing your workspace…
+          <Shimmer>Syncing your workspace…</Shimmer>
         </div>
       </motion.div>
     </div>

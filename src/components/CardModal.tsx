@@ -22,6 +22,10 @@ import { Select } from './ui/Select';
 import AvatarBorder from './ui/AvatarBorder';
 import { deriveCardProgress, getCardWorkStatus } from './RoadmapView';
 import CreateRoadmapModal from './modals/CreateRoadmapModal';
+import { dropdownMotion, modalMotion, overlayMotion, panelMotion } from '../lib/motion';
+
+const mentionMenuMotion = dropdownMotion('bottom-left');
+const sheetMotion = panelMotion('x', 40);
 
 interface Props {
   cardId: string | null;
@@ -696,10 +700,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
 
   const renderMentionDropdown = () => (
     <motion.div
-      initial={{ opacity: 0, y: 6, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 6, scale: 0.97 }}
-      transition={{ duration: 0.12 }}
+      {...mentionMenuMotion}
       onMouseDown={e => {
         e.preventDefault();
         if (mentionBlurTimeoutRef.current) {
@@ -707,6 +708,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
         }
       }}
       style={{
+        ...mentionMenuMotion.style,
         position: 'absolute',
         bottom: '100%',
         left: 0,
@@ -927,10 +929,9 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
     <>
     <div className="modal-overlay" onClick={handleSafeClose}>
       <motion.div
-        initial={{ opacity: 0, x: 56 }}
-        animate={isDeleting ? { opacity: 0, x: 80 } : { opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 56 }}
-        transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+        initial={sheetMotion.initial}
+        animate={isDeleting ? sheetMotion.exit : sheetMotion.animate}
+        exit={sheetMotion.exit}
         className="modal large-modal wp-card-modal"
         style={{ overflow: 'hidden' }}
         onClick={e => e.stopPropagation()}
@@ -3828,16 +3829,14 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
     {/* Fullscreen Lightbox Image Preview */}
     <AnimatePresence>
       {previewAttachment && (
-        <div
+        <motion.div
           className="modal-overlay"
+          {...overlayMotion}
           style={{ zIndex: 200, backgroundColor: 'rgba(0, 0, 0, 0.82)', backdropFilter: 'blur(10px)', padding: 24 }}
           onClick={() => setPreviewAttachment(null)}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.92 }}
-            transition={{ duration: 0.16 }}
+            {...modalMotion}
             style={{
               position: 'relative',
               maxWidth: '92vw',
@@ -3884,23 +3883,21 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
               }}
             />
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
 
     {/* Link Insertion Modal Dialog */}
     <AnimatePresence>
       {showLinkModal && (
-        <div
+        <motion.div
           className="modal-overlay"
+          {...overlayMotion}
           style={{ zIndex: 210, backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(5px)', padding: 20 }}
           onClick={() => setShowLinkModal(null)}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.15 }}
+            {...modalMotion}
             className="modal-content"
             style={{
               width: '100%',
@@ -4029,7 +4026,7 @@ function CardModalInner({ cardId, result, onClose }: InnerProps) {
               </div>
             </form>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
     {showCreateRoadmapModal && (

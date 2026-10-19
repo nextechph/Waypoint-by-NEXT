@@ -7,7 +7,8 @@ import {
 } from '../lib/workspace';
 import { AvatarStack, Eyebrow, EmptyState } from './wp/primitives';
 import heroImg from '../assets/login-hero.jpg';
-import { ArrowRight, Plus, Kanban, Milestone as MilestoneIcon, FileText, Path, UserPlus } from './ui/icons';
+import { LearnChevron, NumberPop } from './ui/transitions';
+import { Plus, Kanban, Milestone as MilestoneIcon, FileText, Path, UserPlus } from './ui/icons';
 
 const STATUS_LABEL = { completed: 'Completed', current: 'In progress', upcoming: 'Upcoming' } as const;
 
@@ -99,7 +100,9 @@ export function OverviewTab({ board, onOpenCard, onAddTask, onShowTab, onInvite,
           <Ring value={stats.progress} />
           <div className="wp-panel-progress-text">
             <strong>{health}</strong>
-            <span>{fromTasks ? `${doneMilestones} of ${items.length} milestones complete` : `${stats.done} of ${stats.total} tasks complete`}</span>
+            <span>{fromTasks
+              ? <><NumberPop value={doneMilestones} /> of <NumberPop value={items.length} /> milestones complete</>
+              : <><NumberPop value={stats.done} /> of <NumberPop value={stats.total} /> tasks complete</>}</span>
           </div>
         </section>
       </div>
@@ -108,7 +111,7 @@ export function OverviewTab({ board, onOpenCard, onAddTask, onShowTab, onInvite,
         <section>
           <div className="wp-section-head compact">
             <Eyebrow>{fromTasks ? 'Key milestones' : 'Stages'}</Eyebrow>
-            <button type="button" className="wp-link sm" onClick={() => onShowTab('milestones')}>View all <ArrowRight size={13} /></button>
+            <button type="button" className="wp-link sm t-learn" onClick={() => onShowTab('milestones')}>View all <LearnChevron size={13} /></button>
           </div>
           <MilestoneRows items={items.slice(0, 5)} onOpenCard={onOpenCard} />
           {!fromTasks && (
@@ -119,11 +122,11 @@ export function OverviewTab({ board, onOpenCard, onAddTask, onShowTab, onInvite,
         <section className="wp-panel">
           <Eyebrow>Quick actions</Eyebrow>
           <div className="wp-quick-actions">
-            {editable && <button type="button" onClick={onAddTask}><Plus size={17} /> Add task <ArrowRight size={14} className="wp-qa-arrow" /></button>}
-            <button type="button" onClick={() => onShowTab('tasks')}>{board.type === 'roadmap' ? <MilestoneIcon size={17} /> : <Kanban size={17} />} Open {board.type === 'roadmap' ? 'roadmap' : 'board'} <ArrowRight size={14} className="wp-qa-arrow" /></button>
-            <button type="button" onClick={() => onShowTab('files')}><FileText size={17} /> Browse files <ArrowRight size={14} className="wp-qa-arrow" /></button>
-            <button type="button" onClick={onOpenTimeline}><Path size={17} /> View timeline <ArrowRight size={14} className="wp-qa-arrow" /></button>
-            <button type="button" onClick={onInvite}><UserPlus size={17} /> Invite members <ArrowRight size={14} className="wp-qa-arrow" /></button>
+            {editable && <button type="button" className="t-learn" onClick={onAddTask}><Plus size={17} /> Add task <span className="wp-qa-arrow"><LearnChevron size={14} /></span></button>}
+            <button type="button" className="t-learn" onClick={() => onShowTab('tasks')}>{board.type === 'roadmap' ? <MilestoneIcon size={17} /> : <Kanban size={17} />} Open {board.type === 'roadmap' ? 'roadmap' : 'board'} <span className="wp-qa-arrow"><LearnChevron size={14} /></span></button>
+            <button type="button" className="t-learn" onClick={() => onShowTab('files')}><FileText size={17} /> Browse files <span className="wp-qa-arrow"><LearnChevron size={14} /></span></button>
+            <button type="button" className="t-learn" onClick={onOpenTimeline}><Path size={17} /> View timeline <span className="wp-qa-arrow"><LearnChevron size={14} /></span></button>
+            <button type="button" className="t-learn" onClick={onInvite}><UserPlus size={17} /> Invite members <span className="wp-qa-arrow"><LearnChevron size={14} /></span></button>
           </div>
         </section>
       </div>
@@ -170,7 +173,7 @@ export function MilestonesTab({ board, onOpenCard }: { board: Board; onOpenCard:
               </button>
               <div className="wp-ms-card-progress">
                 <div className="wp-progress" style={{ height: 3 }}><div className="wp-progress-fill" style={{ width: `${m.progress}%` }} /></div>
-                <span className="wp-num">{m.progress}%</span>
+                <span className="wp-num"><NumberPop value={m.progress} />%</span>
               </div>
             </li>
           ))}

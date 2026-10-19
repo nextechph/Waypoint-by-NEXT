@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, X, Send, Trash2, ExternalLink, CheckCircle2, ShieldCheck, Loader2, Users } from './ui/icons';
 import { motion } from 'framer-motion';
+import { modalMotion } from '../lib/motion';
+import { Toggle } from './ui/transitions';
 import { Select } from './ui/Select';
 import { useEmailStore } from '../store/useEmailStore';
 import { useWorkStore } from '../store/useWorkStore';
@@ -76,12 +78,9 @@ export default function EmailNotifModal({ onClose }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-        animate={{ opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }}
-        exit={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        {...modalMotion}
         className="modal"
-        style={{ maxWidth: 620, maxHeight: '88vh', transformStyle: 'preserve-3d' }}
+        style={{ maxWidth: 620, maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -166,14 +165,12 @@ export default function EmailNotifModal({ onClose }: Props) {
                 <div style={{ fontSize: 11.5, color: 'hsl(var(--muted-foreground))' }}>Choose which board actions dispatch email alerts</div>
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={settings.enabled}
-                  onChange={e => {
-                    updateSettings({ enabled: e.target.checked });
-                    showToast(e.target.checked ? 'Email notifications enabled' : 'Email notifications paused', 'info');
+                <Toggle
+                  on={settings.enabled}
+                  onChange={next => {
+                    updateSettings({ enabled: next });
+                    showToast(next ? 'Email notifications enabled' : 'Email notifications paused', 'info');
                   }}
-                  style={{ width: 16, height: 16, accentColor: 'hsl(var(--primary))' }}
                 />
                 <span style={{ fontSize: 12, fontWeight: 600, color: settings.enabled ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}>
                   {settings.enabled ? 'Enabled' : 'Paused'}
@@ -183,39 +180,19 @@ export default function EmailNotifModal({ onClose }: Props) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7, paddingTop: 8, borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'hsl(var(--foreground))', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={settings.notifyOnAssign}
-                  onChange={e => updateSettings({ notifyOnAssign: e.target.checked })}
-                  style={{ accentColor: 'hsl(var(--primary))' }}
-                />
+                <Toggle on={settings.notifyOnAssign} onChange={next => updateSettings({ notifyOnAssign: next })} />
                 Notify member on task assignment
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'hsl(var(--foreground))', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={settings.notifyOnDue}
-                  onChange={e => updateSettings({ notifyOnDue: e.target.checked })}
-                  style={{ accentColor: 'hsl(var(--primary))' }}
-                />
+                <Toggle on={settings.notifyOnDue} onChange={next => updateSettings({ notifyOnDue: next })} />
                 Notify member on due dates & overdue alerts
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'hsl(var(--foreground))', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={settings.notifyOnStatusChange}
-                  onChange={e => updateSettings({ notifyOnStatusChange: e.target.checked })}
-                  style={{ accentColor: 'hsl(var(--primary))' }}
-                />
+                <Toggle on={settings.notifyOnStatusChange} onChange={next => updateSettings({ notifyOnStatusChange: next })} />
                 Notify member on task status completed / reopened
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'hsl(var(--foreground))', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={settings.notifyOnMention ?? true}
-                  onChange={e => updateSettings({ notifyOnMention: e.target.checked })}
-                  style={{ accentColor: 'hsl(var(--primary))' }}
-                />
+                <Toggle on={settings.notifyOnMention ?? true} onChange={next => updateSettings({ notifyOnMention: next })} />
                 Notify member on comment @mentions
               </label>
             </div>

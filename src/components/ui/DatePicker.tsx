@@ -4,6 +4,7 @@ import {
   X, Check, Sparkles
 } from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dropdownMotion } from '../../lib/motion';
 
 interface Props {
   value?: string | null; // ISO date string or datetime string
@@ -65,6 +66,7 @@ export default function DatePicker({
 
   // Dynamic alignment check to prevent popover cutoff on container edges
   const [effectiveAlign, setEffectiveAlign] = useState<'left' | 'right'>(align);
+  const popMotion = dropdownMotion(effectiveAlign === 'right' ? 'top-right' : 'top-left');
 
   useEffect(() => {
     setEffectiveAlign(align);
@@ -391,11 +393,9 @@ export default function DatePicker({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -6 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -6 }}
-            transition={{ duration: 0.16, ease: 'easeOut' }}
+            {...popMotion}
             style={{
+              ...popMotion.style,
               position: 'absolute',
               top: '100%',
               ...(effectiveAlign === 'right' ? { right: 0 } : { left: 0 }),
