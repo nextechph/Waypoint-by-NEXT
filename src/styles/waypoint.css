@@ -1719,3 +1719,42 @@ li.current .wp-ms-status { color: var(--wp-ink); }
     -webkit-tap-highlight-color: transparent;
   }
 }
+@media (max-width: 860px) {
+  .wp-route-create {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 12px);
+    width: min(300px, calc(100vw - 28px));
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-radius: 20px;
+    background: hsl(var(--card));
+    border: 1px solid var(--wp-hairline);
+    box-shadow: 0 18px 44px hsl(0 0% 0% / 0.28), 0 3px 8px hsl(0 0% 0% / 0.12);
+    transform-origin: bottom right;
+    pointer-events: auto;
+  }
+  .wp-route-create-eyebrow { padding: 6px 10px 8px; font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--wp-ink-3); }
+  .wp-route-create-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: none;
+    border-radius: 14px;
+    background: none;
+    color: var(--wp-ink);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wp-route-create-item:active, .wp-route-create-item:hover { background: hsl(var(--accent)); }
+  .wp-route-create-icon { width: 42px; height: 42px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid var(--wp-hairline); }
+  .wp-route-create-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .wp-route-create-text strong { font-size: 14.5px; font-weight: 600; }
+  .wp-route-create-text small { font-size: 12px; color: var(--wp-ink-3); }
+  .wp-route-dock.creating .wp-route { opacity: 0.55; transition: opacity 0.2s ease; }
+}
