@@ -861,7 +861,6 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
             onOpenSettings={handleOpenSettings}
             onToggleNotif={() => setNotifOpen(o => !o)}
             notifOpen={notifOpen}
-            onToggleMobileMenu={() => setMobileMenuOpen(o => !o)}
           />
           <AnimatePresence mode="wait">
             <motion.div
