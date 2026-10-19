@@ -5,6 +5,7 @@ import { useToastStore } from '../../store/useToastStore';
 import { canEditBoard, isMe, useWorkspace } from '../../lib/workspace';
 import { Select } from '../ui/Select';
 import DatePicker from '../ui/DatePicker';
+import { X, KanbanSquare, Milestone } from '../ui/icons';
 
 interface Props {
   /** Preselect a project (e.g. when opened from a project header). */
@@ -12,9 +13,10 @@ interface Props {
   onClose: () => void;
   onCreated?: (cardId: string, boardId: string) => void;
   onCreateProject?: () => void;
+  onCreateRoadmap?: () => void;
 }
 
-export default function QuickTaskModal({ boardId, onClose, onCreated, onCreateProject }: Props) {
+export default function QuickTaskModal({ boardId, onClose, onCreated, onCreateProject, onCreateRoadmap }: Props) {
   const { user, boards } = useWorkspace();
   const addCard = useWorkStore(s => s.addCard);
   const updateCard = useWorkStore(s => s.updateCard);
@@ -62,7 +64,7 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
     <div className="modal-overlay" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, y: 16, scale: 0.96, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
         exit={{ opacity: 0, y: 10, scale: 0.96, filter: 'blur(3px)' }}
         transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
         className="modal small-modal wp-quick-task"
@@ -73,17 +75,24 @@ export default function QuickTaskModal({ boardId, onClose, onCreated, onCreatePr
             <div className="wp-eyebrow">New task</div>
             <h2 className="modal-title" style={{ marginTop: 4 }}>What’s next?</h2>
           </div>
-          <button type="button" className="wp-icon-ghost" onClick={onClose} aria-label="Close">Close</button>
+          <button type="button" className="wp-icon-ghost" onClick={onClose} aria-label="Close"><X size={18} /></button>
         </div>
 
         {projects.length === 0 ? (
           <div className="modal-body">
-            <p className="wp-muted">Create a project first, then add tasks to it.</p>
-            {onCreateProject && (
-              <button type="button" className="wp-btn wp-btn-primary" onClick={() => { onClose(); onCreateProject(); }}>
-                Create a project
-              </button>
-            )}
+            <p className="wp-muted">Tasks live inside a project. Start a task board or a roadmap, then add tasks to it.</p>
+            <div className="wp-quick-create">
+              {onCreateProject && (
+                <button type="button" className="wp-btn wp-btn-primary" onClick={() => { onClose(); onCreateProject(); }}>
+                  <KanbanSquare size={16} /> Task board
+                </button>
+              )}
+              {onCreateRoadmap && (
+                <button type="button" className="wp-btn wp-btn-outline" onClick={() => { onClose(); onCreateRoadmap(); }}>
+                  <Milestone size={16} /> Roadmap
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <>

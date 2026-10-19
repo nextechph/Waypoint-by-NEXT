@@ -2630,7 +2630,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
 
         {/* Roadmap Guide Modal */}
         {showHelpGuide && (
-          <div className="modal-overlay" style={{ perspective: 1200 }} onClick={() => setShowHelpGuide(false)}>
+          <div className="modal-overlay" onClick={() => setShowHelpGuide(false)}>
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

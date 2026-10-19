@@ -99,7 +99,7 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
               key={g.bucket}
               className="wp-task-group"
               initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
               transition={{ delay: gi * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="wp-task-group-head">

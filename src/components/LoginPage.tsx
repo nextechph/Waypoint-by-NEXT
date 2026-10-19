@@ -340,7 +340,7 @@ export default function LoginPage() {
       <motion.div
         className="login-right-panel"
         initial={{ opacity: 0, x: 24, filter: 'blur(6px)' }}
-        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+        animate={{ opacity: 1, x: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
         transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         style={{
           width: '100%',

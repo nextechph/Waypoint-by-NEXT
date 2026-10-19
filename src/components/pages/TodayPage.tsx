@@ -23,7 +23,7 @@ const fade = {
   show: (i: number) => ({
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
+    filter: 'blur(0px)', transitionEnd: { filter: 'none' },
     transition: { delay: i * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] as const }
   }),
 };

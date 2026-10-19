@@ -938,6 +938,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           onClose={() => setQuickTask(null)}
           onCreated={(cardId, boardId) => handleOpenCard(cardId, boardId)}
           onCreateProject={() => setShowCreateBoard(true)}
+          onCreateRoadmap={() => setShowCreateRoadmap(true)}
         />
       )}
       {showMembers && <MembersModal onClose={() => setShowMembers(false)} />}

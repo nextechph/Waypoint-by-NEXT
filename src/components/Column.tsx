@@ -152,7 +152,7 @@ export default function Column({ col, colIndex, dragState, setDragState, onOpenC
     <motion.div
       layout
       initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
       transition={{
         layout: { type: 'spring', damping: 26, stiffness: 220, mass: 0.8 },
         duration: 0.32,

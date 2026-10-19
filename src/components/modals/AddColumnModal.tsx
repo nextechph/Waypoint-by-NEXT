@@ -25,7 +25,7 @@ export default function AddColumnModal({ onClose, mode = 'column' }: Props) {
   };
 
   return (
-    <div className="modal-overlay" style={{ perspective: 1200 }} onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
         animate={{ opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }}
