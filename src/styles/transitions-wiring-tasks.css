@@ -1,0 +1,32 @@
+/* Error-shake fields: the message takes no space until the field errors. */
+.wp-field-err .t-error-msg {
+  max-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  transition:
+    opacity    var(--revert-dur, 280ms) ease-out,
+    max-height var(--revert-dur, 280ms) ease-out,
+    margin-top var(--revert-dur, 280ms) ease-out,
+    visibility 0s linear var(--revert-dur, 280ms);
+}
+.wp-field-err.is-error .t-error-msg {
+  max-height: 40px;
+  margin-top: 6px;
+  transition:
+    opacity    var(--revert-dur, 280ms) ease-out,
+    max-height var(--revert-dur, 280ms) ease-out,
+    margin-top var(--revert-dur, 280ms) ease-out,
+    visibility 0s linear 0s;
+}
+.wp-field-err .t-input { display: block; }
+.wp-field-err .t-input.is-error .text-input,
+.wp-field-err .t-input.is-error input { border-color: hsl(var(--foreground)) !important; }
+
+/* Quick task title sits on its own underline with a 20px gap below. */
+.wp-quick-title-wrap.is-error .t-error-msg { margin-top: -14px; margin-bottom: 14px; }
+
+/* Submit buttons stay clickable on an empty name so the field can shake; keep the disabled look. */
+.wp-btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* Switches inside setting rows keep their label text aligned. */
+label > .wp-toggle { flex-shrink: 0; }

@@ -4,6 +4,7 @@ import {
   Sparkles, Lock, Mail, AlertCircle, LogIn, Loader2
 } from './ui/icons';
 import { motion } from 'framer-motion';
+import { modalMotion } from '../lib/motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -227,9 +228,8 @@ export default function InviteLandingPage({ boardId, role = 'member', onAcceptJo
       />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        initial={modalMotion.initial}
+        animate={modalMotion.animate}
         className="modal"
         style={{
           maxWidth: 480,

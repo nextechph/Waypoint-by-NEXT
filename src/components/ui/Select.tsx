@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dropdownMotion } from '../../lib/motion';
 
 export interface SelectOption<T extends string = string> {
   value: T;
@@ -107,6 +108,9 @@ export function Select<T extends string = string>({
 
   const isSmall = size === 'sm';
   const isTop = computedPlacement === 'top';
+  const menuMotion = dropdownMotion(isTop
+    ? (align === 'right' ? 'bottom-right' : 'bottom-left')
+    : (align === 'right' ? 'top-right' : 'top-left'));
 
   return (
     <div
@@ -183,14 +187,14 @@ export function Select<T extends string = string>({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: isTop ? 6 : -6, scale: 0.96 }}
-            animate={{ opacity: 1, y: isTop ? -4 : 4, scale: 1 }}
-            exit={{ opacity: 0, y: isTop ? 6 : -6, scale: 0.96 }}
-            transition={{ duration: 0.16, ease: 'easeOut' }}
+            {...menuMotion}
             style={{
+              ...menuMotion.style,
               position: 'absolute',
               top: isTop ? 'auto' : '100%',
               bottom: isTop ? '100%' : 'auto',
+              marginTop: isTop ? 0 : 4,
+              marginBottom: isTop ? 4 : 0,
               left: align === 'right' ? 'auto' : 0,
               right: align === 'right' ? 0 : 'auto',
               zIndex: 9999,
@@ -207,9 +211,6 @@ export function Select<T extends string = string>({
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
-              transformOrigin: isTop
-                ? (align === 'right' ? 'bottom right' : 'bottom left')
-                : (align === 'right' ? 'top right' : 'top left'),
             }}
           >
             {options.map((opt) => {

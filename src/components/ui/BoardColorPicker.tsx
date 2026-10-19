@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Pipette, X } from './icons';
 import { BOARD_COLORS } from '../../types';
+import { dropdownMotion } from '../../lib/motion';
 
 interface Props {
   currentColor: string;
@@ -60,17 +61,17 @@ export default function BoardColorPicker({
     }
   };
 
+  const popMotion = dropdownMotion(align === 'left' ? 'top-left' : 'top-right');
+
   return (
     <motion.div
       ref={containerRef}
-      initial={{ opacity: 0, scale: 0.92, y: 6 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.92, y: 6 }}
-      transition={{ duration: 0.16, ease: 'easeOut' }}
+      {...popMotion}
       onClick={e => e.stopPropagation()}
       onMouseDown={e => e.stopPropagation()}
       onPointerDown={e => e.stopPropagation()}
       style={{
+        ...popMotion.style,
         position: 'absolute',
         top: 'calc(100% + 6px)',
         [align]: 0,

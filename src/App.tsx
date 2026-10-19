@@ -857,9 +857,11 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Modals — AnimatePresence lets each one play its close transition before unmounting. */}
+      <AnimatePresence>
       {showSearch && (
         <CommandPalette
+          key="search"
           onClose={() => setShowSearch(false)}
           onOpenCard={(cardId, boardId) => handleOpenCard(cardId, boardId)}
           onSelectBoard={boardId => handleSelectBoard(boardId)}
@@ -877,13 +879,15 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {showSettings && (
         <SettingsModal
+          key="settings"
           initialTab={settingsTab}
           onClose={() => setShowSettings(false)}
         />
       )}
-      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+      {showPrivacy && <PrivacyModal key="privacy" onClose={() => setShowPrivacy(false)} />}
       {showCreateBoard && (
         <CreateBoardModal
+          key="create-board"
           onClose={(createdBoardId?: string) => {
             setShowCreateBoard(false);
             if (createdBoardId) {
@@ -895,6 +899,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {showCreateRoadmap && (
         <CreateRoadmapModal
+          key="create-roadmap"
           onClose={(createdRoadmapId?: string) => {
             setShowCreateRoadmap(false);
             if (createdRoadmapId) {
@@ -907,12 +912,14 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {showAddColumn && (
         <AddColumnModal
+          key="add-column"
           onClose={() => setShowAddColumn(false)}
           mode="column"
         />
       )}
       {quickTask && (
         <QuickTaskModal
+          key="quick-task"
           boardId={quickTask.boardId}
           onClose={() => setQuickTask(null)}
           onCreated={(cardId, boardId) => handleOpenCard(cardId, boardId)}
@@ -920,12 +927,13 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
           onCreateRoadmap={() => setShowCreateRoadmap(true)}
         />
       )}
-      {showMembers && <MembersModal onClose={() => setShowMembers(false)} />}
-      {showEmail && <EmailNotifModal onClose={() => setShowEmail(false)} />}
+      {showMembers && <MembersModal key="members" onClose={() => setShowMembers(false)} />}
+      {showEmail && <EmailNotifModal key="email" onClose={() => setShowEmail(false)} />}
 
       {/* Card Detail */}
       {openCardId && !scheduleEditorOpen && (
         <TaskSheet
+          key="task-sheet"
           cardId={openCardId}
           boardId={openCardBoardId}
           onClose={() => { setOpenCardId(null); setOpenCardBoardId(null); }}
@@ -934,11 +942,13 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       {openCardId && scheduleEditorOpen && (
         <CardModal
+          key="schedule-editor"
           cardId={openCardId}
           boardId={openCardBoardId}
           onClose={() => setScheduleEditorOpen(false)}
         />
       )}
+      </AnimatePresence>
 
       {/* Notification Panel */}
       <NotifPanel

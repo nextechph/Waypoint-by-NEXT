@@ -16,6 +16,7 @@ import { useConfirmStore } from '../store/useConfirmStore';
 import AvatarBorder from './ui/AvatarBorder';
 import DatePicker from './ui/DatePicker';
 import { Select, SelectOption } from './ui/Select';
+import { modalMotion, overlayMotion } from '../lib/motion';
 
 interface Props {
   board: Board;
@@ -2348,8 +2349,10 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
       {/* ── Roadmap Modals (Side-by-Side & Centered) ── */}
       <AnimatePresence>
         {(showSprintModal || showQuickAddModal) && (
-          <div
+          <motion.div
+            key="roadmap-modals"
             className="roadmap-modal-overlay"
+            {...overlayMotion}
           >
             <div
               className="roadmap-modal-container"
@@ -2359,10 +2362,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               {showSprintModal && (
                 <motion.div
                   key="sprint-modal"
-                  initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  {...modalMotion}
                   className="roadmap-modal-card"
                   style={{ width: 440, maxWidth: '100%' }}
                 >
@@ -2469,10 +2469,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
               {showQuickAddModal && (
                 <motion.div
                   key="task-modal"
-                  initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  {...modalMotion}
                   className="roadmap-modal-card"
                   style={{ width: 460, maxWidth: '100%' }}
                 >
@@ -2625,17 +2622,14 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                 </motion.div>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Roadmap Guide Modal */}
         {showHelpGuide && (
-          <div className="modal-overlay" onClick={() => setShowHelpGuide(false)}>
+          <motion.div key="help-guide" className="modal-overlay" {...overlayMotion} onClick={() => setShowHelpGuide(false)}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 14 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              {...modalMotion}
               className="modal"
               style={{ maxWidth: 580 }}
               onClick={e => e.stopPropagation()}
@@ -2707,7 +2701,7 @@ export default function RoadmapView({ board, onOpenCard, isObserver }: Props) {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

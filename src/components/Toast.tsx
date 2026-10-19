@@ -7,7 +7,7 @@ import { toastMotion } from '../lib/motion';
 import { SuccessCheck } from './ui/transitions';
 
 const iconMap: Record<ToastType, React.ReactNode> = {
-  success: <span style={{ display: 'inline-flex', color: '#10b981' }}><SuccessCheck size={16} /></span>,
+  success: <span style={{ display: 'inline-flex', color: 'hsl(var(--foreground))' }}><SuccessCheck size={16} /></span>,
   error:   <XCircle size={16} color="#ef4444" />,
   warning: <AlertTriangle size={16} color="#f59e0b" />,
   info:    <Info size={16} color="#3b82f6" />,

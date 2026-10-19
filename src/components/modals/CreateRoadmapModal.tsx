@@ -6,6 +6,8 @@ import { useToastStore } from '../../store/useToastStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { BOARD_COLORS } from '../../types';
 import { useEscape } from '../../lib/useEscape';
+import { modalMotion } from '../../lib/motion';
+import { Shimmer, useErrorShake } from '../ui/transitions';
 
 interface Props {
   onClose: (createdRoadmapId?: string) => void;
@@ -82,6 +84,7 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
   const [newPhaseInput, setNewPhaseInput] = useState('');
   const [newPhaseType, setNewPhaseType]   = useState<'phase' | 'subtask'>('phase');
   const [isSubmitting, setIsSubmitting]   = useState(false);
+  const nameErr = useErrorShake();
 
   const fileInputRef                    = useRef<HTMLInputElement>(null);
   const [isParsing, setIsParsing]       = useState(false);
@@ -98,7 +101,8 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
     setPhases(prev => prev.filter((_, idx) => idx !== i));
 
   const handleCreate = async () => {
-    if (!name.trim() || isSubmitting) return;
+    if (isSubmitting) return;
+    if (!name.trim()) { nameErr.showError(); return; }
     setIsSubmitting(true);
     try {
       const newRoadmap = await createRoadmap(
@@ -164,10 +168,7 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
   return (
     <div className="modal-overlay" onClick={() => onClose()}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 14, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-        exit={{ opacity: 0, scale: 0.96, y: 10, filter: 'blur(3px)' }}
-        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+        {...modalMotion}
         className="modal"
         style={{ maxWidth: 520 }}
         onClick={e => e.stopPropagation()}
@@ -190,15 +191,18 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
         <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Name */}
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div ref={nameErr.wrapRef} className="form-group t-input-wrap wp-field-err" style={{ marginBottom: 0 }}>
             <label className="field-label">Roadmap / Project Name</label>
-            <input type="text" className="text-input"
-              placeholder="e.g. Brand Redesign, Product Launch, Event Schedule, Q3 Strategy"
-              maxLength={60} value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
-              autoFocus
-            />
+            <div ref={nameErr.inputRef} className="t-input">
+              <input type="text" className="text-input"
+                placeholder="e.g. Brand Redesign, Product Launch, Event Schedule, Q3 Strategy"
+                maxLength={60} value={name}
+                onChange={e => { setName(e.target.value); nameErr.clear(); }}
+                onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
+                autoFocus
+              />
+            </div>
+            <p className="t-error-msg">Give it a name first</p>
           </div>
 
           {/* Description */}
@@ -297,7 +301,7 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
                 disabled={isParsing}
               >
                 {isParsing
-                  ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Parsing file…</>
+                  ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> <Shimmer>Parsing file…</Shimmer></>
                   : <><Upload size={12} /> Import phases from document (PDF, DOCX, TXT)</>
                 }
               </button>
@@ -391,7 +395,8 @@ export default function CreateRoadmapModal({ onClose, initialName = '' }: Props)
             whileTap={(name.trim() && !isSubmitting) ? { scale: 0.95 } : undefined}
             className="btn btn-primary"
             onClick={handleCreate}
-            disabled={!name.trim() || isSubmitting}
+            disabled={isSubmitting}
+            aria-disabled={!name.trim() || isSubmitting}
             style={{
               opacity: (name.trim() && !isSubmitting) ? 1 : 0.5,
               cursor: (name.trim() && !isSubmitting) ? 'pointer' : 'not-allowed',

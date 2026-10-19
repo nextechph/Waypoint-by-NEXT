@@ -14,6 +14,7 @@ import { InboxDrawer } from './InboxDrawer';
 import { formatDueDate, avatarInitials, useIsMobile } from '../utils';
 import { LABELS, type Member, type Card, type Column as ColumnType } from '../types';
 import { sortColumnsByWorkflow } from '../store/useWorkStore';
+import { modalMotion, overlayMotion } from '../lib/motion';
 
 const formatLocalDate = (date: Date) => {
   const year = date.getFullYear();
@@ -472,12 +473,9 @@ export default function BoardArea({
       {/* Rename Column Modal */}
       <AnimatePresence>
         {showRenameModal && (
-          <div className="modal-overlay" onClick={() => setShowRenameModal(false)}>
+          <motion.div className="modal-overlay" {...overlayMotion} onClick={() => setShowRenameModal(false)}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-              animate={{ opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }}
-              exit={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-              transition={{ duration: 0.2 }}
+              {...modalMotion}
               className="modal small-modal"
               onClick={e => e.stopPropagation()}
             >
@@ -508,19 +506,16 @@ export default function BoardArea({
                 </motion.button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Day Tasks Modal */}
       <AnimatePresence>
         {selectedCalendarDate && (
-          <div className="modal-overlay" onClick={() => setSelectedCalendarDate(null)}>
+          <motion.div className="modal-overlay" {...overlayMotion} onClick={() => setSelectedCalendarDate(null)}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 16 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
+              {...modalMotion}
               className="modal"
               style={{ maxWidth: 540, width: '92vw', maxHeight: '82vh', display: 'flex', flexDirection: 'column' }}
               onClick={e => e.stopPropagation()}
@@ -726,7 +721,7 @@ export default function BoardArea({
                 </motion.button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

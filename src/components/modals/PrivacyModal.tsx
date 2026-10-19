@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Shield, X, Download, Upload, Trash2, Database, HardDrive, CheckCircle2, AlertTriangle } from '../ui/icons';
 import { motion } from 'framer-motion';
+import { modalMotion } from '../../lib/motion';
 import { useWorkStore } from '../../store/useWorkStore';
 import { useNotifStore } from '../../store/useNotifStore';
 import { useEmailStore } from '../../store/useEmailStore';
@@ -82,12 +83,8 @@ export default function PrivacyModal({ onClose }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.94 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        {...modalMotion}
         className="modal small-modal"
-        style={{ transformStyle: 'preserve-3d' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="modal-header">

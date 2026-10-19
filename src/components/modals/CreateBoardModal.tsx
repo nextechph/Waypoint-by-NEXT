@@ -6,6 +6,8 @@ import { useToastStore } from '../../store/useToastStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { BOARD_COLORS } from '../../types';
 import { useEscape } from '../../lib/useEscape';
+import { modalMotion } from '../../lib/motion';
+import { useErrorShake } from '../ui/transitions';
 
 interface Props {
   onClose: (createdBoardId?: string) => void;
@@ -17,11 +19,13 @@ export default function CreateBoardModal({ onClose }: Props) {
   const showToast = useToastStore(s => s.showToast);
   const user = useAuthStore(s => s.user);
   const [name, setName] = useState('');
+  const nameErr = useErrorShake();
   const [selectedColor, setSelectedColor] = useState<string>(BOARD_COLORS[0].value);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreate = async () => {
-    if (!name.trim() || isSubmitting) return;
+    if (isSubmitting) return;
+    if (!name.trim()) { nameErr.showError(); return; }
     setIsSubmitting(true);
     try {
       const newBoard = await createBoard(name.trim(), selectedColor, user?.email, user?.name);
@@ -38,10 +42,7 @@ export default function CreateBoardModal({ onClose }: Props) {
   return (
     <div className="modal-overlay" onClick={() => onClose()}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 14, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-        exit={{ opacity: 0, scale: 0.96, y: 10, filter: 'blur(3px)' }}
-        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+        {...modalMotion}
         className="modal small-modal"
         onClick={e => e.stopPropagation()}
       >
@@ -50,18 +51,21 @@ export default function CreateBoardModal({ onClose }: Props) {
           <motion.button whileTap={{ scale: 0.92 }} className="icon-btn" onClick={() => onClose()}><X size={15} /></motion.button>
         </div>
         <div className="modal-body">
-          <div className="form-group">
+          <div ref={nameErr.wrapRef} className="form-group t-input-wrap wp-field-err">
             <label className="field-label">Board Name</label>
-            <input
-              type="text"
-              className="text-input"
-              placeholder="e.g. Marketing Campaign, Operations, Project Board"
-              maxLength={50}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
-              autoFocus
-            />
+            <div ref={nameErr.inputRef} className="t-input">
+              <input
+                type="text"
+                className="text-input"
+                placeholder="e.g. Marketing Campaign, Operations, Project Board"
+                maxLength={50}
+                value={name}
+                onChange={e => { setName(e.target.value); nameErr.clear(); }}
+                onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
+                autoFocus
+              />
+            </div>
+            <p className="t-error-msg">Give it a name first</p>
           </div>
         </div>
         <div className="modal-footer">
@@ -70,7 +74,8 @@ export default function CreateBoardModal({ onClose }: Props) {
             whileTap={(name.trim() && !isSubmitting) ? { scale: 0.95 } : undefined}
             className="btn btn-primary"
             onClick={handleCreate}
-            disabled={!name.trim() || isSubmitting}
+            disabled={isSubmitting}
+            aria-disabled={!name.trim() || isSubmitting}
             style={{
               opacity: (name.trim() && !isSubmitting) ? 1 : 0.5,
               cursor: (name.trim() && !isSubmitting) ? 'pointer' : 'not-allowed',

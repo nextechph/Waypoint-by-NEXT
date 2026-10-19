@@ -5,6 +5,8 @@ import {
   UserCheck, Loader2
 } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { modalMotion } from '../lib/motion';
+import { Shimmer } from './ui/transitions';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
 import { useConfirmStore } from '../store/useConfirmStore';
@@ -422,12 +424,9 @@ export default function MembersModal({ onClose }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-        animate={{ opacity: 1, scale: 1, rotateX: 0, translateZ: 0 }}
-        exit={{ opacity: 0, scale: 0.94, rotateX: 12, translateZ: -50 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        {...modalMotion}
         className="modal small-modal"
-        style={{ transformStyle: 'preserve-3d', maxWidth: 540 }}
+        style={{ maxWidth: 540 }}
         onClick={e => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -777,7 +776,7 @@ export default function MembersModal({ onClose }: Props) {
                         >
                           {isAdding ? (
                             <>
-                              <Loader2 size={14} className="animate-spin" /> Adding...
+                              <Loader2 size={14} className="animate-spin" /> <Shimmer>Adding...</Shimmer>
                             </>
                           ) : (
                             <>
