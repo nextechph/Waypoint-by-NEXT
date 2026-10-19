@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { AppPage } from '../../lib/workspace';
+import { DUR, EASE_SMOOTH_OUT, dropdownMotion, morphIconTransition, tabsTransition } from '../../lib/motion';
+import { Badge } from '../ui/transitions';
 import { Home, CheckSquare, FolderClosed, Inbox, Plus, KanbanSquare, Milestone, Path, Calendar } from '../ui/icons';
 
 interface MobileBottomNavProps {
@@ -31,13 +33,8 @@ const STOPS: Stop[] = [
   { key: 'inbox', label: 'Inbox', icon: Inbox, pages: ['inbox'] },
 ];
 
-const spring = { type: 'spring' as const, stiffness: 420, damping: 34, mass: 0.8 };
-const pop = {
-  initial: { opacity: 0, y: 12, scale: 0.96 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: 8, scale: 0.97 },
-  transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const },
-};
+const createPop = dropdownMotion('bottom-right');
+const planPop = dropdownMotion('bottom-center');
 
 /**
  * The "route bar": a floating capsule with a dotted route running through it. Each
@@ -76,7 +73,7 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
     <div className={`wp-route-dock${menu === 'create' ? ' creating' : ''}`} ref={dockRef}>
       <AnimatePresence>
         {menu === 'create' && (
-          <motion.div key="create" className="wp-route-create" role="menu" {...pop}>
+          <motion.div key="create" className="wp-route-create" role="menu" {...createPop}>
             <span className="wp-route-create-eyebrow">Create new</span>
             <button type="button" role="menuitem" className="wp-route-create-item" onClick={pick(onCreateBoard)}>
               <span className="wp-route-create-icon"><KanbanSquare size={20} /></span>
@@ -95,7 +92,7 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
           </motion.div>
         )}
         {menu === 'plan' && (
-          <motion.div key="plan" className="wp-route-create plan" role="menu" {...pop}>
+          <motion.div key="plan" className="wp-route-create plan" role="menu" {...planPop}>
             <span className="wp-route-create-eyebrow">Plan</span>
             <button
               type="button"
@@ -142,11 +139,11 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
               aria-haspopup={isPlan ? 'menu' : undefined}
               aria-expanded={isPlan ? menu === 'plan' : undefined}
             >
-              {active && <motion.span layoutId="wp-route-marker" className="wp-route-marker" transition={spring} />}
+              {active && <motion.span layoutId="wp-route-marker" className="wp-route-marker" transition={tabsTransition} />}
               <span className="wp-route-stop-inner">
                 <span className="wp-route-icon">
                   <Icon size={20} weight={active ? 'fill' : 'regular'} />
-                  {key === 'inbox' && inboxUnread && !active && <span className="wp-route-dot" />}
+                  {key === 'inbox' && <Badge open={inboxUnread && !active} className="wp-dot-badge" />}
                 </span>
                 {active && (
                   <motion.span
@@ -154,7 +151,7 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
                     className="wp-route-label"
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: DUR.fast / 1000, ease: EASE_SMOOTH_OUT }}
                   >
                     {label}
                   </motion.span>
@@ -176,7 +173,7 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
         <motion.span
           style={{ display: 'inline-flex' }}
           animate={{ rotate: menu === 'create' ? 45 : 0 }}
-          transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+          transition={morphIconTransition(menu === 'create')}
         >
           <Plus size={22} weight="bold" />
         </motion.span>

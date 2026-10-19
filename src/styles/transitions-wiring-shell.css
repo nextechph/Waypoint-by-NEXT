@@ -1,0 +1,2 @@
+/* Shell wiring: the collapsed-rail tooltip is positioned against the nav. */
+.wp-nav { position: relative; }

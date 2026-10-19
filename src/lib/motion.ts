@@ -72,10 +72,11 @@ export function dropdownMotion(origin: DropdownOrigin = 'top-left') {
    close 350ms. The task sheet enters from the side, so the travel
    runs on X. */
 export function panelMotion(axis: 'x' | 'y' = 'y', distance = 100) {
+  const at = (v: number) => (axis === 'x' ? { x: v } : { y: v });
   return {
-    initial: { opacity: 0, [axis]: distance, filter: 'blur(2px)' },
-    animate: { opacity: 1, [axis]: 0, filter: 'blur(0px)', transition: tween(400), transitionEnd: { filter: 'none' } },
-    exit: { opacity: 0, [axis]: distance, filter: 'blur(2px)', transition: tween(350) },
+    initial: { opacity: 0, ...at(distance), filter: 'blur(2px)' },
+    animate: { opacity: 1, ...at(0), filter: 'blur(0px)', transition: tween(400), transitionEnd: { filter: 'none' } },
+    exit: { opacity: 0, ...at(distance), filter: 'blur(2px)', transition: tween(350) },
   };
 }
 

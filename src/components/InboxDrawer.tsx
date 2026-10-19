@@ -3,7 +3,8 @@ import {
   Inbox, Plus, X, Search, ChevronLeft,
   MessageSquare, Paperclip, Calendar, Trash2
 } from './ui/icons';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion';
+import { overlayMotion, panelMotion } from '../lib/motion';
 import { Card as CardType, Board, LABELS } from '../types';
 import { useWorkStore } from '../store/useWorkStore';
 import { useToastStore } from '../store/useToastStore';
@@ -115,14 +116,15 @@ export function InboxDrawer({
     c => !c.name.toLowerCase().includes('done')
   ) || board?.columns?.[0];
 
+  // The drawer opens from the left edge, so it travels in from -X.
+  const drawerMotion = panelMotion('x', -24) as Record<'initial' | 'animate' | 'exit', TargetAndTransition>;
+
   return (
     <AnimatePresence>
       {isOpen && isMobile && (
         <motion.div
           key="inbox-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          {...overlayMotion}
           onClick={onClose}
           className="inbox-backdrop"
           style={{
@@ -139,25 +141,19 @@ export function InboxDrawer({
         <motion.aside
           key="inbox-drawer-panel"
           initial={
-              isMobile
-                ? { x: '-100%' }
-                : isDocked
+              isDocked && !isMobile
                 ? { width: 0, opacity: 0, rotateY: -18, translateZ: -35, scale: 0.94 }
-                : { x: -340, opacity: 0, rotateY: -15 }
+                : drawerMotion.initial
             }
             animate={
-              isMobile
-                ? { x: 0 }
-                : isDocked
+              isDocked && !isMobile
                 ? { width: 320, opacity: 1, rotateY: 0, translateZ: 0, scale: 1 }
-                : { x: 0, opacity: 1, rotateY: 0 }
+                : drawerMotion.animate
             }
             exit={
-              isMobile
-                ? { x: '-100%' }
-                : isDocked
+              isDocked && !isMobile
                 ? { width: 0, opacity: 0, rotateY: -18, translateZ: -35, scale: 0.94 }
-                : { x: -340, opacity: 0, rotateY: -15 }
+                : drawerMotion.exit
             }
             transition={{
               type: 'spring',

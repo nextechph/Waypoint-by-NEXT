@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { modalMotion, overlayMotion } from '../lib/motion';
+import { useSlidingPill } from './ui/transitions';
 import { useThemeStore } from '../store/useThemeStore';
 import { useWorkspace, timeAgo, type AppPage } from '../lib/workspace';
 import { getRecent } from '../lib/recent';
@@ -48,6 +50,7 @@ export default function CommandPalette(props: Props) {
   const [scope, setScope] = useState<Scope>('all');
   const [cursor, setCursor] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const { barRef: scopesRef, pill: scopePill } = useSlidingPill<HTMLDivElement>(scope, '.wp-chip.on');
 
   const run = (fn: () => void) => () => { onClose(); fn(); };
 
@@ -131,18 +134,12 @@ export default function CommandPalette(props: Props) {
   return (
     <motion.div
       className="wp-palette-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.18 }}
+      {...overlayMotion}
       onClick={onClose}
     >
       <motion.div
         className="wp-palette"
-        initial={{ opacity: 0, y: -12, scale: 0.97, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-        exit={{ opacity: 0, y: -8, scale: 0.98, filter: 'blur(3px)' }}
-        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+        {...modalMotion}
         onClick={e => e.stopPropagation()}
         onKeyDown={onKey}
         role="dialog"
@@ -153,7 +150,8 @@ export default function CommandPalette(props: Props) {
           <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Search projects, tasks, people — or type a command" />
           <kbd className="wp-kbd">Esc</kbd>
         </div>
-        <div className="wp-palette-scopes">
+        <div ref={scopesRef} className="wp-palette-scopes has-pill">
+          {scopePill}
           {(['all', 'projects', 'tasks', 'people', 'actions'] as const).map(s => (
             <button key={s} type="button" className={`wp-chip${scope === s ? ' on' : ''}`} onClick={() => setScope(s)}>
               {s === 'all' ? 'Everything' : s[0].toUpperCase() + s.slice(1)}
