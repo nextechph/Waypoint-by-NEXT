@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useWorkspace, toDate, hasTime, startOfDay, dayDiff, formatTime, type CardMeta } from '../../lib/workspace';
 import { useIsMobile } from '../../utils';
 import { ChevronLeft, ChevronRight } from '../ui/icons';
+import { RevealLines, useSlidingPill } from '../ui/transitions';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -30,6 +31,8 @@ export default function CalendarPage({ onOpenCard }: Props) {
   const [mineOnly, setMineOnly] = useState(false);
   const [anchor, setAnchor] = useState(() => startOfDay(new Date()));
   const today = startOfDay(new Date());
+  const whoTabs = useSlidingPill<HTMLDivElement>(mineOnly);
+  const modeTabs = useSlidingPill<HTMLDivElement>(mode);
 
   const source = mineOnly ? myCards : cards;
   const dated = useMemo(() => source.filter(c => c.card.dueDate), [source]);
@@ -56,10 +59,10 @@ export default function CalendarPage({ onOpenCard }: Props) {
     <div className="wp-page">
       <div className="wp-page-inner wide">
         <header className="wp-hero compact">
-          <div>
+          <RevealLines>
             <h1 className="wp-display md">Calendar.</h1>
             <p className="wp-lede">Every deadline across your projects, laid out by day.</p>
-          </div>
+          </RevealLines>
         </header>
 
         <div className="wp-toolbar">
@@ -70,11 +73,13 @@ export default function CalendarPage({ onOpenCard }: Props) {
             <span className="wp-cal-title">{title}</span>
           </div>
           <div className="wp-toolbar-right">
-            <div className="wp-segmented">
+            <div ref={whoTabs.barRef} className="wp-segmented has-pill">
+              {whoTabs.pill}
               <button type="button" className={!mineOnly ? 'active' : ''} onClick={() => setMineOnly(false)}>Everyone</button>
               <button type="button" className={mineOnly ? 'active' : ''} onClick={() => setMineOnly(true)}>Mine</button>
             </div>
-            <div className="wp-segmented">
+            <div ref={modeTabs.barRef} className="wp-segmented has-pill">
+              {modeTabs.pill}
               <button type="button" className={mode === 'week' ? 'active' : ''} onClick={() => setMode('week')}>Week</button>
               <button type="button" className={mode === 'month' ? 'active' : ''} onClick={() => setMode('month')}>Month</button>
             </div>

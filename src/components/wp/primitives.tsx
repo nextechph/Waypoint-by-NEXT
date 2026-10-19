@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { Member } from '../../types';
 import { avatarInitials } from '../../utils';
+import { RevealLines, useAvatarGroup } from '../ui/transitions';
 
 /* ── Eyebrow / section label ─────────────────────────────── */
 export function Eyebrow({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
@@ -36,13 +37,18 @@ export function MemberAvatar({ member, size = 28, ring = true }: { member: Pick<
 }
 
 export function AvatarStack({ members, max = 3, size = 28, onClick }: { members: Member[]; max?: number; size?: number; onClick?: () => void }) {
+  const group = useAvatarGroup();
   if (!members.length) return <span className="wp-muted-sm">—</span>;
   const shown = members.slice(0, max);
   const extra = members.length - shown.length;
   return (
-    <span className={`wp-avatar-stack${onClick ? ' clickable' : ''}`} onClick={onClick} role={onClick ? 'button' : undefined}>
-      {shown.map(m => <MemberAvatar key={m.id || m.email || m.name} member={m} size={size} />)}
-      {extra > 0 && <span className="wp-avatar ring more" style={{ width: size, height: size, fontSize: size * 0.34 }}>+{extra}</span>}
+    <span {...group.root} className={`wp-avatar-stack${onClick ? ' clickable' : ''}`} onClick={onClick} role={onClick ? 'button' : undefined}>
+      {shown.map((m, i) => (
+        <span key={m.id || m.email || m.name} {...group.item(i)}>
+          <MemberAvatar member={m} size={size} />
+        </span>
+      ))}
+      {extra > 0 && <span {...group.item(shown.length)} className="t-avatar wp-avatar ring more" style={{ width: size, height: size, fontSize: size * 0.34 }}>+{extra}</span>}
     </span>
   );
 }
@@ -139,8 +145,10 @@ export function EmptyState({ title, body, action }: { title: string; body?: stri
   return (
     <div className="wp-empty">
       <ProjectGlyph id={title} variant={0} size={64} />
-      <div className="wp-empty-title">{title}</div>
-      {body && <div className="wp-empty-body">{body}</div>}
+      <RevealLines className="wp-empty-text">
+        <div className="wp-empty-title">{title}</div>
+        {body && <div className="wp-empty-body">{body}</div>}
+      </RevealLines>
       {action}
     </div>
   );

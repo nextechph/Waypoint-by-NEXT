@@ -7,6 +7,8 @@ import { useWorkspace, toDate, dayDiff, type CardMeta } from '../../lib/workspac
 import { Eyebrow, EmptyState, MemberAvatar } from '../wp/primitives';
 import { relativeDay } from './TodayPage';
 import { Plus } from '../ui/icons';
+import { revealItem } from '../../lib/motion';
+import { CheckBox, NumberPop, RevealLines, useSlidingPill } from '../ui/transitions';
 
 interface Props {
   onOpenCard: (cardId: string, boardId?: string) => void;
@@ -58,30 +60,34 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
 
   const openMine = myCards.filter(c => !c.card.completed).length;
   const openAll = cards.filter(c => !c.card.completed).length;
+  const scopeTabs = useSlidingPill<HTMLDivElement>(scope);
+  const filterTabs = useSlidingPill<HTMLDivElement>(filter);
 
   return (
     <div className="wp-page">
       <div className="wp-page-inner">
         <header className="wp-hero compact">
-          <div>
+          <RevealLines>
             <h1 className="wp-display md">My work.</h1>
             <p className="wp-lede">Everything on your plate across every project, ordered by when it’s due.</p>
-          </div>
+          </RevealLines>
           <button type="button" className="wp-btn wp-btn-outline lg" onClick={onNewTask}>
             <Plus size={16} weight="bold" /> New task
           </button>
         </header>
 
         <div className="wp-toolbar">
-          <div className="wp-tabs">
+          <div ref={scopeTabs.barRef} className="wp-tabs has-pill">
+            {scopeTabs.pill}
             <button type="button" className={`wp-tab${scope === 'mine' ? ' active' : ''}`} onClick={() => setScope('mine')}>
-              Assigned to me <span className="wp-count">{openMine}</span>
+              Assigned to me <span className="wp-count"><NumberPop value={openMine} /></span>
             </button>
             <button type="button" className={`wp-tab${scope === 'all' ? ' active' : ''}`} onClick={() => setScope('all')}>
-              All tasks <span className="wp-count">{openAll}</span>
+              All tasks <span className="wp-count"><NumberPop value={openAll} /></span>
             </button>
           </div>
-          <div className="wp-segmented">
+          <div ref={filterTabs.barRef} className="wp-segmented has-pill">
+            {filterTabs.pill}
             <button type="button" className={filter === 'open' ? 'active' : ''} onClick={() => setFilter('open')}>Open</button>
             <button type="button" className={filter === 'completed' ? 'active' : ''} onClick={() => setFilter('completed')}>Completed</button>
           </div>
@@ -98,13 +104,11 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
             <motion.section
               key={g.bucket}
               className="wp-task-group"
-              initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-              transition={{ delay: gi * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              {...revealItem(gi)}
             >
               <div className="wp-task-group-head">
                 <Eyebrow style={g.bucket === 'Overdue' ? { color: 'hsl(var(--destructive))' } : undefined}>{g.bucket}</Eyebrow>
-                <span className="wp-muted-sm">{g.items.length}</span>
+                <span className="wp-muted-sm"><NumberPop value={g.items.length} /></span>
               </div>
               <div className="wp-task-list">
                 {g.items.map(item => {
@@ -115,14 +119,12 @@ export default function MyWorkPage({ onOpenCard, onNewTask }: Props) {
                   const overdue = !card.completed && card.dueDate && dayDiff(toDate(card.dueDate), new Date()) < 0;
                   return (
                     <div key={card.id} className={`wp-task-row${card.completed ? ' done' : ''}`}>
-                      <button
-                        type="button"
-                        className={`wp-check${card.completed ? ' checked' : ''}`}
-                        onClick={() => toggleCardComplete(card.id)}
-                        aria-label={card.completed ? 'Mark as not done' : 'Mark as done'}
-                      >
-                        
-                      </button>
+                      <CheckBox
+                        className="wp-check"
+                        checked={!!card.completed}
+                        onToggle={() => toggleCardComplete(card.id)}
+                        label={card.completed ? 'Mark as not done' : 'Mark as done'}
+                      />
                       <button type="button" className="wp-task-main" onClick={() => onOpenCard(card.id, board.id)}>
                         <span className="wp-task-title">{card.title}</span>
                         <span className="wp-task-meta">

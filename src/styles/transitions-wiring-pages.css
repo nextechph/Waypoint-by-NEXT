@@ -1,0 +1,26 @@
+/* Waypoint wiring for the page surfaces (Today, My work, Projects,
+   Timeline, Calendar, Inbox, project header + overview). */
+
+/* Learn more hover: .t-learn's inline-flex must not flatten the In-motion row grid. */
+.wp-motion-row.t-learn { display: grid; gap: 28px; }
+@media (max-width: 1280px) { .wp-motion-row.t-learn { gap: 20px; } }
+@media (max-width: 860px) { .wp-motion-row.t-learn { gap: 14px; } }
+.wp-motion-chevron { display: inline-flex; }
+/* The snippet's chevron slide replaces the old 3px nudge on the wrapper. */
+.wp-motion-row.t-learn:hover .wp-motion-chevron,
+.wp-quick-actions button.t-learn:hover .wp-qa-arrow { transform: none; }
+.wp-quick-actions .wp-qa-arrow { display: inline-flex; }
+
+/* Avatar group hover: each avatar sits in a .t-avatar wrapper that must be
+   a box for its transform to apply. */
+.wp-avatar-stack > .t-avatar { display: inline-flex; }
+
+/* Empty state: the reveal wrapper keeps the stack's centring and spacing. */
+.wp-empty-text { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+/* Timeline accordion: task rows now sit inside the panel, so restore the
+   divider under each project's last task, and drop it only at the very end. */
+.wp-gantt-acc-rows > .wp-gantt-row:last-child { border-bottom: 1px solid var(--wp-hairline); }
+.wp-gantt-grid > .t-acc:last-child .wp-gantt-acc-rows > .wp-gantt-row:last-child { border-bottom: none; }
+.wp-gantt-grid > .wp-gantt-row.project:has(+ .t-acc[data-open="false"]:last-child) { border-bottom: none; }
+.wp-gantt-toggle .t-acc-chevron { color: currentColor; }

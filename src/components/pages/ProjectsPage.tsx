@@ -5,6 +5,8 @@ import { useWorkspace, projectStats, canEditBoard, isBoardOwner, formatShortDate
 import type { Board } from '../../types';
 import { AvatarStack, EmptyState, ProgressBar, SummitCover } from '../wp/primitives';
 import { useProjectActions } from '../wp/useProjectActions';
+import { dropdownMotion, revealItem } from '../../lib/motion';
+import { NumberPop, RevealLines, useSlidingPill } from '../ui/transitions';
 import { Plus, KanbanSquare, Milestone, Search, MoreHorizontal, Pencil, Trash2, LogOut, CheckSquare, X } from '../ui/icons';
 
 interface Props {
@@ -25,6 +27,8 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [createOpen, setCreateOpen] = useState(false);
   const createRef = useRef<HTMLDivElement>(null);
+  const filterTabs = useSlidingPill<HTMLDivElement>(tab);
+  const createMenu = dropdownMotion('top-right');
 
   useEffect(() => {
     if (!createOpen) return;
@@ -59,10 +63,10 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
     <div className="wp-page">
       <div className="wp-page-inner">
         <header className="wp-hero compact">
-          <div>
+          <RevealLines>
             <h1 className="wp-display md">Projects.</h1>
             <p className="wp-lede">Every board and roadmap your team is moving forward.</p>
-          </div>
+          </RevealLines>
           <div ref={createRef} style={{ position: 'relative' }}>
             <button type="button" className="wp-btn wp-btn-outline lg" onClick={() => setCreateOpen(o => !o)}>
               <Plus size={16} weight="bold" /> New project
@@ -71,11 +75,8 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
               {createOpen && (
                 <motion.div
                   className="wp-menu"
-                  style={{ right: 0, top: 'calc(100% + 8px)', width: 260 }}
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.12 }}
+                  {...createMenu}
+                  style={{ right: 0, top: 'calc(100% + 8px)', width: 260, ...createMenu.style }}
                 >
                   <button type="button" className="wp-menu-item tall" onClick={() => { setCreateOpen(false); onCreateBoard(); }}>
                     <span className="wp-menu-icon"><KanbanSquare size={18} /></span>
@@ -92,10 +93,11 @@ export default function ProjectsPage({ onSelectBoard, onCreateBoard, onCreateRoa
         </header>
 
         <div className="wp-toolbar">
-          <div className="wp-tabs">
+          <div ref={filterTabs.barRef} className="wp-tabs has-pill">
+            {filterTabs.pill}
             {([['all', 'All'], ['boards', 'Boards'], ['roadmaps', 'Roadmaps'], ['completed', 'Completed']] as const).map(([id, label]) => (
               <button key={id} type="button" className={`wp-tab${tab === id ? ' active' : ''}`} onClick={() => setTab(id)}>
-                {label} <span className="wp-count">{counts[id]}</span>
+                {label} <span className="wp-count"><NumberPop value={counts[id]} /></span>
               </button>
             ))}
           </div>
@@ -199,6 +201,7 @@ function ProjectCard({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(board.name);
   const menuRef = useRef<HTMLDivElement>(null);
+  const optionsMenu = dropdownMotion('top-right');
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -213,9 +216,7 @@ function ProjectCard({
   return (
     <motion.div
       className={`wp-project-card${selected ? ' selected' : ''}`}
-      initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-      transition={{ delay: Math.min(index, 8) * 0.04, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+      {...revealItem(Math.min(index, 8))}
       onClick={() => { if (!editing) onOpen(); }}
       role="button"
       tabIndex={0}
@@ -224,7 +225,12 @@ function ProjectCard({
     >
       <SummitCover id={board.id} />
       {selecting && (
-        <span className={`wp-check wp-card-check${selected ? ' checked' : ''}`}></span>
+        // The card itself toggles selection, so the check is display-only (a nested button would double-fire on Enter).
+        <span className={`t-check wp-tcheck wp-check wp-card-check${selected ? ' checked' : ''}`} aria-checked={selected} aria-hidden>
+          <svg viewBox="0 0 10.1668 10.1668" aria-hidden style={{ ['--check-len' as string]: 15 }}>
+            <path d="M1 5.52L3.92 9.17L9.17 1" />
+          </svg>
+        </span>
       )}
       <div className="wp-project-card-body">
         <div className="wp-project-card-head">
@@ -250,11 +256,8 @@ function ProjectCard({
                 {menuOpen && (
                   <motion.div
                     className="wp-menu"
-                    style={{ right: 0, top: 'calc(100% + 6px)', width: 190 }}
-                    initial={{ opacity: 0, y: -6, scale: 0.96, filter: 'blur(3px)' }}
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-                    exit={{ opacity: 0, y: -4, scale: 0.96, filter: 'blur(2px)' }}
-                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    {...optionsMenu}
+                    style={{ right: 0, top: 'calc(100% + 6px)', width: 190, ...optionsMenu.style }}
                   >
                     {editable && (
                       <>
@@ -278,12 +281,12 @@ function ProjectCard({
         <div className="wp-project-card-meta">
           {board.type === 'roadmap' ? 'Roadmap' : 'Board'}
           <span className="wp-dot-sep" />
-          {total} {total === 1 ? 'task' : 'tasks'}
+          <NumberPop value={total} /> {total === 1 ? 'task' : 'tasks'}
           {due && (<><span className="wp-dot-sep" />Due {formatShortDate(due)}</>)}
         </div>
         <div className="wp-project-card-progress">
           <ProgressBar value={progress} />
-          <span className="wp-num">{progress}%</span>
+          <span className="wp-num"><NumberPop value={progress} />%</span>
         </div>
         <div className="wp-project-card-foot">
           <AvatarStack members={members} size={24} />
