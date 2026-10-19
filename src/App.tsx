@@ -8,7 +8,6 @@ import TaskSheet from './components/TaskSheet';
 import MembersModal from './components/MembersModal';
 import EmailNotifModal from './components/EmailNotifModal';
 import LoginPage from './components/LoginPage';
-import NotifPanel from './components/NotifPanel';
 import Toast from './components/Toast';
 import TodayPage from './components/pages/TodayPage';
 import MyWorkPage from './components/pages/MyWorkPage';
@@ -333,7 +332,6 @@ export default function App() {
   const [showInbox, setShowInbox] = useState(false);
   const [showBoardSelector, setShowBoardSelector] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'profile' | 'appearance' | 'notifications' | 'email' | 'privacy' | 'labels'>('profile');
-  const [notifOpen, setNotifOpen] = useState(false);
 
   const handleOpenSettings = useCallback((tab: 'profile' | 'appearance' | 'notifications' | 'email' | 'privacy' | 'labels' = 'profile') => {
     setSettingsTab(tab);
@@ -838,8 +836,6 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
             onNavigate={handleNavigate}
             onOpenSearch={() => setShowSearch(true)}
             onOpenSettings={handleOpenSettings}
-            onToggleNotif={() => setNotifOpen(o => !o)}
-            notifOpen={notifOpen}
           />
           <AnimatePresence mode="wait" custom={pageDir.current}>
             <motion.div
@@ -950,17 +946,7 @@ function saveAlertedSet(key: string, setObj: Set<string>) {
       )}
       </AnimatePresence>
 
-      {/* Notification Panel */}
-      <NotifPanel
-        open={notifOpen}
-        onClose={() => setNotifOpen(false)}
-        onOpenCard={(cardId, boardId) => {
-          handleOpenCard(cardId, boardId);
-          if (boardId && boardId !== activeBoardId) {
-            useWorkStore.getState().switchBoard(boardId);
-          }
-        }}
-      />
+
 
       {/* Global Off-canvas Overlay Inbox Drawer (Mobile) */}
       {isMobile && (

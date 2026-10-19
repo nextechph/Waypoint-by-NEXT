@@ -156,7 +156,7 @@ export default function Sidebar({
               {p === 'inbox' && <Badge open={inboxUnread} className="wp-dot-badge" />}
             </button>
           ))}
-          {tip}
+          {isCollapsed && tip}
         </nav>
 
         {/* Projects quick list */}

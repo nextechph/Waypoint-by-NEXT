@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, Search, LogOut, User, Sun, Moon, Settings } from './ui/icons';
+import { Search, LogOut, User, Sun, Moon, Settings } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { dropdownMotion } from '../lib/motion';
-import { Badge, TextSwap } from './ui/transitions';
+import { TextSwap } from './ui/transitions';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { avatarInitials, useIsMobile } from '../utils';
-import { useMyNotifications, getInboxSeen, type AppPage } from '../lib/workspace';
+import { type AppPage } from '../lib/workspace';
 import AvatarBorder from './ui/AvatarBorder';
 import markDark from '../assets/logo-mark-dark.png';
 import markLight from '../assets/logo-mark-light.png';
@@ -19,8 +19,6 @@ interface Props {
   onNavigate: (page: AppPage) => void;
   onOpenSearch: () => void;
   onOpenSettings: (tab?: SettingsTab) => void;
-  onToggleNotif: () => void;
-  notifOpen: boolean;
 }
 
 const PAGE_LABEL: Partial<Record<AppPage, string>> = {
@@ -36,8 +34,6 @@ export default function Topbar({
   onNavigate,
   onOpenSearch,
   onOpenSettings,
-  onToggleNotif,
-  notifOpen,
 }: Props) {
   const boards = useWorkStore(s => s.boards);
   const activeBoardId = useWorkStore(s => s.activeBoardId);
@@ -45,7 +41,6 @@ export default function Topbar({
   const logout = useAuthStore(s => s.logout);
   const isDark = useThemeStore(s => s.isDark);
   const toggleTheme = useThemeStore(s => s.toggle);
-  const notifications = useMyNotifications();
   const isMobile = useIsMobile(860);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,7 +60,6 @@ export default function Topbar({
   const today = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 
   const menuMotion = dropdownMotion('top-right');
-  const bellUnread = page !== 'inbox' && notifications.some(n => new Date(n.time).getTime() > getInboxSeen());
 
   const rootLabel = inProject ? 'Projects' : 'Workspace';
   const leafLabel = inProject ? board?.name ?? 'Project' : page === 'dashboard' ? today : PAGE_LABEL[page] ?? '';
@@ -98,17 +92,6 @@ export default function Topbar({
               <kbd className="wp-kbd">⌘K</kbd>
             </>
           )}
-        </button>
-
-        <button
-          type="button"
-          className={`wp-icon-btn${notifOpen || page === 'inbox' ? ' on' : ''}`}
-          onClick={onToggleNotif}
-          title="Notifications"
-          aria-label="Notifications"
-        >
-          <Bell size={18} weight={notifOpen ? 'fill' : 'regular'} />
-          <Badge open={bellUnread} className="wp-dot-badge" />
         </button>
 
         <span className="wp-topbar-divider hide-on-mobile" />

@@ -367,11 +367,11 @@ export function useTooltipGroup(enabled: boolean) {
     onFocus: (e: React.FocusEvent<HTMLElement>) => place(e.currentTarget),
     onBlur: hide,
   }) : {};
-  const tip = (
+  const tip = enabled ? (
     <span ref={tipRef} className="t-tt wp-rail-tt" role="tooltip" aria-hidden="true" data-show="false">
       <span ref={textRef} className="t-tt-text" />
     </span>
-  );
+  ) : null;
   return { groupRef, groupProps: { onPointerLeave: hide }, trigger, tip };
 }
 
