@@ -161,7 +161,7 @@ export default function TaskSheet({ cardId, boardId, onClose, onOpenScheduleEdit
         role="dialog"
         aria-label={card.title}
         initial={{ opacity: 0, x: 60, filter: 'blur(6px)' }}
-        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+        animate={{ opacity: 1, x: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
         exit={{ opacity: 0, x: 60, filter: 'blur(4px)' }}
         transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         onClick={e => e.stopPropagation()}

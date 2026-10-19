@@ -50,13 +50,13 @@ interface Props {
 
 const view3DVariants: Variants = {
   initial: { opacity: 0, y: 10, filter: 'blur(5px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' }, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
   exit: { opacity: 0, y: -8, filter: 'blur(3px)', transition: { duration: 0.16, ease: [0.65, 0, 0.35, 1] } }
 };
 
 const viewMobileVariants: Variants = {
   initial: { opacity: 0, y: 6, filter: 'blur(3px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' }, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } },
   exit: { opacity: 0, y: -6, filter: 'blur(2px)', transition: { duration: 0.14, ease: [0.65, 0, 0.35, 1] } }
 };
 

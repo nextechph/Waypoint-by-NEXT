@@ -36,10 +36,10 @@ export default function CreateBoardModal({ onClose }: Props) {
   };
 
   return (
-    <div className="modal-overlay" style={{ perspective: 1200 }} onClick={() => onClose()}>
+    <div className="modal-overlay" onClick={() => onClose()}>
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 14, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+        animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
         exit={{ opacity: 0, scale: 0.96, y: 10, filter: 'blur(3px)' }}
         transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
         className="modal small-modal"

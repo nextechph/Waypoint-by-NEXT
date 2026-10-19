@@ -268,7 +268,7 @@ export default function Card({
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.96, y: 8, filter: 'blur(3px)' }}
-      animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+      animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
       exit={{ opacity: 0, scale: 0.88, y: 12, filter: 'blur(6px)', transition: { duration: 0.2, ease: [0.65, 0, 0.35, 1] } }}
       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       className={`card ${card.completed ? 'completed' : ''}${isTouchDragging ? ' touch-dragging' : ''}`}

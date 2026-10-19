@@ -1293,7 +1293,7 @@ h1, h2, h3,
   justify-content: center;
   z-index: 100;
   padding: 20px;
-  animation: wp-fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: wp-fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 .dark .modal-overlay {
@@ -1312,7 +1312,7 @@ h1, h2, h3,
   flex-direction: column;
   overflow: hidden;
   color: hsl(var(--foreground));
-  animation: wp-scale-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: wp-scale-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 .modal.small-modal { max-width: 440px; }

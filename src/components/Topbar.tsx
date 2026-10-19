@@ -133,7 +133,7 @@ export default function Topbar({
                 className="wp-menu"
                 style={{ right: 0, top: 'calc(100% + 10px)', width: 248 }}
                 initial={{ opacity: 0, y: -6, scale: 0.96, filter: 'blur(3px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
                 exit={{ opacity: 0, y: -4, scale: 0.96, filter: 'blur(2px)' }}
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >

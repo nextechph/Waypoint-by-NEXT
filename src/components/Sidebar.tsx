@@ -240,7 +240,7 @@ export default function Sidebar({
                 className="wp-menu"
                 style={{ left: 0, bottom: 'calc(100% + 8px)', width: 232 }}
                 initial={{ opacity: 0, y: 6, scale: 0.96, filter: 'blur(3px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
                 exit={{ opacity: 0, y: 4, scale: 0.96, filter: 'blur(2px)' }}
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >
