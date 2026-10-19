@@ -1,0 +1,1000 @@
+/* ══════════════════════════════════════════════════════════
+   Transitions.dev — https://transitions.dev
+   Copyright (c) 2026 Jakub Antalik / Transitions.dev. Used under the
+   Transitions.dev licence (free for personal and commercial projects).
+
+   1. The universal :root block (motion tokens + per-transition
+      variables), copied from _root.css.
+   2. Waypoint theme overrides for the colour tokens, so every snippet
+      stays monochrome and follows light / dark mode.
+   3. The CSS for each transition Waypoint uses, verbatim from the
+      reference files. Surfaces animated by framer-motion (modals,
+      dropdowns, panels, toasts, pages) read the same values from
+      src/lib/motion.ts instead.
+   ══════════════════════════════════════════════════════════ */
+/* transitions-dev — copy this :root block into your project once.
+   Every transition snippet reads from these semantic names. */
+:root {
+  /* ── Motion tokens — shared scale ──────────────────────────────
+     Reference these with var(--…) anywhere in your project. The
+     transitions below ship literal values so each snippet works on
+     its own; `transitions refine` maps hardcoded values back to
+     these tokens. */
+  /* Durations */
+  --duration-stagger: 40ms;  /* per-item stagger offset */
+  --duration-micro: 80ms;  /* tooltip/path delay, shake segment, large stagger */
+  --duration-quick: 150ms;  /* modal/dropdown close, text swap, tooltip appear */
+  --duration-fast: 250ms;  /* icon swap, dropdown/modal open, tabs sliding, page slide */
+  --duration-medium: 350ms;  /* panel close, toast close */
+  --duration-slow: 400ms;  /* panel open, skeleton content reveal, input clear */
+  --duration-very-slow: 500ms;  /* emphasis moments, badge appear, text reveal, success check */
+  /* Easings */
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);  /* modal/dropdown/panel open + close, page slide, resize, position change */
+  --ease-in-out: ease-in-out;  /* icon swap, text swap, text reveal, skeleton reveal */
+  --ease-out: ease-out;  /* tooltip open / close */
+  --ease-linear: linear;  /* shimmer, skeleton pulse, spinner */
+  --ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);  /* badge pop open */
+  --ease-bounce-strong: cubic-bezier(0.34, 3.85, 0.64, 1);  /* bouncy hover-out (avatar return) */
+  /* Distances */
+  --distance-micro: 4px;  /* text swap */
+  --distance-small: 6px;  /* error shake (small segment) */
+  --distance-base: 8px;  /* badge diagonal reveal, page slide, error shake (large segment) */
+  --distance-medium: 12px;  /* text reveal */
+  --distance-large: 30px;  /* check badge appear */
+  /* Scales */
+  --scale-large: 0.96;  /* modal open / close */
+  --scale-medium: 0.97;  /* dropdown open */
+  --scale-small: 0.98;  /* tooltip open */
+  --scale-tiny: 0.99;  /* dropdown close */
+  /* Blur */
+  --blur-small: 2px;  /* panel reveal, icon swap, text swap, skeleton reveal, number pop-in */
+  --blur-medium: 3px;  /* page slide, text reveal */
+  --blur-large: 8px;  /* success check open */
+
+  /* Card resize */
+  --resize-dur: 300ms;
+  --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Number pop-in */
+  --digit-dur: 500ms;
+  --digit-distance: 8px;
+  --digit-stagger: 70ms;
+  --digit-blur: 2px;
+  --digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --digit-dir-x: 0;
+  --digit-dir-y: 1;
+  /* Notification badge */
+  --badge-slide-dur: 260ms;
+  --badge-pop-dur: 500ms;
+  --badge-pop-close-dur: 180ms;
+  --badge-fade-dur: 400ms;
+  --badge-fade-close-dur: 180ms;
+  --badge-blur: 2px;
+  --badge-offset-x: -8.2px;
+  --badge-offset-y: 12.4px;
+  --badge-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --badge-pop-ease: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --badge-close-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Text states swap */
+  --text-swap-dur: 150ms;
+  --text-swap-translate-y: 4px;
+  --text-swap-blur: 2px;
+  --text-swap-ease: ease-in-out;
+  /* Menu dropdown */
+  --dropdown-open-dur: 250ms;
+  --dropdown-close-dur: 150ms;
+  --dropdown-pre-scale: 0.97;
+  --dropdown-closing-scale: 0.99;
+  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Modal open / close */
+  --modal-open-dur: 250ms;
+  --modal-close-dur: 150ms;
+  --modal-scale: 0.96;
+  --modal-scale-close: 0.96;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Panel reveal */
+  --panel-open-dur: 400ms;
+  --panel-close-dur: 350ms;
+  --panel-translate-y: 100px;
+  --panel-blur: 2px;
+  --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Page side-by-side */
+  --page-slide-dur: 250ms;
+  --page-fade-dur: 250ms;
+  --page-slide-distance: 8px;
+  --page-blur: 3px;
+  --page-stagger: 0ms;
+  --page-exit-enabled: 1;
+  --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Icon swap */
+  --icon-swap-dur: 250ms;
+  --icon-swap-blur: 2px;
+  --icon-swap-start-scale: 0.25;
+  --icon-swap-ease: ease-in-out;
+  /* Success check */
+  --check-opacity-dur: 500ms;
+  --check-rotate-dur: 500ms;
+  --check-rotate-from: 80deg;
+  --check-bob-dur: 500ms;
+  --check-y-amount: 40px;
+  --check-blur-dur: 500ms;
+  --check-blur-from: 10px;
+  --check-path-dur: 500ms;
+  --check-path-delay: 80ms;
+  --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-rotate: cubic-bezier(0.22, 1, 0.36, 1);
+  --check-ease-bob: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Avatar group hover */
+  --avatar-lift: -4px;
+  --avatar-dur: 320ms;
+  --avatar-scale: 1.05;
+  --avatar-falloff: 0.45;
+  --avatar-ease-in: cubic-bezier(0.22, 1, 0.36, 1);
+  --avatar-ease-out: cubic-bezier(0.34, 3.85, 0.64, 1);
+  /* Error state shake */
+  --shake-distance: 6px;
+  --shake-overshoot: 4px;
+  --shake-dur-a: 80ms;
+  --shake-dur-b: 60ms;
+  --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --revert-hold: 3000ms;
+  --revert-dur: 280ms;
+  /* Input clear with dissolve */
+  --clear-dur: 1000ms;
+  --clear-out-dur: 400ms;
+  --clear-in-dur: 400ms;
+  --clear-out-fly: 12px;
+  --clear-in-fly: 12px;
+  --clear-out-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --clear-in-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --clear-blur: 2px;
+  --glow-delay: 50ms;
+  --glow-peak-at: 0.15;
+  --glow-opacity: 0.42;
+  --glow-spread: 1.5;
+  /* Skeleton loader and reveal */
+  --pulse-dur: 1000ms;
+  --pulse-count: 1;
+  --pulse-min: 0.5;
+  --reveal-dur: 400ms;
+  --reveal-blur: 2px;
+  --reveal-ease: ease-in-out;
+  /* Shimmer text */
+  --shimmer-dur: 2000ms;
+  --shimmer-base: #7c7c7c;
+  --shimmer-highlight: #0d0d0d;
+  --shimmer-band: 400%;
+  --shimmer-ease: linear;
+  /* Tabs sliding */
+  --tabs-dur: 250ms;
+  --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tabs-text-muted: rgba(15, 15, 15, 0.8);
+  --tabs-text-active: #0f0f0f;
+  --tabs-bar-bg: #f1f1f1;
+  --tabs-pill-bg: #ffffff;
+  /* Tooltip open/close */
+  --tt-in-dur: 150ms;
+  --tt-out-dur: 50ms;
+  --tt-scale: 0.98;
+  --tt-delay: 80ms;
+  --tt-in-ease: ease-out;
+  --tt-out-ease: ease-out;
+  --tt-move-dur: 160ms;
+  --tt-move-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tt-bg: #ffffff;
+  --tt-fg: #2f2f2f;
+  /* Texts reveal */
+  --stagger-dur: 500ms;
+  --stagger-distance: 12px;
+  --stagger-stagger: 40ms;
+  --stagger-blur: 3px;
+  --stagger-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Card hover tilt */
+  --tilt-perspective: 1000px;
+  --tilt-return: 1000ms;
+  --tilt-return-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tilt-follow: 400ms;
+  --tilt-follow-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tilt-glare-opacity: 0.32;
+  --tilt-glare-fade: 300ms;
+  --tilt-glare-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Plus to menu morph */
+  --morph-open-dur: 350ms;
+  --morph-close-dur: 250ms;
+  --morph-ease: cubic-bezier(0.34, 1.25, 0.64, 1);
+  --morph-close-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --morph-r-closed: 40px;
+  --morph-r-open: 20px;
+  --morph-fade-dur: 200ms;
+  --morph-slide: 40px;
+  --morph-rotate: 45deg;
+  --morph-scale: 0.97;
+  --morph-blur: 2px;
+  /* Accordion expand */
+  --acc-expand: 250ms;
+  --acc-collapse: 250ms;
+  --acc-chevron: 250ms;
+  --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Toast open / close */
+  --toast-open: 350ms;
+  --toast-close: 250ms;
+  --toast-distance: 16px;
+  --toast-blur: 2px;
+  --toast-scale: 0.97;
+  --toast-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Like button */
+  --like-color: #f40051;
+  --like-fill: 150ms;
+  --like-pop: 350ms;
+  --like-pop-ease: cubic-bezier(0.34, 1.96, 0.64, 1);
+  --like-particle-dur: 600ms;
+  --like-particle-dist: 20px;
+  --like-particle-size: 2.5px;
+  --like-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Learn more hover */
+  --learn-shift: 2px;
+  --learn-spread: 8deg;
+  --learn-in: 350ms;
+  --learn-out: 350ms;
+  --learn-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Checkbox check */
+  --check-box: 150ms;
+  --check-draw: 350ms;
+  --check-delay: 0ms;
+  --check-uncheck: 150ms;
+  --check-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Spinning counter */
+  --reel-dur: 1400ms;
+  --reel-cell: 30px;
+  --reel-spin-blur: 3px;
+  --reel-stagger: 90ms;
+  --reel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Toggle */
+  --toggle-dur: 350ms;
+  --toggle-travel: 14.66px;
+  --toggle-ov1: 1px;
+  --toggle-ov2: 0px;
+  --toggle-track: 0ms;
+  --toggle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
+  /* Thinking states */
+  --think-hold: 2000ms;
+  --think-swap: 150ms;
+  --think-gap: 50ms;
+  --think-distance: 8px;
+  --think-blur: 2px;
+  --think-shimmer: 2000ms;
+  --think-base: #7c7c7c;
+  --think-highlight: #0d0d0d;
+  --think-ease: ease-in-out;
+  /* Reasoning stream */
+  --reason-hold: 840ms;
+  --reason-step: 500ms;
+  --reason-lines: 2;
+  --reason-fade: 28px;
+  --reason-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Streaming text */
+  --stream-gap: 60ms;
+  --stream-fade: 350ms;
+  --stream-blur: 1px;
+  --stream-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Matrix dot loader */
+  --matrix-cycle: 1200ms;
+  --matrix-base: #d9d9d9;
+  --matrix-active: #85858f;
+  --matrix-ease: ease-in-out;
+  /* Banner stacking */
+  --stack-open: 350ms;
+  --stack-close: 250ms;
+  --stack-rise: 60px;
+  --stack-blur: 2px;
+  --stack-scale: 0.97;
+  --stack-peek: 12px;
+  --stack-spread-gap: 8px;
+  --stack-depth-scale: 0.06;
+  --stack-depth-fade: 0.4;
+  --stack-depth1-blur: 1px;
+  --stack-depth2-blur: 2px;
+  --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Waypoint theme overrides ─────────────────────────────── */
+:root {
+  --shimmer-base: hsl(var(--muted-foreground));
+  --shimmer-highlight: hsl(var(--foreground));
+  --tabs-text-muted: hsl(var(--muted-foreground));
+  --tabs-text-active: hsl(var(--background));
+  --tabs-bar-bg: transparent;
+  --tabs-pill-bg: hsl(var(--foreground));
+  --tt-bg: hsl(var(--foreground));
+  --tt-fg: hsl(var(--background));
+  --matrix-base: hsl(var(--foreground) / 0.14);
+  --matrix-active: hsl(var(--foreground));
+  --like-color: hsl(var(--foreground));
+}
+
+/* ── Number pop-in (02-number-pop-in.md) ─────────────────── */
+@keyframes t-digit-pop-in {
+  0%   {
+    transform: translate(
+      calc(var(--digit-distance) * var(--digit-dir-x)),
+      calc(var(--digit-distance) * var(--digit-dir-y))
+    );
+    opacity: 0;
+    filter: blur(var(--digit-blur));
+  }
+  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
+}
+
+.t-digit-group {
+  display: inline-flex;
+  align-items: baseline;
+}
+.t-digit {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+.t-digit-group.is-animating .t-digit {
+  animation: t-digit-pop-in var(--digit-dur) var(--digit-ease) both;
+}
+.t-digit-group.is-animating .t-digit[data-stagger="1"] {
+  animation-delay: var(--digit-stagger);
+}
+.t-digit-group.is-animating .t-digit[data-stagger="2"] {
+  animation-delay: calc(var(--digit-stagger) * 2);
+}
+/* Digits that did not change (the leading ones the old and new number
+   share) stay still; only the digits that changed pop in. */
+.t-digit-group.is-animating .t-digit[data-same] {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-digit-group .t-digit { animation: none !important; }
+}
+
+/* ── Notification badge (03-notification-badge.md) ───────── */
+@keyframes t-badge-slide-in {
+  from { transform: translate(var(--badge-offset-x), var(--badge-offset-y)); }
+  to   { transform: translate(0, 0); }
+}
+
+/* .t-badge is the absolutely-positioned wrapper for the dot.
+   Adjust top/right (or left/bottom) to anchor it on your trigger. */
+.t-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  pointer-events: none;
+  will-change: transform;
+}
+.t-badge[data-open="true"] {
+  animation: t-badge-slide-in var(--badge-slide-dur) var(--badge-slide-ease);
+}
+
+.t-badge-dot {
+  display: block;
+  transform-origin: center;
+  transform: scale(1);
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    transform var(--badge-pop-dur)  var(--badge-pop-ease),
+    opacity   var(--badge-fade-dur) var(--badge-pop-ease),
+    filter    var(--badge-pop-dur)  var(--badge-pop-ease);
+  will-change: transform, opacity, filter;
+}
+.t-badge[data-open="false"] .t-badge-dot {
+  transform: scale(0);
+  opacity: 0;
+  filter: blur(var(--badge-blur));
+  transition:
+    transform var(--badge-pop-close-dur)  var(--badge-close-ease),
+    opacity   var(--badge-fade-close-dur) var(--badge-close-ease),
+    filter    var(--badge-pop-close-dur)  var(--badge-close-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-badge, .t-badge-dot { animation: none !important; transition: none !important; }
+}
+
+/* ── Text states swap (04-text-states-swap.md) ───────────── */
+.t-text-swap {
+  display: inline-block;
+  transform: translateY(0);
+  filter: blur(0);
+  opacity: 1;
+  transition:
+    transform var(--text-swap-dur) var(--text-swap-ease),
+    filter    var(--text-swap-dur) var(--text-swap-ease),
+    opacity   var(--text-swap-dur) var(--text-swap-ease);
+  will-change: transform, filter, opacity;
+}
+.t-text-swap.is-exit {
+  transform: translateY(calc(var(--text-swap-translate-y) * -1));
+  filter: blur(var(--text-swap-blur));
+  opacity: 0;
+}
+.t-text-swap.is-enter-start {
+  transform: translateY(var(--text-swap-translate-y));
+  filter: blur(var(--text-swap-blur));
+  opacity: 0;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-text-swap { transition: none !important; }
+}
+
+/* ── Icon swap (09-icon-swap.md) ─────────────────────────── */
+.t-icon-swap {
+  position: relative;
+  display: inline-grid;
+}
+.t-icon-swap .t-icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity   var(--icon-swap-dur) var(--icon-swap-ease),
+    filter    var(--icon-swap-dur) var(--icon-swap-ease),
+    transform var(--icon-swap-dur) var(--icon-swap-ease);
+  /* No will-change: it would freeze each icon's raster at its 0.25 start
+     scale, so a large icon scales up blurry and pixelated. */
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="a"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="b"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+.t-icon-swap[data-state="a"] .t-icon[data-icon="b"],
+.t-icon-swap[data-state="b"] .t-icon[data-icon="a"] {
+  opacity: 0;
+  filter: blur(var(--icon-swap-blur));
+  transform: scale(var(--icon-swap-start-scale));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-icon-swap .t-icon { transition: none !important; }
+}
+
+/* ── Success check (10-success-check.md) ─────────────────── */
+/* Wrapper drives the appear animation; it doesn't own any
+   sizing or color so you can drop in any icon. */
+.t-success-check {
+  display: inline-block;
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+/* overflow: visible keeps the stroke from clipping while it
+   draws; display: block kills the inline whitespace under SVGs. */
+.t-success-check svg { display: block; overflow: visible; }
+/* Stroke-draw setup. Replace 20 with the result of
+   path.getTotalLength() for your path; round caps mean any
+   sub-pixel overshoot is invisible. */
+.t-success-check svg path {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+}
+
+.t-success-check[data-state="in"] {
+  animation:
+    t-check-fade   var(--check-opacity-dur) var(--check-ease-opacity) forwards,
+    t-check-rotate var(--check-rotate-dur)  var(--check-ease-rotate)  forwards,
+    t-check-blur   var(--check-blur-dur)    var(--check-ease-out)     forwards,
+    t-check-bob    var(--check-bob-dur)     var(--check-ease-bob)     forwards;
+}
+.t-success-check[data-state="in"] svg path {
+  animation: t-check-draw var(--check-path-dur) var(--check-ease-path) var(--check-path-delay, 0ms) forwards;
+}
+
+@keyframes t-check-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes t-check-rotate {
+  from { transform: rotate(var(--check-rotate-from)); }
+  to   { transform: rotate(0deg); }
+}
+@keyframes t-check-blur {
+  from { filter: blur(var(--check-blur-from)); }
+  to   { filter: blur(0); }
+}
+@keyframes t-check-bob {
+  from { translate: 0 var(--check-y-amount); }
+  to   { translate: 0 0; }
+}
+@keyframes t-check-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-success-check { animation: none !important; opacity: 1; }
+  .t-success-check svg path { animation: none !important; stroke-dashoffset: 0 !important; }
+}
+
+/* ── Avatar group hover (11-avatar-group-hover.md) ───────── */
+/* Hover-spring transition only — bring your own avatar/chip
+   styling (size, shape, border, stacking, background). */
+.t-avatar {
+  transform-origin: center;
+  /* translateY before scale so scale doesn't amplify the lift offset. */
+  transform:
+    translateY(var(--shift, 0px))
+    scale(var(--scale-active, 1));
+  transition: transform var(--avatar-dur) var(--avatar-ease-in);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-avatar { transition: none !important; transform: none !important; }
+}
+
+/* ── Error state shake (12-error-state-shake.md) ─────────── */
+/* Border-color tween. Define your input's default / focused
+   / error border-color in your own component CSS — this rule
+   only owns the interpolation. Use a constant border-width
+   across states so the tween never shifts inner content. */
+.t-input {
+  transition: border-color 150ms ease-out;
+  will-change: transform;
+}
+.t-input.is-error {
+  /* Error border auto-reverts on the hold timer, so the
+     fade-out uses the slower revert duration (matches the
+     message fade). */
+  transition: border-color var(--revert-dur, 280ms) ease-out;
+}
+
+/* Error message reveal. Visibility is delayed by --revert-dur
+   on hide so the message stays painted for the full opacity
+   fade-out. Entering .is-error drops the delay to 0 so the
+   message becomes visible immediately. */
+.t-error-msg {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity    var(--revert-dur, 280ms) ease-out,
+    visibility 0s linear var(--revert-dur, 280ms);
+}
+.t-input-wrap.is-error .t-error-msg {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity    var(--revert-dur, 280ms) ease-out,
+    visibility 0s linear 0s;
+}
+
+/* Multi-segment keyframe with per-stop easing so each leg
+   of the shake follows its own cubic-bezier independently.
+   %-stops are cumulative durations as a fraction of the
+   total (80, 60, 80, 60 = 280ms): 28.57%, 57.14%, 78.57%,
+   100%. Recompute if any segment duration changes. */
+.t-input.is-shaking {
+  animation: t-input-shake calc(
+      var(--shake-dur-a) * 2 + var(--shake-dur-b) * 2
+    ) linear;
+}
+@keyframes t-input-shake {
+  0%      { transform: translateX(0);                                 animation-timing-function: var(--shake-ease); }
+  28.57%  { transform: translateX(var(--shake-distance));             animation-timing-function: var(--shake-ease); }
+  57.14%  { transform: translateX(calc(var(--shake-distance) * -1)); animation-timing-function: var(--shake-ease); }
+  78.57%  { transform: translateX(var(--shake-overshoot));            animation-timing-function: var(--shake-ease); }
+  100%    { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-input { animation: none !important; transform: none !important; }
+}
+
+/* ── Shimmer text (15-shimmer-text.md) ───────────────────── */
+/* Two-layer construction:
+   1. The base text renders normally in --shimmer-base.
+   2. ::before duplicates it via content: attr(data-text),
+      paints a transparent → highlight → transparent gradient
+      onto it, and clips that gradient to the glyphs via
+      background-clip: text. Animating background-position
+      sweeps the band across the text. */
+.t-shimmer {
+  position: relative;
+  display: inline-block;
+  color: var(--shimmer-base);
+}
+.t-shimmer::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    90deg,
+    transparent          0%,
+    transparent         40%,
+    var(--shimmer-highlight) 50%,
+    transparent         60%,
+    transparent        100%
+  );
+  background-size: var(--shimmer-band) 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: t-shimmer var(--shimmer-dur) var(--shimmer-ease) infinite;
+}
+@keyframes t-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: 0% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-shimmer::before { animation: none !important; }
+}
+
+/* ── Tabs sliding (16-tabs-sliding.md) ───────────────────── */
+/* The bar is just a flex container with padding for the pill
+   to sit inside. Tabs sit on z-index: 1, the pill on z-index: 0,
+   so labels read above the pill background. */
+.t-tabs {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 48px;
+  background: var(--tabs-bar-bg);
+}
+.t-tab {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  height: 30px;
+  padding: 4px 12px;
+  color: var(--tabs-text-muted);
+  cursor: pointer;
+  border-radius: 48px;
+  z-index: 1;
+  transition: color var(--tabs-dur) var(--tabs-ease);
+}
+.t-tab:not([aria-selected="true"]):hover,
+.t-tab[aria-selected="true"] {
+  color: var(--tabs-text-active);
+}
+
+/* The pill: width + transform are written inline by JS so
+   the transition tweens between the previous and next
+   measured positions. */
+.t-tabs-pill {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: 30px;
+  width: 0;
+  background: var(--tabs-pill-bg);
+  border-radius: 48px;
+  transform: translateX(0);
+  transition:
+    transform var(--tabs-dur) var(--tabs-ease),
+    width     var(--tabs-dur) var(--tabs-ease);
+  will-change: transform, width;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-tabs-pill, .t-tab { transition: none !important; }
+}
+
+/* ── Tooltip open/close (17-tooltip.md) ──────────────────── */
+.t-tt-group {
+  position: relative;
+  display: inline-flex;
+}
+.t-tt {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;                 /* the JS writes the measured width */
+  overflow: hidden;
+  /* Individual transform properties: the travel (translate) and the
+     appear (scale) run on their own clocks. */
+  translate: var(--tt-x, 0px) 0;
+  scale: var(--tt-scale);
+  transform-origin: 50% 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--tt-bg);
+  color: var(--tt-fg);
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 2px 6px 0 rgba(0, 0, 0, 0.05),
+    0 4px 42px 0 rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  /* Default rule controls the LEAVE state: no delay, so hiding plays
+     immediately. The move lanes are always live. */
+  transition:
+    opacity   var(--tt-out-dur) var(--tt-out-ease),
+    scale     var(--tt-out-dur) var(--tt-out-ease),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
+}
+/* The appear delay belongs ONLY to the show rule, so hiding snaps it
+   back to 0. A retarget while showing carries no delay at all. */
+.t-tt[data-show="true"] {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity   var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    scale     var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
+}
+.t-tt-text { white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-tt { transition: none !important; }
+}
+
+/* ── Texts reveal (18-texts-reveal.md) ───────────────────── */
+/* Lines start translated down + blurred + invisible; .is-shown
+   on the parent flips them to their resting state. The second
+   line's transition-delay holds it back by --stagger-stagger
+   so the eye lands on the headline first. */
+.t-stagger-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(var(--stagger-distance));
+  filter: blur(var(--stagger-blur));
+  transition:
+    opacity   var(--stagger-dur) var(--stagger-ease),
+    transform var(--stagger-dur) var(--stagger-ease),
+    filter    var(--stagger-dur) var(--stagger-ease);
+  will-change: transform, opacity, filter;
+}
+.t-stagger-line--2 { transition-delay: var(--stagger-stagger); }
+
+.t-stagger.is-shown .t-stagger-line {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+/* Exit decouples from the stagger: same fade for every line,
+   no Y return, no blur — so the disappearance reads as a
+   single quiet fade instead of a reverse reveal. */
+.t-stagger.is-hiding .t-stagger-line {
+  opacity: 0;
+  transform: translateY(0);
+  filter: blur(0);
+  transition:
+    opacity 200ms ease,
+    transform 0s linear,
+    filter 0s linear;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-stagger-line { transition: none !important; }
+}
+
+/* ── Accordion expand (21-accordion.md) ──────────────────── */
+/* grid-template-rows 0fr → 1fr gives a clean height animation
+   with no JS measurement; the inner element clips overflow. */
+.t-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open="true"] .t-acc-panel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+}
+.t-acc-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(2px);
+  transition:
+    opacity var(--acc-collapse) var(--acc-ease),
+    filter var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open="true"] .t-acc-panel-inner {
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--acc-expand) var(--acc-ease),
+    filter var(--acc-expand) var(--acc-ease);
+}
+/* Flip the chevron vertically to turn the "v" into a "^".
+   scaleY(-1) about the centre passes through a flat line at
+   the midpoint (same look as a `d:` path morph) but animates
+   in every browser, unlike CSS `d:` morphing (Chromium only).
+   The chevron path is symmetric about the 16x16 viewBox
+   centre, so the flip lands exactly on the "^"; non-scaling
+   -stroke keeps the stroke width constant through the flip. */
+.t-acc-chevron {
+  display: inline-flex;
+  transform: scaleY(1);
+  transform-origin: center;
+  transition: transform var(--acc-chevron) var(--acc-ease);
+}
+.t-acc-chevron path { vector-effect: non-scaling-stroke; }
+.t-acc[data-open="true"] .t-acc-chevron {
+  transform: scaleY(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron {
+    transition: none !important;
+  }
+}
+
+/* ── Learn more hover (24-learn-more-hover.md) ───────────── */
+.t-learn-chevron {
+  display: inline-flex;
+  transform: translateX(0);
+  transition: transform var(--learn-out) var(--learn-ease);
+}
+.t-learn-arm {
+  transform-box: view-box;
+  transform-origin: 10px 8px;
+  vector-effect: non-scaling-stroke;
+  transition: transform var(--learn-out) var(--learn-ease);
+}
+.t-learn:hover .t-learn-chevron { transform: translateX(var(--learn-shift)); transition-duration: var(--learn-in); }
+.t-learn:hover .t-learn-arm { transition-duration: var(--learn-in); }
+.t-learn:hover .t-learn-arm-top { transform: rotate(var(--learn-spread)); }
+.t-learn:hover .t-learn-arm-bot { transform: rotate(calc(var(--learn-spread) * -1)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-learn-chevron, .t-learn-arm { transition: none !important; }
+}
+
+/* ── Checkbox check (25-checkbox-check.md) ───────────────── */
+.t-check {
+  transition:
+    background var(--check-box) var(--check-ease),
+    box-shadow var(--check-box) var(--check-ease);
+}
+.t-check svg path {
+  stroke-dasharray: var(--check-len, 15);
+  stroke-dashoffset: var(--check-len, 15);
+  transition: stroke-dashoffset var(--check-uncheck) var(--check-ease);
+}
+.t-check[aria-checked="true"] svg path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--check-draw) var(--check-ease) var(--check-delay);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-check, .t-check svg path { transition: none !important; }
+}
+
+/* ── Toggle (27-toggle.md) ───────────────────────────────── */
+.t-toggle { transition: background var(--toggle-track) var(--toggle-ease); }
+.t-toggle-thumb { translate: 0 0; will-change: translate; }
+.t-toggle[data-on="true"] .t-toggle-thumb { translate: var(--toggle-travel) 0; }
+.t-toggle.is-init[data-on="true"] .t-toggle-thumb { animation: t-toggle-on var(--toggle-dur) var(--toggle-ease) both; }
+.t-toggle.is-init[data-on="false"] .t-toggle-thumb { animation: t-toggle-off var(--toggle-dur) var(--toggle-ease) both; }
+@keyframes t-toggle-on {
+  0% { translate: 0 0; }
+  55% { translate: calc(var(--toggle-travel) + var(--toggle-ov1)) 0; }
+  80% { translate: calc(var(--toggle-travel) - var(--toggle-ov2)) 0; }
+  100% { translate: var(--toggle-travel) 0; }
+}
+@keyframes t-toggle-off {
+  0% { translate: var(--toggle-travel) 0; }
+  55% { translate: calc(0px - var(--toggle-ov1)) 0; }
+  80% { translate: var(--toggle-ov2) 0; }
+  100% { translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-toggle-thumb { animation: none !important; }
+}
+
+/* ── Matrix dot loader (31-matrix-loader.md) ─────────────── */
+.t-matrix {
+  display: grid;
+  grid-template-columns: repeat(4, 2px);
+  grid-auto-rows: 2px;
+  gap: 2px;
+}
+.t-matrix i {
+  display: block;
+  background: var(--matrix-base);
+  animation: t-matrix-pulse var(--matrix-cycle) var(--matrix-ease) infinite;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+/* Hole positions (rounded variants) render nothing. */
+.t-matrix i.is-gap { visibility: hidden; animation: none; }
+@keyframes t-matrix-pulse {
+  0%, 45%, 100% { background-color: var(--matrix-base); }
+  15%           { background-color: var(--matrix-active); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-matrix i { animation: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   Waypoint wiring — sizes and colours for the t-* hooks above.
+   Motion itself stays in the verbatim snippets.
+   ══════════════════════════════════════════════════════════ */
+
+/* Checkbox check: the box keeps Waypoint's square; the snippet draws the tick. */
+.wp-tcheck { display: inline-flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
+.wp-tcheck.checked::after { content: none !important; display: none !important; }
+.wp-tcheck svg { width: 60%; height: 60%; overflow: visible; }
+.wp-tcheck svg path { fill: none; stroke: hsl(var(--background)); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.wp-check.wp-tcheck.checked svg path { stroke: hsl(var(--primary-foreground)); }
+
+/* Notification badge: a 7px dot anchored on its trigger. */
+.t-badge.wp-dot-badge { top: 6px; right: 6px; }
+.t-badge.wp-dot-badge .t-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: hsl(var(--foreground)); box-shadow: 0 0 0 2px hsl(var(--background)); }
+.wp-route .t-badge.wp-dot-badge { top: 1px; right: 1px; }
+.wp-route .t-badge.wp-dot-badge .t-badge-dot { box-shadow: 0 0 0 2px hsl(var(--card)); }
+.wp-nav-item .t-badge.wp-dot-badge { position: static; margin-left: auto; }
+.wp-nav-item .t-badge.wp-dot-badge .t-badge-dot { box-shadow: none; }
+.collapsed .wp-nav-item .t-badge.wp-dot-badge { position: absolute; top: 9px; right: 12px; margin: 0; }
+.collapsed .wp-nav-item .t-badge.wp-dot-badge .t-badge-dot { box-shadow: 0 0 0 2px hsl(var(--sidebar, var(--background))); }
+
+/* Learn more hover on links and quick actions. */
+.t-learn { display: inline-flex; align-items: center; gap: 4px; }
+.t-learn .t-learn-chevron { color: var(--wp-ink-3); }
+.t-learn:hover .t-learn-chevron { color: var(--wp-ink); }
+
+/* Toggle: 34×20 track, 16px thumb, so the thumb travels 14px. */
+.wp-toggle {
+  --toggle-travel: 14px;
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  padding: 2px;
+  border: none;
+  border-radius: 999px;
+  background: hsl(var(--foreground) / 0.16);
+  cursor: pointer;
+}
+.wp-toggle[data-on="true"] { background: hsl(var(--foreground)); }
+.wp-toggle:disabled { opacity: 0.45; cursor: not-allowed; }
+.wp-toggle .t-toggle-thumb { display: block; width: 16px; height: 16px; border-radius: 50%; background: hsl(var(--background)); box-shadow: 0 1px 2px hsl(0 0% 0% / 0.25); }
+
+/* Tabs sliding, segmented-control form: the pill paints the active option. */
+.wp-segmented { position: relative; }
+.wp-segmented .t-tabs-pill { top: 3px; height: 28px; border-radius: 6px; }
+.wp-segmented.has-pill button { position: relative; z-index: 1; background: transparent !important; transition: color var(--tabs-dur) var(--tabs-ease); }
+.wp-segmented.has-pill button.active { color: var(--tabs-text-active); }
+/* Tabs sliding, underline form: a 2px bar travels under the active tab. */
+.wp-tabs { position: relative; }
+.wp-tabs > .t-tabs-pill { top: auto; bottom: -1px; height: 2px; border-radius: 2px; }
+.wp-tabs.has-pill .wp-tab.active::after { display: none !important; }
+.wp-palette-scopes { position: relative; }
+.wp-palette-scopes > .t-tabs-pill { top: auto; height: 28px; border-radius: 999px; }
+.wp-palette-scopes.has-pill .wp-chip { position: relative; z-index: 1; transition: color var(--tabs-dur) var(--tabs-ease); }
+.wp-palette-scopes.has-pill .wp-chip.on { background: transparent !important; border-color: transparent !important; color: hsl(var(--background)) !important; }
+
+/* Tooltip on the collapsed sidebar rail: sits to the right and travels on Y. */
+.wp-rail-tt {
+  top: 0;
+  bottom: auto;
+  left: calc(100% + 10px);
+  translate: 0 var(--tt-y, 0px);
+  transform-origin: 0 50%;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  z-index: 120;
+}
+
+/* Error state shake on form fields. */
+.t-input.is-error, .t-input.is-error input { border-color: hsl(var(--foreground)) !important; }
+.t-error-msg { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: var(--wp-ink); }
+
+/* Matrix dot loader, scaled up for the app loading screen. */
+.t-matrix.wp-matrix-lg { grid-template-columns: repeat(4, 6px); grid-auto-rows: 6px; gap: 5px; }
+.t-matrix.wp-matrix-lg i { border-radius: 1.5px; }
+
+/* Number pop-in keeps tabular figures so widths don't jump. */
+.t-digit-group { font-variant-numeric: tabular-nums; }
