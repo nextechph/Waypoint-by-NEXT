@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, Search, Menu, LogOut, User, Sun, Moon, Settings } from './ui/icons';
+import { Bell, Search, LogOut, User, Sun, Moon, Settings } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -19,7 +19,6 @@ interface Props {
   onOpenSettings: (tab?: SettingsTab) => void;
   onToggleNotif: () => void;
   notifOpen: boolean;
-  onToggleMobileMenu?: () => void;
 }
 
 const PAGE_LABEL: Partial<Record<AppPage, string>> = {
@@ -37,7 +36,6 @@ export default function Topbar({
   onOpenSettings,
   onToggleNotif,
   notifOpen,
-  onToggleMobileMenu,
 }: Props) {
   const boards = useWorkStore(s => s.boards);
   const activeBoardId = useWorkStore(s => s.activeBoardId);
@@ -70,11 +68,6 @@ export default function Topbar({
   return (
     <header className="topbar wp-topbar">
       <div className="wp-topbar-left">
-        {onToggleMobileMenu && (
-          <button type="button" className="wp-text-link show-on-mobile-flex" onClick={onToggleMobileMenu} aria-label="Open navigation">
-            <Menu size={20} />
-          </button>
-        )}
         {isMobile && (
           <img src={isDark ? markDark : markLight} alt="Waypoint" className="wp-topbar-mark" onClick={() => onNavigate('dashboard')} />
         )}
