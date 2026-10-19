@@ -1758,3 +1758,20 @@ li.current .wp-ms-status { color: var(--wp-ink); }
   .wp-route-dock.creating .wp-route { opacity: 0.55; transition: opacity 0.2s ease; }
 }
 .wp-quick-create { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+@media (max-width: 860px) {
+  /* Five stops: inactive stops stay compact so the active label has room. */
+  .wp-route-dock { left: 12px; right: 12px; }
+  .wp-route { padding: 0 6px; }
+  .wp-route-stop-inner { padding: 0 6px; }
+  .wp-route-stop.active .wp-route-stop-inner { padding: 0 14px 0 12px; }
+  .wp-route-new { width: 56px; height: 56px; }
+  .wp-route-stop.open:not(.active) { color: var(--wp-ink); }
+  .wp-route-stop.open:not(.active) .wp-route-icon { box-shadow: 0 0 0 1.5px hsl(var(--foreground) / 0.5); }
+  .wp-route-create.plan { right: auto; left: 0; transform-origin: bottom center; }
+  .wp-route-create-item.current { background: hsl(var(--accent)); }
+  .wp-route-create-item.current .wp-route-create-icon { background: hsl(var(--foreground)); color: hsl(var(--background)); border-color: hsl(var(--foreground)); }
+}
+@media (max-width: 360px) {
+  .wp-route-label { display: none; }
+  .wp-route-stop.active .wp-route-stop-inner { padding: 0 12px; }
+}

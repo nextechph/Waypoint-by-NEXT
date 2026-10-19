@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { AppPage } from '../../lib/workspace';
-import { Home, CheckSquare, FolderClosed, Inbox, Plus, KanbanSquare, Milestone } from '../ui/icons';
+import { Home, CheckSquare, FolderClosed, Inbox, Plus, KanbanSquare, Milestone, Path, Calendar } from '../ui/icons';
 
 interface MobileBottomNavProps {
   page: AppPage;
@@ -11,57 +11,72 @@ interface MobileBottomNavProps {
   onCreateRoadmap: () => void;
 }
 
-const STOPS: Array<{ page: AppPage; label: string; icon: typeof Home }> = [
-  { page: 'dashboard', label: 'Today', icon: Home },
-  { page: 'mywork', label: 'Work', icon: CheckSquare },
-  { page: 'projects', label: 'Projects', icon: FolderClosed },
-  { page: 'inbox', label: 'Inbox', icon: Inbox },
+type IconC = typeof Home;
+type Menu = 'create' | 'plan' | null;
+
+interface Stop {
+  key: string;
+  label: string;
+  icon: IconC;
+  /** Pages that light this stop up. */
+  pages: AppPage[];
+}
+
+// Timeline and Calendar share one "Plan" stop so the bar keeps five roomy stops.
+const STOPS: Stop[] = [
+  { key: 'dashboard', label: 'Today', icon: Home, pages: ['dashboard'] },
+  { key: 'mywork', label: 'Work', icon: CheckSquare, pages: ['mywork'] },
+  { key: 'projects', label: 'Projects', icon: FolderClosed, pages: ['projects', 'board', 'roadmap'] },
+  { key: 'plan', label: 'Plan', icon: Path, pages: ['timeline', 'calendar'] },
+  { key: 'inbox', label: 'Inbox', icon: Inbox, pages: ['inbox'] },
 ];
 
 const spring = { type: 'spring' as const, stiffness: 420, damping: 34, mass: 0.8 };
+const pop = {
+  initial: { opacity: 0, y: 12, scale: 0.96 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 8, scale: 0.97 },
+  transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] as const },
+};
 
 /**
  * The "route bar": a floating capsule with a dotted route running through it. Each
  * destination is a stop on that route; the current one becomes an inverted marker that
- * slides along the route and reveals its label. The plus button beside it opens a choice
- * between a new task board and a new roadmap.
+ * slides along the route and reveals its label. The Plan stop opens a Timeline / Calendar
+ * choice, and the plus button beside the bar opens a choice of task board or roadmap.
  */
 export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreateBoard, onCreateRoadmap }: MobileBottomNavProps) {
-  const [createOpen, setCreateOpen] = useState(false);
+  const [menu, setMenu] = useState<Menu>(null);
   const dockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!createOpen) return;
+    if (!menu) return;
     const onDown = (e: PointerEvent) => {
-      if (!dockRef.current?.contains(e.target as Node)) setCreateOpen(false);
+      if (!dockRef.current?.contains(e.target as Node)) setMenu(null);
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCreateOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
     document.addEventListener('pointerdown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [createOpen]);
+  }, [menu]);
 
-  const pick = (fn: () => void) => () => { setCreateOpen(false); fn(); };
+  // Close any open menu when the page changes.
+  useEffect(() => { setMenu(null); }, [page]);
 
-  const activeIndex = STOPS.findIndex(s =>
-    s.page === page || (s.page === 'projects' && (page === 'board' || page === 'roadmap')),
-  );
+  const pick = (fn: () => void) => () => { setMenu(null); fn(); };
+  const toggle = (m: Exclude<Menu, null>) => setMenu(cur => (cur === m ? null : m));
+
+  const activeIndex = STOPS.findIndex(s => s.pages.includes(page));
+  const stopLabel = (s: Stop) => (s.key === 'plan' && page === 'calendar' ? 'Calendar' : s.key === 'plan' && page === 'timeline' ? 'Timeline' : s.label);
 
   return (
-    <div className={`wp-route-dock${createOpen ? ' creating' : ''}`} ref={dockRef}>
+    <div className={`wp-route-dock${menu === 'create' ? ' creating' : ''}`} ref={dockRef}>
       <AnimatePresence>
-        {createOpen && (
-          <motion.div
-            className="wp-route-create"
-            role="menu"
-            initial={{ opacity: 0, y: 12, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.97 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          >
+        {menu === 'create' && (
+          <motion.div key="create" className="wp-route-create" role="menu" {...pop}>
             <span className="wp-route-create-eyebrow">Create new</span>
             <button type="button" role="menuitem" className="wp-route-create-item" onClick={pick(onCreateBoard)}>
               <span className="wp-route-create-icon"><KanbanSquare size={20} /></span>
@@ -79,28 +94,63 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
             </button>
           </motion.div>
         )}
+        {menu === 'plan' && (
+          <motion.div key="plan" className="wp-route-create plan" role="menu" {...pop}>
+            <span className="wp-route-create-eyebrow">Plan</span>
+            <button
+              type="button"
+              role="menuitem"
+              className={`wp-route-create-item${page === 'timeline' ? ' current' : ''}`}
+              onClick={pick(() => onNavigate('timeline'))}
+            >
+              <span className="wp-route-create-icon"><Path size={20} /></span>
+              <span className="wp-route-create-text">
+                <strong>Timeline</strong>
+                <small>Every project across the weeks ahead</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className={`wp-route-create-item${page === 'calendar' ? ' current' : ''}`}
+              onClick={pick(() => onNavigate('calendar'))}
+            >
+              <span className="wp-route-create-icon"><Calendar size={20} /></span>
+              <span className="wp-route-create-text">
+                <strong>Calendar</strong>
+                <small>Deadlines and milestones by day</small>
+              </span>
+            </button>
+          </motion.div>
+        )}
       </AnimatePresence>
       <nav className="wp-route" aria-label="Primary">
         <span className="wp-route-line" aria-hidden />
-        {STOPS.map(({ page: p, label, icon: Icon }, i) => {
+        {STOPS.map((stop, i) => {
+          const { key, icon: Icon } = stop;
+          const label = stopLabel(stop);
           const active = i === activeIndex;
+          const isPlan = key === 'plan';
           return (
             <button
-              key={p}
+              key={key}
               type="button"
-              className={`wp-route-stop${active ? ' active' : ''}${i < activeIndex ? ' passed' : ''}`}
-              onClick={() => onNavigate(p)}
+              className={`wp-route-stop${active ? ' active' : ''}${i < activeIndex ? ' passed' : ''}${isPlan && menu === 'plan' ? ' open' : ''}`}
+              onClick={() => (isPlan ? toggle('plan') : onNavigate(stop.pages[0]))}
               aria-current={active ? 'page' : undefined}
               aria-label={label}
+              aria-haspopup={isPlan ? 'menu' : undefined}
+              aria-expanded={isPlan ? menu === 'plan' : undefined}
             >
               {active && <motion.span layoutId="wp-route-marker" className="wp-route-marker" transition={spring} />}
               <span className="wp-route-stop-inner">
                 <span className="wp-route-icon">
                   <Icon size={20} weight={active ? 'fill' : 'regular'} />
-                  {p === 'inbox' && inboxUnread && !active && <span className="wp-route-dot" />}
+                  {key === 'inbox' && inboxUnread && !active && <span className="wp-route-dot" />}
                 </span>
                 {active && (
                   <motion.span
+                    key={label}
                     className="wp-route-label"
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
@@ -118,14 +168,14 @@ export default function MobileBottomNav({ page, inboxUnread, onNavigate, onCreat
         whileTap={{ scale: 0.92 }}
         type="button"
         className="wp-route-new"
-        onClick={() => setCreateOpen(o => !o)}
-        aria-label={createOpen ? 'Close create menu' : 'Create board or roadmap'}
+        onClick={() => toggle('create')}
+        aria-label={menu === 'create' ? 'Close create menu' : 'Create board or roadmap'}
         aria-haspopup="menu"
-        aria-expanded={createOpen}
+        aria-expanded={menu === 'create'}
       >
         <motion.span
           style={{ display: 'inline-flex' }}
-          animate={{ rotate: createOpen ? 45 : 0 }}
+          animate={{ rotate: menu === 'create' ? 45 : 0 }}
           transition={{ type: 'spring', stiffness: 420, damping: 26 }}
         >
           <Plus size={22} weight="bold" />

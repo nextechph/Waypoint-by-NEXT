@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, Search, LogOut, User, Sun, Moon, Settings, Path, Calendar } from './ui/icons';
+import { Bell, Search, LogOut, User, Sun, Moon, Settings } from './ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkStore } from '../store/useWorkStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -135,18 +135,6 @@ export default function Topbar({
                   {user?.email && <div className="wp-menu-email">{user.email}</div>}
                 </div>
                 <div className="wp-menu-sep" />
-                {isMobile && (
-                  <>
-                    {/* The route bar covers the main pages; these two live here on mobile. */}
-                    <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onNavigate('timeline'); }}>
-                      <Path size={16} /> Timeline
-                    </button>
-                    <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onNavigate('calendar'); }}>
-                      <Calendar size={16} /> Calendar
-                    </button>
-                    <div className="wp-menu-sep" />
-                  </>
-                )}
                 <button type="button" className="wp-menu-item" onClick={() => { setMenuOpen(false); onOpenSettings('profile'); }}>
                   <User size={16} /> Profile & avatar
                 </button>
